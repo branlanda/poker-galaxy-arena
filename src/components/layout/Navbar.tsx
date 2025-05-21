@@ -1,12 +1,20 @@
 
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Menu } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Menu, LogOut, Settings, User } from 'lucide-react';
 import Logo from '@/assets/Logo';
 import { Button } from '@/components/ui/Button';
+import { useAuth } from '@/stores/auth';
 
 const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full backdrop-blur-md bg-navy/90 border-b border-emerald/20">
@@ -47,12 +55,29 @@ const Navbar: React.FC = () => {
 
         {/* Auth buttons */}
         <div className="hidden md:flex items-center gap-3">
-          <Button variant="outline" size="sm">
-            Sign In
-          </Button>
-          <Button variant="primary" size="sm">
-            Sign Up
-          </Button>
+          {user ? (
+            <div className="flex items-center gap-3">
+              <div className="text-emerald text-sm mr-2">
+                {user.alias && `Hello, ${user.alias}`}
+              </div>
+              <Button variant="ghost" size="icon" onClick={() => navigate('/settings')}>
+                <Settings size={18} />
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleLogout}>
+                <LogOut size={16} className="mr-2" />
+                Sign Out
+              </Button>
+            </div>
+          ) : (
+            <>
+              <Button variant="outline" size="sm" onClick={() => navigate('/login')}>
+                Sign In
+              </Button>
+              <Button variant="primary" size="sm" onClick={() => navigate('/signup')}>
+                Sign Up
+              </Button>
+            </>
+          )}
         </div>
 
         {/* Mobile menu */}
@@ -102,12 +127,50 @@ const Navbar: React.FC = () => {
                 Hall of Fame
               </Link>
               <div className="flex flex-col gap-2 mt-4 pt-4 border-t border-emerald/10">
-                <Button variant="outline" fullWidth>
-                  Sign In
-                </Button>
-                <Button variant="primary" fullWidth>
-                  Sign Up
-                </Button>
+                {user ? (
+                  <>
+                    {user.alias && (
+                      <div className="text-emerald text-sm py-2">
+                        Hello, {user.alias}
+                      </div>
+                    )}
+                    <Link
+                      to="/settings"
+                      className="py-2 flex items-center text-white hover:text-emerald"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <Settings size={18} className="mr-2" />
+                      Settings
+                    </Link>
+                    <Button variant="outline" fullWidth onClick={handleLogout}>
+                      <LogOut size={16} className="mr-2" />
+                      Sign Out
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button 
+                      variant="outline" 
+                      fullWidth 
+                      onClick={() => {
+                        navigate('/login');
+                        setIsMenuOpen(false);
+                      }}
+                    >
+                      Sign In
+                    </Button>
+                    <Button 
+                      variant="primary" 
+                      fullWidth
+                      onClick={() => {
+                        navigate('/signup');
+                        setIsMenuOpen(false);
+                      }}
+                    >
+                      Sign Up
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
           </div>
