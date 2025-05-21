@@ -4,8 +4,8 @@ import { cn } from '@/lib/utils';
 import { cva } from 'class-variance-authority';
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'default' | 'primary' | 'secondary' | 'accent' | 'outline' | 'link';
-  size?: 'sm' | 'md' | 'lg';
+  variant?: 'default' | 'primary' | 'secondary' | 'accent' | 'outline' | 'link' | 'ghost';
+  size?: 'sm' | 'md' | 'lg' | 'icon' | 'default';
   loading?: boolean;
   fullWidth?: boolean;
 }
@@ -20,12 +20,15 @@ export const buttonVariants = cva(
         secondary: 'bg-gold text-navy hover:bg-gold/90 shadow-md shadow-gold/20',
         accent: 'bg-accent text-white hover:bg-accent/90 shadow-md shadow-accent/20',
         outline: 'border border-emerald text-emerald hover:bg-emerald/10',
-        link: 'bg-transparent text-emerald underline-offset-4 hover:underline hover:text-emerald/90'
+        link: 'bg-transparent text-emerald underline-offset-4 hover:underline hover:text-emerald/90',
+        ghost: 'bg-transparent hover:bg-muted/80 text-foreground'
       },
       size: {
         sm: 'h-8 px-3 text-sm',
         md: 'h-10 px-4',
-        lg: 'h-12 px-6 text-lg'
+        lg: 'h-12 px-6 text-lg',
+        icon: 'h-9 w-9 p-0',
+        default: 'h-10 px-4'
       },
       fullWidth: {
         true: 'w-full',
