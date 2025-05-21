@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
 import Logo from '@/assets/Logo';
 import { useAuth } from '@/stores/auth';
+import { LanguageSelector } from '@/components/language/LanguageSelector';
 
 const Navbar = () => {
   const { user, isAdmin, logout } = useAuth();
@@ -21,7 +22,9 @@ const Navbar = () => {
           <span className="text-xl font-bold text-emerald ml-2">PokerP2P</span>
         </Link>
         
-        <div className="flex gap-4 items-center">
+        <div className="flex gap-2 md:gap-4 items-center">
+          <LanguageSelector />
+          
           {user ? (
             <>
               <Link to="/funds">
