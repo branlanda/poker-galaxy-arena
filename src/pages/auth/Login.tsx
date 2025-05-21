@@ -1,10 +1,11 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
+import { useAuth } from '@/stores/auth';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -12,9 +13,17 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const user = useAuth((s) => s.user);
   
-  // Get redirect path from location state, or default to '/lobby'
-  const from = (location.state as any)?.from?.pathname || '/lobby';
+  // Get redirect path from location state, or default to '/'
+  const from = (location.state as any)?.from?.pathname || '/';
+
+  // If user is already logged in, redirect to home page
+  useEffect(() => {
+    if (user) {
+      navigate('/', { replace: true });
+    }
+  }, [user, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

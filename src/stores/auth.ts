@@ -1,6 +1,6 @@
 
 import { create } from 'zustand';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface User {
   id: string;
@@ -17,9 +17,17 @@ interface AuthState {
 
 export const useAuth = create<AuthState>((set) => ({
   user: null,
-  setUser: (u) => set({ user: u }),
+  setUser: (u) => {
+    set({ user: u });
+    if (u) {
+      localStorage.setItem('user', JSON.stringify(u));
+    } else {
+      localStorage.removeItem('user');
+    }
+  },
   logout: async () => {
     await supabase.auth.signOut();
+    localStorage.removeItem('user');
     set({ user: null });
   }
 }));
