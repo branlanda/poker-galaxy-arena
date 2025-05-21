@@ -5,6 +5,7 @@ import { useAuth } from '@/stores/auth';
 
 export function useAuthSync() {
   const setUser = useAuth((s) => s.setUser);
+  const setAdmin = useAuth((s) => s.setAdmin);
   
   useEffect(() => {
     // Initial session check
@@ -28,6 +29,9 @@ export function useAuthSync() {
                 alias: playerData.alias,
                 showInLeaderboard: playerData.show_public_stats
               });
+              
+              // TODO: remove this when backend is implemented
+              setAdmin(true);
             }
           });
       } else {
@@ -57,9 +61,13 @@ export function useAuthSync() {
               alias: playerData.alias,
               showInLeaderboard: playerData.show_public_stats
             });
+            
+            // TODO: remove this when backend is implemented
+            setAdmin(true);
           }
         } else {
           setUser(null);
+          setAdmin(false);
         }
       }
     );
@@ -67,5 +75,5 @@ export function useAuthSync() {
     return () => {
       subscription.unsubscribe();
     };
-  }, [setUser]);
+  }, [setUser, setAdmin]);
 }

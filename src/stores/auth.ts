@@ -11,12 +11,15 @@ export interface User {
 
 interface AuthState {
   user: User | null;
+  isAdmin: boolean;
   setUser: (u: User | null) => void;
+  setAdmin: (is: boolean) => void;
   logout: () => Promise<void>;
 }
 
 export const useAuth = create<AuthState>((set) => ({
   user: null,
+  isAdmin: false,
   setUser: (u) => {
     set({ user: u });
     if (u) {
@@ -25,9 +28,12 @@ export const useAuth = create<AuthState>((set) => ({
       localStorage.removeItem('user');
     }
   },
+  setAdmin: (is) => {
+    set({ isAdmin: is });
+  },
   logout: async () => {
     await supabase.auth.signOut();
     localStorage.removeItem('user');
-    set({ user: null });
+    set({ user: null, isAdmin: false });
   }
 }));

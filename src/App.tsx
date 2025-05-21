@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { useAuth } from '@/stores/auth';
@@ -8,6 +9,12 @@ import FundsPage from './pages/Funds/FundsPage';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import { useAuthSync } from './hooks/useAuthSync';
 import NotFound from './pages/NotFound';
+import AdminLayout from './pages/Admin/AdminLayout';
+import Dashboard from './pages/Admin/Dashboard';
+import Users from './pages/Admin/Users';
+import Tables from './pages/Admin/Tables';
+import Ledger from './pages/Admin/Ledger';
+import { AdminGuard } from './hooks/useAdminGuard';
 
 function App() {
   const [loading, setLoading] = useState(true);
@@ -31,19 +38,33 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* Rutas de autenticación */}
+        {/* Auth routes */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignUpPage />} />
         
-        {/* Página principal - accesible para todos */}
+        {/* Public route */}
         <Route path="/" element={<DashboardPage />} />
         
-        {/* Rutas protegidas */}
+        {/* Protected routes */}
         <Route path="/funds" element={
           <ProtectedRoute>
             <FundsPage />
           </ProtectedRoute>
         } />
+        
+        {/* Admin routes */}
+        <Route path="/admin" element={
+          <AdminGuard>
+            <AdminLayout />
+          </AdminGuard>
+        }>
+          <Route index element={<Dashboard />} />
+          <Route path="users" element={<Users />} />
+          <Route path="tables" element={<Tables />} />
+          <Route path="ledger" element={<Ledger />} />
+        </Route>
+        
+        {/* 404 route */}
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>

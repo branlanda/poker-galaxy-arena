@@ -5,7 +5,7 @@ import Logo from '@/assets/Logo';
 import { useAuth } from '@/stores/auth';
 
 const Navbar = () => {
-  const { user, logout } = useAuth();
+  const { user, isAdmin, logout } = useAuth();
   const navigate = useNavigate();
   
   const handleLogout = async () => {
@@ -29,9 +29,19 @@ const Navbar = () => {
                   Fondos
                 </Button>
               </Link>
+              
+              {isAdmin && (
+                <Link to="/admin">
+                  <Button variant="primary" size="sm">
+                    Admin
+                  </Button>
+                </Link>
+              )}
+              
               <Button variant="secondary" size="sm" onClick={handleLogout}>
                 Cerrar sesión
               </Button>
+              
               <div className="text-emerald text-sm font-medium ml-2">
                 {user.alias || user.email}
               </div>
