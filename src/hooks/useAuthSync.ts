@@ -17,7 +17,7 @@ export function useAuthSync() {
         
         // Fetch player data
         supabase.from('players')
-          .select('alias, show_in_leaderboard')
+          .select('alias, show_public_stats')
           .eq('user_id', data.session.user.id)
           .single()
           .then(({ data: playerData }) => {
@@ -26,7 +26,7 @@ export function useAuthSync() {
                 id: data.session.user.id,
                 email: data.session.user.email,
                 alias: playerData.alias,
-                showInLeaderboard: playerData.show_in_leaderboard
+                showInLeaderboard: playerData.show_public_stats
               });
             }
           });
@@ -46,7 +46,7 @@ export function useAuthSync() {
           
           // Fetch player data
           const { data: playerData } = await supabase.from('players')
-            .select('alias, show_in_leaderboard')
+            .select('alias, show_public_stats')
             .eq('user_id', session.user.id)
             .single();
             
@@ -55,7 +55,7 @@ export function useAuthSync() {
               id: session.user.id,
               email: session.user.email,
               alias: playerData.alias,
-              showInLeaderboard: playerData.show_in_leaderboard
+              showInLeaderboard: playerData.show_public_stats
             });
           }
         } else {

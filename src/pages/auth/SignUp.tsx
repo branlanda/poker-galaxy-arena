@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/stores/auth';
@@ -49,7 +49,7 @@ const SignUp = () => {
           .insert([{ 
             user_id: data.user.id, 
             alias,
-            show_in_leaderboard: true
+            show_public_stats: true  // Updated from show_in_leaderboard to show_public_stats
           }]);
           
         if (profileError) throw profileError;
@@ -63,7 +63,7 @@ const SignUp = () => {
         });
         
         toast.success("Account created successfully!");
-        navigate('/lobby');
+        navigate('/');  // Updated from '/lobby' to '/' to match our route structure
       }
     } catch (error: any) {
       toast.error(error.message || "Failed to create account");
