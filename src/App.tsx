@@ -1,65 +1,54 @@
+import { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { useAuth } from '@/stores/auth';
+import LoginPage from './pages/Login';
+import DashboardPage from './pages/Dashboard';
+import FundsPage from './pages/Funds/FundsPage';
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
-import NotFound from "./pages/NotFound";
-import SignUp from "./pages/auth/SignUp";
-import Login from "./pages/auth/Login";
-import SettingsPage from "./pages/settings/Settings";
-import ProtectedRoute from "./components/auth/ProtectedRoute";
-import { useAuthSync } from "./hooks/useAuthSync";
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const user = useAuth((s) => s.user);
 
-// These will be created as stub components for now
-const Lobby = () => <div className="p-8"><h1 className="h1 mb-4">Lobby</h1><p>Coming soon</p></div>;
-const Tournament = () => <div className="p-8"><h1 className="h1 mb-4">Tournament</h1><p>Coming soon</p></div>;
-const Table = () => <div className="p-8"><h1 className="h1 mb-4">Table</h1><p>Coming soon</p></div>;
-const Funds = () => <div className="p-8"><h1 className="h1 mb-4">Funds</h1><p>Coming soon</p></div>;
-const VIP = () => <div className="p-8"><h1 className="h1 mb-4">VIP</h1><p>Coming soon</p></div>;
-const Affiliate = () => <div className="p-8"><h1 className="h1 mb-4">Affiliate</h1><p>Coming soon</p></div>;
-const HallOfFame = () => <div className="p-8"><h1 className="h1 mb-4">Hall of Fame</h1><p>Coming soon</p></div>;
+  if (!user) {
+    // Redirect to login if not authenticated
+    return <Navigate to="/login" />;
+  }
 
-const queryClient = new QueryClient();
-
-// Wrap the app with auth sync
-const AppWithAuth = () => {
-  useAuthSync();
-  
-  return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Index />} />
-        <Route path="/signup" element={<SignUp />} />
-        <Route path="/login" element={<Login />} />
-        
-        {/* Protected routes */}
-        <Route path="/lobby" element={<ProtectedRoute><Lobby /></ProtectedRoute>} />
-        <Route path="/tournament" element={<ProtectedRoute><Tournament /></ProtectedRoute>} />
-        <Route path="/tournament/:id" element={<ProtectedRoute><Tournament /></ProtectedRoute>} />
-        <Route path="/table/:id" element={<ProtectedRoute><Table /></ProtectedRoute>} />
-        <Route path="/funds" element={<ProtectedRoute><Funds /></ProtectedRoute>} />
-        <Route path="/vip" element={<ProtectedRoute><VIP /></ProtectedRoute>} />
-        <Route path="/affiliate" element={<ProtectedRoute><Affiliate /></ProtectedRoute>} />
-        <Route path="/hof" element={<ProtectedRoute><HallOfFame /></ProtectedRoute>} />
-        <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
-        
-        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </BrowserRouter>
-  );
+  return <>{children}</>;
 };
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <AppWithAuth />
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+function App() {
+  const [loading, setLoading] = useState(true);
+  const setUser = useAuth((s) => s.setUser);
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+    setLoading(false);
+  }, [setUser]);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  return (
+    <Router>
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/" element={
+          <ProtectedRoute>
+            <DashboardPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/funds" element={
+          <ProtectedRoute>
+            <FundsPage />
+          </ProtectedRoute>
+        } />
+      </Routes>
+    </Router>
+  );
+}
 
 export default App;
