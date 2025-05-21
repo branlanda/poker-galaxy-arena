@@ -1,8 +1,9 @@
+
 import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { useAuth } from '@/stores/auth';
-import LoginPage from './pages/Login';
-import DashboardPage from './pages/Dashboard';
+import LoginPage from './pages/auth/Login';
+import DashboardPage from './pages/Index';
 import FundsPage from './pages/Funds/FundsPage';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
