@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { useAuth } from '@/stores/auth';
 import LoginPage from './pages/auth/Login';
+import SignUpPage from './pages/auth/SignUp';
 import DashboardPage from './pages/Index';
 import FundsPage from './pages/Funds/FundsPage';
 import ProtectedRoute from './components/auth/ProtectedRoute';
@@ -30,12 +31,14 @@ function App() {
   return (
     <Router>
       <Routes>
+        {/* Rutas de autenticación */}
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/" element={
-          <ProtectedRoute>
-            <DashboardPage />
-          </ProtectedRoute>
-        } />
+        <Route path="/signup" element={<SignUpPage />} />
+        
+        {/* Página principal - accesible para todos */}
+        <Route path="/" element={<DashboardPage />} />
+        
+        {/* Rutas protegidas */}
         <Route path="/funds" element={
           <ProtectedRoute>
             <FundsPage />
