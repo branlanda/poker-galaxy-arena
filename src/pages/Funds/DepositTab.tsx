@@ -1,9 +1,8 @@
-
 import React, { useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { Slider } from "@/components/ui/slider";
 import { requestDeposit } from "@/lib/api/wallet";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 import { Loader2, QrCode, Copy, Check, AlertCircle } from "lucide-react";
 import { WalletConnect } from "@/components/wallet/WalletConnect";
 import { useWalletStore } from "@/stores/wallet";

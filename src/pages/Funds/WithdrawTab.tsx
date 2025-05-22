@@ -1,11 +1,10 @@
-
 import React, { useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { useBalance } from "@/hooks/useBalance";
 import { Slider } from "@/components/ui/slider";
 import { requestWithdraw } from "@/lib/api/wallet";
 import { useWalletStore } from '@/stores/wallet';
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Loader2, AlertCircle } from "lucide-react";
 import { WalletConnect } from "@/components/wallet/WalletConnect";
