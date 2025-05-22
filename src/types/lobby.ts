@@ -74,6 +74,8 @@ export interface SeatState {
   winAmount?: number;
 }
 
+export type SortOption = 'activity' | 'players' | 'newest' | 'blinds_asc' | 'blinds_desc';
+
 export interface TableFilters {
   searchQuery: string;
   tableType: TableType | 'ALL';
@@ -82,15 +84,8 @@ export interface TableFilters {
   showFull: boolean;
   showEmpty: boolean;
   showPrivate: boolean;
-}
-
-export interface RoomMessage {
-  id: string;
-  table_id: string;
-  player_id: string;
-  player_name: string;
-  message: string;
-  created_at: string;
+  showActive: boolean; // New field
+  sortBy: SortOption; // New field
 }
 
 export const DEFAULT_FILTERS: TableFilters = {
@@ -100,5 +95,16 @@ export const DEFAULT_FILTERS: TableFilters = {
   buyInRange: [0, 10000],
   showFull: true,
   showEmpty: true,
-  showPrivate: true
+  showPrivate: true,
+  showActive: false,
+  sortBy: 'activity'
 };
+
+export interface RoomMessage {
+  id: string;
+  table_id: string;
+  player_id: string;
+  player_name: string;
+  message: string;
+  created_at: string;
+}
