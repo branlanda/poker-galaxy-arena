@@ -6,6 +6,14 @@ import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/Button';
 import { LobbyTable, PlayerAtTable } from '@/types/lobby';
 import { useAuth } from '@/stores/auth';
+import { useGameStore } from '@/stores/game';
+import { PlayerSeat } from '@/components/poker/PlayerSeat';
+import { PokerChip } from '@/components/poker/PokerChip';
+import { PokerCard } from '@/components/poker/PokerCard';
+import { CommunityCards } from '@/components/poker/CommunityCards';
+import { BetActions } from '@/components/poker/BetActions';
+import { GameMessages } from '@/components/poker/GameMessages';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 export default function GameRoom() {
   const { tableId } = useParams<{ tableId: string }>();
@@ -15,6 +23,27 @@ export default function GameRoom() {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { user } = useAuth();
+  
+  // Game state from Zustand store
+  const { 
+    gameState, 
+    isLoading: gameLoading, 
+    error: gameError,
+    initializeGame,
+    disconnectGame,
+    takeSeat,
+    leaveSeat
+  } = useGameStore();
+  
+  // Find player's seat if they are at the table
+  const playerSeat = user && gameState?.seats.findIndex(
+    seat => seat !== null && seat.playerId === user.id
+  );
+  
+  const isPlayerSeated = playerSeat !== undefined && playerSeat !== -1;
+  
+  // Is it the player's turn
+  const isPlayerTurn = user && gameState?.activePlayerId === user.id;
   
   useEffect(() => {
     if (!tableId) return;
@@ -52,6 +81,9 @@ export default function GameRoom() {
         if (playersError) throw playersError;
         
         setPlayers(playersData as PlayerAtTable[]);
+        
+        // Initialize the game state
+        await initializeGame(tableId);
       } catch (error: any) {
         toast({
           title: 'Error',
@@ -113,13 +145,56 @@ export default function GameRoom() {
     return () => {
       supabase.removeChannel(tableChannel);
       supabase.removeChannel(playersChannel);
+      disconnectGame();
     };
-  }, [tableId, toast, navigate]);
+  }, [tableId, toast, navigate, initializeGame, disconnectGame]);
+  
+  const handleSitDown = async (seatNumber: number) => {
+    if (!user || !tableId || !table) return;
+    
+    try {
+      // Default buy-in at minimum
+      const buyIn = table.min_buy_in;
+      
+      // Create player at table entry
+      const { error } = await supabase
+        .from('players_at_table')
+        .upsert({
+          player_id: user.id,
+          table_id: tableId,
+          seat_number: seatNumber,
+          stack: buyIn,
+          status: 'SITTING'
+        }, { onConflict: 'player_id, table_id' });
+        
+      if (error) throw error;
+      
+      // Update the game state
+      await takeSeat(seatNumber, user.id, user.email || 'Player', buyIn);
+      
+      toast({
+        title: 'Success',
+        description: 'You have taken a seat at the table',
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: `Failed to take seat: ${error.message}`,
+        variant: 'destructive',
+      });
+    }
+  };
   
   const leaveTable = async () => {
     if (!user || !tableId) return;
     
     try {
+      // If player is seated, first leave the seat
+      if (isPlayerSeated) {
+        await leaveSeat(user.id);
+      }
+      
+      // Delete the player_at_table entry
       const { error } = await supabase
         .from('players_at_table')
         .delete()
@@ -143,7 +218,7 @@ export default function GameRoom() {
     }
   };
 
-  if (loading) {
+  if (loading || gameLoading) {
     return (
       <div className="container mx-auto px-4 py-6 grid place-items-center h-[80vh]">
         <p>Loading game room...</p>
@@ -151,11 +226,13 @@ export default function GameRoom() {
     );
   }
 
-  if (!table) {
+  if (gameError || !table) {
     return (
       <div className="container mx-auto px-4 py-6 grid place-items-center h-[80vh]">
         <div className="text-center">
-          <h2 className="text-xl font-semibold mb-4">Table not found</h2>
+          <h2 className="text-xl font-semibold mb-4">
+            {gameError ? `Error: ${gameError}` : 'Table not found'}
+          </h2>
           <Button onClick={() => navigate('/lobby')}>Return to Lobby</Button>
         </div>
       </div>
@@ -164,37 +241,132 @@ export default function GameRoom() {
 
   return (
     <div className="container mx-auto px-4 py-6">
+      {/* Table header with info and controls */}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-emerald">{table.name}</h1>
+        <div>
+          <h1 className="text-2xl font-bold text-emerald">{table.name}</h1>
+          <p className="text-sm text-gray-400">
+            Blinds: {table.small_blind}/{table.big_blind} • Buy-in: {table.min_buy_in}-{table.max_buy_in}
+          </p>
+        </div>
         <Button variant="outline" onClick={leaveTable}>
           Leave Table
         </Button>
       </div>
       
-      <div className="bg-navy/50 border border-emerald/10 rounded-lg p-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <h2 className="text-xl font-semibold mb-4">Table Info</h2>
-            <div className="space-y-2">
-              <p><span className="text-gray-400">Blinds:</span> {table.small_blind} / {table.big_blind}</p>
-              <p><span className="text-gray-400">Buy-in Range:</span> {table.min_buy_in} - {table.max_buy_in}</p>
-              <p><span className="text-gray-400">Type:</span> {table.table_type}</p>
-              <p><span className="text-gray-400">Players:</span> {table.current_players} / {table.max_players}</p>
+      {/* Main poker table layout */}
+      <div className="bg-navy/50 border border-emerald/10 rounded-lg p-6 mb-6">
+        {/* The table itself */}
+        <div className="relative">
+          {/* Elliptical table background */}
+          <div className="aspect-[4/3] w-full bg-green-900/80 rounded-[50%] border-8 border-amber-950 shadow-xl overflow-hidden relative mb-8">
+            {/* Table felt pattern overlay */}
+            <div className="absolute inset-0 opacity-10 bg-grid-pattern"></div>
+            
+            {/* Center info area */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              {gameState?.pot > 0 && (
+                <div className="flex flex-col items-center mb-4">
+                  <div className="flex gap-1">
+                    <PokerChip value={gameState.pot} size="lg" />
+                  </div>
+                  <p className="text-white font-medium mt-2">Pot: {gameState.pot}</p>
+                </div>
+              )}
+              
+              {/* Community cards */}
+              <div className="mb-4">
+                <CommunityCards 
+                  cards={gameState?.communityCards || []}
+                  phase={gameState?.phase || 'WAITING'} 
+                />
+              </div>
+              
+              {/* Game phase display */}
+              <div className="bg-black/30 px-4 py-1 rounded-full">
+                <p className="text-sm font-medium text-gray-300">
+                  {gameState?.phase || 'Waiting for players'}
+                </p>
+              </div>
+            </div>
+            
+            {/* Player positions - 9-player layout */}
+            <div className="absolute inset-0">
+              {/* Top row (seats 0-2) */}
+              <div className="absolute top-[5%] left-0 right-0 flex justify-between px-[15%]">
+                <div><PlayerSeat position={0} state={gameState?.seats[0] || null} isCurrentPlayer={playerSeat === 0} onSitDown={!isPlayerSeated ? handleSitDown : undefined} /></div>
+                <div><PlayerSeat position={1} state={gameState?.seats[1] || null} isCurrentPlayer={playerSeat === 1} onSitDown={!isPlayerSeated ? handleSitDown : undefined} /></div>
+                <div><PlayerSeat position={2} state={gameState?.seats[2] || null} isCurrentPlayer={playerSeat === 2} onSitDown={!isPlayerSeated ? handleSitDown : undefined} /></div>
+              </div>
+              
+              {/* Left middle (seat 3) */}
+              <div className="absolute top-[40%] left-[2%]">
+                <PlayerSeat position={3} state={gameState?.seats[3] || null} isCurrentPlayer={playerSeat === 3} onSitDown={!isPlayerSeated ? handleSitDown : undefined} />
+              </div>
+              
+              {/* Right middle (seat 4) */}
+              <div className="absolute top-[40%] right-[2%]">
+                <PlayerSeat position={4} state={gameState?.seats[4] || null} isCurrentPlayer={playerSeat === 4} onSitDown={!isPlayerSeated ? handleSitDown : undefined} />
+              </div>
+              
+              {/* Bottom row (seats 5-8) */}
+              <div className="absolute bottom-[5%] left-0 right-0 flex justify-between px-[10%]">
+                <div><PlayerSeat position={5} state={gameState?.seats[5] || null} isCurrentPlayer={playerSeat === 5} onSitDown={!isPlayerSeated ? handleSitDown : undefined} /></div>
+                <div><PlayerSeat position={6} state={gameState?.seats[6] || null} isCurrentPlayer={playerSeat === 6} onSitDown={!isPlayerSeated ? handleSitDown : undefined} /></div>
+                <div><PlayerSeat position={7} state={gameState?.seats[7] || null} isCurrentPlayer={playerSeat === 7} onSitDown={!isPlayerSeated ? handleSitDown : undefined} /></div>
+                <div><PlayerSeat position={8} state={gameState?.seats[8] || null} isCurrentPlayer={playerSeat === 8} onSitDown={!isPlayerSeated ? handleSitDown : undefined} /></div>
+              </div>
             </div>
           </div>
           
-          <div>
-            <h2 className="text-xl font-semibold mb-4">Players</h2>
-            {players.length > 0 ? (
+          {/* Action area (only shown when it's the player's turn) */}
+          {isPlayerTurn && isPlayerSeated && gameState?.seats[playerSeat] && (
+            <div className="mt-4 flex justify-center">
+              <BetActions
+                playerId={user!.id}
+                playerStack={gameState.seats[playerSeat]!.stack}
+                currentBet={gameState.currentBet}
+                playerBet={gameState.seats[playerSeat]!.bet}
+              />
+            </div>
+          )}
+          
+          {/* Game messages and chat */}
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="md:col-span-2">
+              <GameMessages
+                action={
+                  gameState?.lastAction ? {
+                    playerName: gameState.seats.find(
+                      s => s !== null && s.playerId === gameState.lastAction?.playerId
+                    )?.playerName || 'Player',
+                    action: gameState.lastAction.action,
+                    amount: gameState.lastAction.amount
+                  } : undefined
+                }
+                gamePhase={gameState?.phase}
+              />
+            </div>
+            <div className="bg-navy/30 border border-emerald/10 rounded-md p-3">
+              <h3 className="text-sm font-medium mb-2 text-gray-300">Players at Table</h3>
               <div className="space-y-2">
-                {players.map((player) => (
-                  <div key={player.id} className="flex justify-between items-center p-2 border border-emerald/10 rounded">
-                    <div>
-                      <p>{player.player_id === user?.id ? 'You' : `Player ${player.seat_number || '(unseated)'}`}</p>
-                      <p className="text-xs text-gray-400">Stack: {player.stack}</p>
+                {players.map(player => (
+                  <div 
+                    key={player.id} 
+                    className="flex items-center justify-between text-xs p-1.5 rounded-sm bg-navy/30"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Avatar className="w-6 h-6">
+                        <AvatarFallback className="text-[10px]">
+                          {player.player_id === user?.id ? 'You' : 'P'}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span>
+                        {player.player_id === user?.id ? 'You' : `Player ${player.seat_number !== null ? player.seat_number : '(unseated)' }`}
+                      </span>
                     </div>
                     <div>
-                      <span className={`px-2 py-1 text-xs rounded ${
+                      <span className={`px-2 py-0.5 text-[10px] rounded ${
                         player.status === 'ACTIVE' ? 'bg-green-900/50 text-green-300' : 
                         player.status === 'AWAY' ? 'bg-amber-900/50 text-amber-300' :
                         'bg-gray-800 text-gray-300'
@@ -205,17 +377,8 @@ export default function GameRoom() {
                   </div>
                 ))}
               </div>
-            ) : (
-              <p className="text-gray-400">No players at this table yet.</p>
-            )}
+            </div>
           </div>
-        </div>
-        
-        <div className="mt-8 text-center">
-          <p className="text-gray-400 mb-2">Game interface coming soon!</p>
-          <p className="text-sm text-gray-500">
-            This is a placeholder for the full game interface that will be implemented in a future update.
-          </p>
         </div>
       </div>
     </div>
