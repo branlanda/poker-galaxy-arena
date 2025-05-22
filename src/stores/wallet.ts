@@ -1,6 +1,5 @@
 
 import { create } from 'zustand';
-import { ethers } from 'ethers';
 import { supabase } from '@/integrations/supabase/client';
 import { StoreAction, Store, StoreDefinition } from './storeTypes';
 
@@ -49,24 +48,39 @@ const walletStore: StoreDefinition<WalletState, WalletActions> = {
   },
   
   actions: {
-    setAddress: (state, address) => ({ ...state, address }),
-    setBalance: (state, balance) => ({ ...state, balance }),
-    setEthBalance: (state, ethBalance) => ({ ...state, ethBalance }),
-    setConnecting: (state, connecting) => ({ ...state, connecting }),
+    setAddress: function(this, state, address) { 
+      return { ...state, address }; 
+    },
     
-    addTransaction: (state, transaction) => ({
-      ...state,
-      transactions: [transaction, ...state.transactions],
-    }),
+    setBalance: function(this, state, balance) { 
+      return { ...state, balance }; 
+    },
     
-    updateTransaction: (state, id, status) => ({
-      ...state,
-      transactions: state.transactions.map(tx => 
-        tx.id === id ? { ...tx, status } : tx
-      ),
-    }),
+    setEthBalance: function(this, state, ethBalance) { 
+      return { ...state, ethBalance }; 
+    },
     
-    loadTransactions: async (get, set) => {
+    setConnecting: function(this, state, connecting) { 
+      return { ...state, connecting }; 
+    },
+    
+    addTransaction: function(this, state, transaction) {
+      return {
+        ...state,
+        transactions: [transaction, ...state.transactions]
+      };
+    },
+    
+    updateTransaction: function(this, state, id, status) {
+      return {
+        ...state,
+        transactions: state.transactions.map(tx => 
+          tx.id === id ? { ...tx, status } : tx
+        )
+      };
+    },
+    
+    loadTransactions: async function(this, state, set, get) {
       try {
         const { data: ledgerData } = await supabase
           .from('ledger_entries')
@@ -76,11 +90,11 @@ const walletStore: StoreDefinition<WalletState, WalletActions> = {
         if (!ledgerData) return;
         
         const transactions: Transaction[] = ledgerData.map(entry => ({
-          id: entry.id,
+          id: entry.id.toString(), // Convert to string
           hash: entry.tx_hash || '',
           amount: entry.amount,
           type: entry.tx_type === 'DEPOSIT' ? 'deposit' : 'withdraw',
-          status: entry.meta?.status || 'confirmed',
+          status: (entry.meta?.status as TransactionStatus) || 'confirmed',
           timestamp: new Date(entry.created_at),
         }));
         
@@ -90,7 +104,7 @@ const walletStore: StoreDefinition<WalletState, WalletActions> = {
       }
     },
     
-    depositFunds: async (get, set) => {
+    depositFunds: async function(this, state, set, get, depositAmount) {
       try {
         // Here would be the ethereum deposit functionality
         // For now we're simulating it with a direct API call
@@ -99,18 +113,17 @@ const walletStore: StoreDefinition<WalletState, WalletActions> = {
         const timestamp = new Date();
         
         // Add pending transaction to state
+        const transaction: Transaction = {
+          id: txId,
+          hash: `0x${Math.random().toString(36).substring(2, 15)}`,
+          amount: depositAmount,
+          type: 'deposit',
+          status: 'pending',
+          timestamp
+        };
+        
         set({
-          transactions: [
-            {
-              id: txId,
-              hash: `0x${Math.random().toString(36).substring(2, 15)}`,
-              amount,
-              type: 'deposit',
-              status: 'pending',
-              timestamp,
-            },
-            ...get().transactions,
-          ],
+          transactions: [transaction, ...get().transactions]
         });
         
         // Call the deposit API
@@ -119,8 +132,8 @@ const walletStore: StoreDefinition<WalletState, WalletActions> = {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ amount }),
-          credentials: 'include',
+          body: JSON.stringify({ amount: depositAmount }),
+          credentials: 'include'
         });
         
         const result = await response.json();
@@ -134,7 +147,7 @@ const walletStore: StoreDefinition<WalletState, WalletActions> = {
           transactions: get().transactions.map(tx =>
             tx.id === txId ? { ...tx, status: 'confirmed' as TransactionStatus } : tx
           ),
-          balance: get().balance + amount,
+          balance: get().balance + depositAmount,
         });
         
         return txId;
@@ -144,7 +157,7 @@ const walletStore: StoreDefinition<WalletState, WalletActions> = {
       }
     },
     
-    withdrawFunds: async (get, set, address, amount) => {
+    withdrawFunds: async function(this, state, set, get, address, withdrawAmount) {
       try {
         // Here would be the ethereum withdraw functionality
         // For now we're simulating it with a direct API call
@@ -153,18 +166,17 @@ const walletStore: StoreDefinition<WalletState, WalletActions> = {
         const timestamp = new Date();
         
         // Add pending transaction to state
+        const transaction: Transaction = {
+          id: txId,
+          hash: `0x${Math.random().toString(36).substring(2, 15)}`,
+          amount: withdrawAmount,
+          type: 'withdraw',
+          status: 'pending',
+          timestamp
+        };
+        
         set({
-          transactions: [
-            {
-              id: txId,
-              hash: `0x${Math.random().toString(36).substring(2, 15)}`,
-              amount,
-              type: 'withdraw',
-              status: 'pending',
-              timestamp,
-            },
-            ...get().transactions,
-          ],
+          transactions: [transaction, ...get().transactions]
         });
         
         // Call the withdraw API
@@ -173,8 +185,8 @@ const walletStore: StoreDefinition<WalletState, WalletActions> = {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ address, amount }),
-          credentials: 'include',
+          body: JSON.stringify({ address, amount: withdrawAmount }),
+          credentials: 'include'
         });
         
         if (!response.ok) {
@@ -186,7 +198,7 @@ const walletStore: StoreDefinition<WalletState, WalletActions> = {
           transactions: get().transactions.map(tx =>
             tx.id === txId ? { ...tx, status: 'confirmed' as TransactionStatus } : tx
           ),
-          balance: get().balance - amount,
+          balance: get().balance - withdrawAmount,
         });
         
         return txId;
@@ -199,14 +211,43 @@ const walletStore: StoreDefinition<WalletState, WalletActions> = {
 };
 
 // Create the store
-export const useWalletStore = create<Store<WalletState, WalletActions>>((set, get) => {
-  const store = {
-    ...walletStore.state,
-    ...Object.entries(walletStore.actions).reduce((acc, [key, action]) => {
-      acc[key] = (...args: any[]) => action(get(), set, ...args);
-      return acc;
-    }, {} as any),
-  };
+export const useWalletStore = create<WalletState & {
+  setAddress: (address: string | null) => void;
+  setBalance: (balance: number) => void;
+  setEthBalance: (balance: string | null) => void;
+  setConnecting: (connecting: boolean) => void;
+  addTransaction: (transaction: Transaction) => void;
+  updateTransaction: (id: string, status: TransactionStatus) => void;
+  loadTransactions: () => Promise<void>;
+  depositFunds: (amount: number) => Promise<string | null>;
+  withdrawFunds: (address: string, amount: number) => Promise<string | null>;
+}>((set, get) => ({
+  ...walletStore.state,
   
-  return store;
-});
+  setAddress: (address) => set({ address }),
+  setBalance: (balance) => set({ balance }),
+  setEthBalance: (ethBalance) => set({ ethBalance }),
+  setConnecting: (connecting) => set({ connecting }),
+  
+  addTransaction: (transaction) => set((state) => ({
+    transactions: [transaction, ...state.transactions]
+  })),
+  
+  updateTransaction: (id, status) => set((state) => ({
+    transactions: state.transactions.map(tx => 
+      tx.id === id ? { ...tx, status } : tx
+    )
+  })),
+  
+  loadTransactions: async () => {
+    await walletStore.actions.loadTransactions.call(null, get(), set, get);
+  },
+  
+  depositFunds: async (amount) => {
+    return walletStore.actions.depositFunds.call(null, get(), set, get, amount);
+  },
+  
+  withdrawFunds: async (address, amount) => {
+    return walletStore.actions.withdrawFunds.call(null, get(), set, get, address, amount);
+  }
+}));

@@ -1,8 +1,16 @@
 
 import React, { ReactElement } from 'react';
-import { render, RenderOptions } from '@testing-library/react';
+import { render, RenderOptions, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
-import { Web3Provider } from '@/providers/Web3Provider';
+
+// Create a custom wrapper component that includes all providers
+const AllProviders: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  return (
+    <BrowserRouter>
+      {children}
+    </BrowserRouter>
+  );
+};
 
 // Create a custom renderer that includes providers
 interface CustomRenderOptions extends Omit<RenderOptions, 'wrapper'> {
@@ -20,9 +28,7 @@ export function renderWithProviders(
   
   return render(ui, {
     wrapper: ({ children }) => (
-      <Web3Provider>
-        <BrowserRouter>{children}</BrowserRouter>
-      </Web3Provider>
+      <AllProviders>{children}</AllProviders>
     ),
     ...renderOptions,
   });

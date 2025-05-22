@@ -1,6 +1,6 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@/test/utils';
+import { render, screen, waitFor } from '@testing-library/react';
 import GameRoom from './GameRoom';
 import { useGameStore } from '@/stores/game';
 import { useAuth } from '@/stores/auth';
@@ -68,7 +68,7 @@ describe('GameRoom Component', () => {
       user: { id: 'user-123', email: 'player@example.com' },
     });
     
-    // Mock Supabase responses
+    // Mock Supabase responses for table data
     (supabase.from as any).mockImplementation(() => ({
       select: () => ({
         eq: () => ({
@@ -82,10 +82,6 @@ describe('GameRoom Component', () => {
             }, 
             error: null 
           }),
-        }),
-        eq: () => Promise.resolve({ 
-          data: [], 
-          error: null 
         }),
       }),
     }));
