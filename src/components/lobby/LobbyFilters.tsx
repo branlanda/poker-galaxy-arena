@@ -15,14 +15,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import {
-  Switch,
   Card,
   CardHeader,
   CardTitle,
   CardDescription,
   CardContent,
-} from '@radix-ui/react-switch';
+} from '@/components/ui/card';
 import { DEFAULT_FILTERS } from '@/types/lobby';
 
 interface LobbyFiltersProps {

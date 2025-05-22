@@ -112,8 +112,7 @@ export default function LobbyPage() {
       <motion.div variants={itemAnimation} className="mt-4">
         <LobbyFilters
           filters={filters}
-          onChange={setFilters}
-          onReset={handleResetFilters}
+          onFilterChange={setFilters}
         />
       </motion.div>
       

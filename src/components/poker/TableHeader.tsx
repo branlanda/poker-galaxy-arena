@@ -1,5 +1,5 @@
 
-import { Chip, X, Users, Clock } from 'lucide-react';
+import { X, Users, Clock, CircleDollarSign } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/badge';
 import { formatDistanceToNow } from 'date-fns';
@@ -28,7 +28,7 @@ export function TableHeader({ table, onLeaveTable }: TableHeaderProps) {
         </div>
         <div className="flex flex-wrap gap-4 text-sm text-gray-300">
           <div className="flex items-center gap-1">
-            <Chip className="h-4 w-4" />
+            <CircleDollarSign className="h-4 w-4" />
             <span>Blinds: {blindsText}</span>
           </div>
           <div className="flex items-center gap-1">
@@ -45,10 +45,10 @@ export function TableHeader({ table, onLeaveTable }: TableHeaderProps) {
       </div>
       <div className="mt-2 md:mt-0">
         <Button 
-          variant="destructive" 
+          variant="outline" 
           size="sm" 
           onClick={onLeaveTable}
-          className="flex items-center gap-1"
+          className="flex items-center gap-1 text-red-500 hover:bg-red-500/10 hover:text-red-500"
         >
           <X className="h-4 w-4" />
           Leave Table
