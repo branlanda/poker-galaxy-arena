@@ -1,7 +1,6 @@
-
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 import { LobbyTable, PlayerAtTable } from '@/types/lobby';
 import { useAuth } from '@/stores/auth';
@@ -35,11 +34,11 @@ export default function GameRoom() {
   } = useGameStore();
   
   // Find player's seat if they are at the table
-  const playerSeat = user && gameState?.seats.findIndex(
+  const playerSeatIndex = user && gameState?.seats.findIndex(
     seat => seat !== null && seat.playerId === user.id
   );
   
-  const isPlayerSeated = playerSeat !== undefined && playerSeat !== -1;
+  const isPlayerSeated = playerSeatIndex !== undefined && playerSeatIndex !== -1;
   
   // Is it the player's turn
   const isPlayerTurn = user && gameState?.activePlayerId === user.id;
@@ -237,7 +236,7 @@ export default function GameRoom() {
           gameState={gameState}
           isPlayerSeated={isPlayerSeated}
           isPlayerTurn={isPlayerTurn}
-          playerSeat={playerSeat || -1}
+          playerSeatIndex={playerSeatIndex || -1}
           userId={user?.id}
           onSitDown={handleSitDown}
         />

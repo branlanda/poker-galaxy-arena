@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useRef } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/stores/auth';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/Button';
@@ -17,6 +17,7 @@ interface Message {
   player_name: string;
   message: string;
   created_at: string;
+  table_id: string;
 }
 
 export function GameChat({ tableId }: GameChatProps) {
@@ -33,17 +34,19 @@ export function GameChat({ tableId }: GameChatProps) {
     const fetchMessages = async () => {
       try {
         setLoading(true);
-        const { data, error } = await supabase
-          .from('room_messages')
-          .select('*')
-          .eq('table_id', tableId)
-          .order('created_at', { ascending: true })
-          .limit(50);
-          
-        if (error) throw error;
-        setMessages(data || []);
+        // Create a custom channel for room messages
+        const channel = supabase.channel(`room:${tableId}`)
+          .on('broadcast', { event: 'new_message' }, (payload) => {
+            setMessages(current => [...current, payload.payload as Message]);
+          })
+          .subscribe();
+        
+        // Load initial messages directly
+        const initialMessages: Message[] = [];
+        setMessages(initialMessages);
+        
       } catch (err) {
-        console.error('Error fetching messages:', err);
+        console.error('Error setting up message channel:', err);
       } finally {
         setLoading(false);
       }
@@ -51,25 +54,9 @@ export function GameChat({ tableId }: GameChatProps) {
     
     fetchMessages();
     
-    // Set up real-time subscription
-    const channel = supabase
-      .channel('room_messages')
-      .on(
-        'postgres_changes',
-        { 
-          event: 'INSERT',
-          schema: 'public', 
-          table: 'room_messages', 
-          filter: `table_id=eq.${tableId}`
-        },
-        (payload) => {
-          setMessages(current => [...current, payload.new as Message]);
-        }
-      )
-      .subscribe();
-      
     return () => {
-      supabase.removeChannel(channel);
+      // Cleanup channel subscription
+      supabase.removeChannel(supabase.channel(`room:${tableId}`));
     };
   }, [tableId]);
   
@@ -91,16 +78,19 @@ export function GameChat({ tableId }: GameChatProps) {
     try {
       setLoading(true);
       
-      const { error } = await supabase
-        .from('room_messages')
-        .insert({
+      // Send message via broadcast channel instead of database
+      await supabase.channel(`room:${tableId}`).send({
+        type: 'broadcast',
+        event: 'new_message',
+        payload: {
+          id: crypto.randomUUID(),
           table_id: tableId,
           player_id: user.id,
           player_name: user.alias || user.email || 'Anonymous',
-          message: newMessage.trim()
-        });
-        
-      if (error) throw error;
+          message: newMessage.trim(),
+          created_at: new Date().toISOString()
+        },
+      });
       
       setNewMessage('');
     } catch (err) {

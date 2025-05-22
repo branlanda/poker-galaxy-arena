@@ -6,6 +6,7 @@ import { PlayerAtTable } from '@/types/lobby';
 import { GameChat } from './GameChat';
 import { PlayerList } from './PlayerList';
 import { GameInfo } from './GameInfo';
+import { HandHistory } from './HandHistory';
 
 interface GameTabsProps {
   gameState: GameState | null;
@@ -61,12 +62,7 @@ export function GameTabs({
       </TabsContent>
       
       <TabsContent value="history" className="border border-emerald/10 rounded-md p-4 bg-navy/30">
-        <div className="space-y-4">
-          <h3 className="text-sm font-medium mb-2 text-gray-300">Hand History</h3>
-          <p className="text-xs text-gray-400 italic">
-            Recent hands will appear here as they are played
-          </p>
-        </div>
+        <HandHistory />
       </TabsContent>
     </Tabs>
   );

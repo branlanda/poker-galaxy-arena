@@ -9,7 +9,7 @@ interface PokerTableProps {
   gameState: GameState | null;
   isPlayerSeated: boolean;
   isPlayerTurn: boolean;
-  playerSeatIndex: number;
+  playerSeatIndex: number;  // This prop needs to match what GameRoom passes
   userId: string | undefined;
   onSitDown: (seatNumber: number) => void;
 }
@@ -18,7 +18,7 @@ export function PokerTable({
   gameState, 
   isPlayerSeated, 
   isPlayerTurn, 
-  playerSeatIndex,
+  playerSeatIndex,  // Renamed from playerSeat to match GameRoom.tsx
   userId,
   onSitDown 
 }: PokerTableProps) {
