@@ -16,27 +16,33 @@ export function useAuthSync() {
         setSession(session);
         
         if (session?.user) {
-          setUser({
+          // Initial minimal user update
+          const minimalUser = {
             id: session.user.id,
             email: session.user.email
-          });
+          };
+          setUser(minimalUser);
           
           // Defer Supabase calls with setTimeout to prevent deadlocks
           setTimeout(async () => {
             try {
-              // Fetch player data
-              const { data: playerData } = await supabase.from('players')
-                .select('alias, show_public_stats')
-                .eq('user_id', session.user.id)
-                .single();
-                
-              // Fetch profile data
-              const { data: profileData } = await supabase.from('profiles')
-                .select('avatar_url')
-                .eq('id', session.user.id)
-                .single();
-                
+              // Parallel fetching of player and profile data
+              const [playerResponse, profileResponse] = await Promise.all([
+                supabase.from('players')
+                  .select('alias, show_public_stats, role')
+                  .eq('user_id', session.user.id)
+                  .maybeSingle(),
+                supabase.from('profiles')
+                  .select('avatar_url')
+                  .eq('id', session.user.id)
+                  .maybeSingle()
+              ]);
+
+              const playerData = playerResponse.data;
+              const profileData = profileResponse.data;
+              
               if (playerData || profileData) {
+                // Update user with extended information
                 setUser({
                   id: session.user.id,
                   email: session.user.email,
@@ -45,14 +51,15 @@ export function useAuthSync() {
                   avatarUrl: profileData?.avatar_url
                 });
                 
-                // Check if user is admin
-                checkIfAdmin(session.user.id);
+                // Set admin status
+                setAdmin(playerData?.role === 'ADMIN');
               }
             } catch (error) {
               console.error('Error fetching user data:', error);
             }
           }, 0);
         } else {
+          // Clear user data on sign out
           setUser(null);
           setAdmin(false);
         }
@@ -60,62 +67,53 @@ export function useAuthSync() {
     );
 
     // THEN check for existing session
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
       
-      if (data.session?.user) {
-        setUser({
-          id: data.session.user.id,
-          email: data.session.user.email
-        });
-        
-        // Fetch player and profile data
-        Promise.all([
-          supabase.from('players')
-            .select('alias, show_public_stats')
-            .eq('user_id', data.session.user.id)
-            .single(),
-          supabase.from('profiles')
-            .select('avatar_url')
-            .eq('id', data.session.user.id)
-            .single()
-        ]).then(([playerResult, profileResult]) => {
-          const playerData = playerResult.data;
-          const profileData = profileResult.data;
-          
-          if (playerData || profileData) {
-            setUser({
-              id: data.session.user.id,
-              email: data.session.user.email,
-              alias: playerData?.alias,
-              showInLeaderboard: playerData?.show_public_stats,
-              avatarUrl: profileData?.avatar_url
-            });
-            
-            // Check if user is admin
-            checkIfAdmin(data.session.user.id);
-          }
-        }).catch(error => {
-          console.error('Error fetching user data:', error);
-        });
+      if (!session?.user) {
+        setUser(null);
+        return;
       }
-    });
 
-    // Function to check if user is admin
-    async function checkIfAdmin(userId: string) {
-      try {
-        const { data } = await supabase
-          .from('players')
-          .select('role')
-          .eq('user_id', userId)
-          .single();
+      // Set basic user data immediately
+      setUser({
+        id: session.user.id,
+        email: session.user.email
+      });
+      
+      // Fetch extended user data
+      Promise.all([
+        supabase.from('players')
+          .select('alias, show_public_stats, role')
+          .eq('user_id', session.user.id)
+          .maybeSingle(),
+        supabase.from('profiles')
+          .select('avatar_url')
+          .eq('id', session.user.id)
+          .maybeSingle()
+      ])
+      .then(([playerResponse, profileResponse]) => {
+        const playerData = playerResponse.data;
+        const profileData = profileResponse.data;
         
-        setAdmin(data?.role === 'ADMIN');
-      } catch (error) {
-        console.error('Error checking admin status:', error);
-        setAdmin(false);
-      }
-    }
+        if (playerData || profileData) {
+          // Update with extended info
+          setUser({
+            id: session.user.id,
+            email: session.user.email,
+            alias: playerData?.alias,
+            showInLeaderboard: playerData?.show_public_stats,
+            avatarUrl: profileData?.avatar_url
+          });
+          
+          // Set admin status
+          setAdmin(playerData?.role === 'ADMIN');
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching user data:', error);
+      });
+    });
 
     return () => {
       subscription.unsubscribe();

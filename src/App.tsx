@@ -4,6 +4,8 @@ import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-d
 import { useAuth } from '@/stores/auth';
 import LoginPage from './pages/auth/Login';
 import SignUpPage from './pages/auth/SignUp';
+import ForgotPasswordPage from './pages/auth/ForgotPassword';
+import ResetPasswordPage from './pages/auth/ResetPassword';
 import DashboardPage from './pages/Index';
 import FundsPage from './pages/Funds/FundsPage';
 import ProfilePage from './pages/profile/ProfilePage';
@@ -36,7 +38,14 @@ function App() {
   }, [setUser]);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-navy">
+        <div className="text-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald border-t-transparent mx-auto"></div>
+          <p className="mt-4 text-gray-400">Loading...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -45,6 +54,8 @@ function App() {
         {/* Auth routes */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignUpPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
         
         {/* Public routes */}
         <Route path="/" element={<DashboardPage />} />

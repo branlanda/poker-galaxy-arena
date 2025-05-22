@@ -1,30 +1,41 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/stores/auth';
 import { toast } from 'sonner';
+import { AlertCircle } from 'lucide-react';
 
 const SignUp = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [alias, setAlias] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const user = useAuth((s) => s.user);
   const setUser = useAuth((s) => s.setUser);
+
+  // If user is already logged in, redirect to lobby
+  useEffect(() => {
+    if (user) {
+      navigate('/lobby', { replace: true });
+    }
+  }, [user, navigate]);
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
     
     if (!email || !password || !alias) {
-      toast.error("All fields are required");
+      setError("All fields are required");
       return;
     }
     
     if (alias.length < 3 || alias.length > 24) {
-      toast.error("Alias must be between 3 and 24 characters");
+      setError("Alias must be between 3 and 24 characters");
       return;
     }
     
@@ -36,7 +47,10 @@ const SignUp = () => {
         email, 
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          data: {
+            alias // Include alias in user metadata for profile trigger
+          }
         }
       });
       
@@ -63,9 +77,10 @@ const SignUp = () => {
         });
         
         toast.success("Account created successfully!");
-        navigate('/');
+        navigate('/lobby');
       }
     } catch (error: any) {
+      setError(error.message || "Failed to create account");
       toast.error(error.message || "Failed to create account");
       console.error("Signup error:", error);
     } finally {
@@ -81,6 +96,13 @@ const SignUp = () => {
           <p className="text-gray-400 mt-2">Join our poker community and start playing</p>
         </div>
         
+        {error && (
+          <div className="bg-red-900/20 border border-red-500/50 rounded-md p-3 flex items-start gap-3">
+            <AlertCircle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
+            <p className="text-sm text-red-200">{error}</p>
+          </div>
+        )}
+        
         <form onSubmit={handleSignup} className="space-y-6">
           <div className="space-y-2">
             <label htmlFor="email" className="block text-sm font-medium text-gray-200">Email</label>
@@ -92,6 +114,8 @@ const SignUp = () => {
               onChange={(e) => setEmail(e.target.value)}
               required
               className="w-full"
+              disabled={loading}
+              autoComplete="email"
             />
           </div>
           
@@ -105,6 +129,8 @@ const SignUp = () => {
               onChange={(e) => setPassword(e.target.value)}
               required
               className="w-full"
+              disabled={loading}
+              autoComplete="new-password"
             />
           </div>
           
@@ -123,6 +149,7 @@ const SignUp = () => {
               minLength={3}
               maxLength={24}
               className="w-full"
+              disabled={loading}
             />
           </div>
           
@@ -132,7 +159,7 @@ const SignUp = () => {
             loading={loading}
             fullWidth
           >
-            Sign Up
+            {loading ? "Creating Account..." : "Sign Up"}
           </Button>
         </form>
         

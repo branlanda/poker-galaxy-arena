@@ -6,30 +6,33 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { useAuth } from '@/stores/auth';
+import { AlertCircle } from 'lucide-react';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
   const user = useAuth((s) => s.user);
   
-  // Get redirect path from location state, or default to '/'
-  const from = (location.state as any)?.from?.pathname || '/';
+  // Get redirect path from location state, or default to '/lobby'
+  const from = (location.state as any)?.from?.pathname || '/lobby';
 
-  // If user is already logged in, redirect to home page
+  // If user is already logged in, redirect to appropriate page
   useEffect(() => {
     if (user) {
-      navigate('/', { replace: true });
+      navigate('/lobby', { replace: true });
     }
   }, [user, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
     
     if (!email || !password) {
-      toast.error("Email and password are required");
+      setError("Email and password are required");
       return;
     }
     
@@ -46,6 +49,7 @@ const Login = () => {
       toast.success("Successfully logged in");
       navigate(from, { replace: true });
     } catch (error: any) {
+      setError(error.message || "Failed to sign in");
       toast.error(error.message || "Failed to sign in");
       console.error("Login error:", error);
     } finally {
@@ -61,6 +65,13 @@ const Login = () => {
           <p className="text-gray-400 mt-2">Sign in to your account</p>
         </div>
         
+        {error && (
+          <div className="bg-red-900/20 border border-red-500/50 rounded-md p-3 flex items-start gap-3">
+            <AlertCircle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
+            <p className="text-sm text-red-200">{error}</p>
+          </div>
+        )}
+        
         <form onSubmit={handleLogin} className="space-y-6">
           <div className="space-y-2">
             <label htmlFor="email" className="block text-sm font-medium text-gray-200">Email</label>
@@ -72,6 +83,8 @@ const Login = () => {
               onChange={(e) => setEmail(e.target.value)}
               required
               className="w-full"
+              disabled={loading}
+              autoComplete="email"
             />
           </div>
           
@@ -85,6 +98,8 @@ const Login = () => {
               onChange={(e) => setPassword(e.target.value)}
               required
               className="w-full"
+              disabled={loading}
+              autoComplete="current-password"
             />
             <div className="text-right">
               <Link to="/forgot-password" className="text-sm text-emerald hover:underline">
@@ -99,7 +114,7 @@ const Login = () => {
             loading={loading}
             fullWidth
           >
-            Sign In
+            {loading ? "Signing In..." : "Sign In"}
           </Button>
         </form>
         
