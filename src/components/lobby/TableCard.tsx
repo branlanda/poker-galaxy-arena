@@ -1,14 +1,15 @@
 
 import { LobbyTable } from '@/types/lobby';
-import { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
+import { es } from 'date-fns/locale';
 import { motion } from 'framer-motion';
-import { CardFooter, Card } from "@/components/ui/card";
+import { Card, CardFooter } from "@/components/ui/card";
 import { HotTableIndicator } from './table-card/HotTableIndicator';
 import { TableCardHeader } from './table-card/TableCardHeader';
 import { TableInfoGrid } from './table-card/TableInfoGrid';
 import { JoinTableDialog } from './table-card/JoinTableDialog';
 import { TableFillIndicator } from './table-card/TableFillIndicator';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface TableCardProps {
   table: LobbyTable;
@@ -16,12 +17,21 @@ interface TableCardProps {
 }
 
 export function TableCard({ table, isNew = false }: TableCardProps) {
+  const { i18n } = useTranslation();
+  const locale = i18n.language.startsWith('es') ? es : undefined;
+  
   // Format creation time
-  const createdTime = formatDistanceToNow(new Date(table.created_at), { addSuffix: true });
+  const createdTime = formatDistanceToNow(new Date(table.created_at), { 
+    addSuffix: true,
+    locale 
+  });
 
   // Format activity time
   const lastActivityTime = table.last_activity ? 
-    formatDistanceToNow(new Date(table.last_activity), { addSuffix: true }) :
+    formatDistanceToNow(new Date(table.last_activity), {
+      addSuffix: true,
+      locale
+    }) :
     createdTime;
 
   // Determine table activity status
@@ -46,19 +56,23 @@ export function TableCard({ table, isNew = false }: TableCardProps) {
 
   return (
     <motion.div
-      initial={isNew ? { opacity: 0, scale: 0.9 } : false}
-      animate={{ opacity: 1, scale: 1 }}
+      initial={isNew ? { opacity: 0, scale: 0.9 } : { opacity: 0, y: 20 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
       transition={{ duration: 0.3 }}
       whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
       className="h-full"
+      layout
     >
-      <Card className={`bg-navy/50 border ${isHot ? 'border-amber-500/50' : 'border-emerald/10'} h-full relative overflow-hidden`}>
-        {isHot && <HotTableIndicator />}
+      <Card className={`bg-navy/50 border ${isNew ? 'border-amber-500/50' : isHot ? 'border-emerald-500/50' : 'border-emerald/10'} h-full relative overflow-hidden`}>
+        {isNew && <HotTableIndicator isNew={true} />}
+        {isHot && !isNew && <HotTableIndicator />}
         <TableFillIndicator fillPercentage={fillPercentage} />
         
         <TableCardHeader 
           table={table} 
           createdTime={createdTime} 
+          isNew={isNew}
         />
         
         <TableInfoGrid 

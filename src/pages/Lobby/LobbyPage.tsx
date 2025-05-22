@@ -13,6 +13,8 @@ import { EmptyState } from '@/components/lobby/EmptyState';
 import { InfiniteScrollIndicator } from '@/components/lobby/InfiniteScrollIndicator';
 import { useTableGrouping } from '@/hooks/useTableGrouping';
 import { useDeviceInfo } from '@/hooks/use-mobile';
+import { Toaster } from '@/components/ui/toaster';
+import { useToast } from '@/hooks/use-toast';
 
 export default function LobbyPage() {
   const [filters, setFilters] = useState<TableFilters>({
@@ -20,11 +22,21 @@ export default function LobbyPage() {
     showActive: false,
     sortBy: 'activity'
   });
-  const { tables, loading, hasMore, loadMore, refreshTables } = useLobbyTables(filters);
+  
+  const { 
+    tables, 
+    loading, 
+    hasMore, 
+    loadMore, 
+    refreshTables, 
+    error 
+  } = useLobbyTables(filters);
+  
   const { t } = useTranslation();
   const bottomRef = useRef<HTMLDivElement>(null);
   const { newTableIds, groupAndSortTables } = useTableGrouping(tables);
   const { isMobile, deviceType } = useDeviceInfo();
+  const { toast } = useToast();
   
   // Set up intersection observer for infinite scrolling
   const bottomInView = useIntersectionObserver(bottomRef, {
@@ -39,23 +51,34 @@ export default function LobbyPage() {
     }
   }, [bottomInView, hasMore, loading]);
 
+  // Show toast on error
+  useEffect(() => {
+    if (error) {
+      toast({
+        title: t('error'),
+        description: error,
+        variant: 'destructive',
+      });
+    }
+  }, [error]);
+
   // Reset handler for filters
   const handleResetFilters = () => {
     setFilters({...DEFAULT_FILTERS, showActive: false, sortBy: 'activity'});
   };
 
-  // Mobile swipe navigation (for demonstration of mobile gestures)
+  // Mobile swipe navigation
   const handleSwipeAction = (direction: 'left' | 'right') => {
     if (direction === 'left') {
-      // Example swipe action - could navigate between sections
-      console.log('Swiped left - could navigate to next section');
+      // Could navigate to next section
+      console.log('Swiped left');
     } else {
-      // Example swipe action - could open filters on mobile
-      console.log('Swiped right - could open side menu or filters');
+      // Could open filters on mobile
+      console.log('Swiped right');
     }
   };
 
-  // Animations for page elements to enhance UI feel
+  // Animations for page elements
   const containerAnimation = {
     hidden: { opacity: 0 },
     show: { opacity: 1, transition: { duration: 0.3, staggerChildren: 0.1 } }
@@ -80,6 +103,8 @@ export default function LobbyPage() {
         }
       }}
     >
+      <Toaster />
+      
       <motion.div variants={itemAnimation}>
         <LobbyHeader onRefresh={refreshTables} loading={loading} />
       </motion.div>
@@ -95,7 +120,7 @@ export default function LobbyPage() {
       <AnimatePresence mode="wait">
         <motion.div 
           className="mt-6 space-y-8"
-          key={loading ? 'loading' : 'content'}
+          key={loading && tables.length === 0 ? 'loading' : 'content'}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -114,6 +139,7 @@ export default function LobbyPage() {
               <InfiniteScrollIndicator 
                 bottomRef={bottomRef}
                 hasMore={hasMore}
+                loading={loading}
               />
             </>
           ) : (
@@ -125,13 +151,13 @@ export default function LobbyPage() {
       {/* Mobile-specific navigation hint */}
       {isMobile && (
         <motion.div 
-          className="fixed bottom-4 left-0 right-0 flex justify-center"
+          className="fixed bottom-4 left-0 right-0 flex justify-center z-50"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1, duration: 0.5 }}
         >
           <div className="bg-navy/80 backdrop-blur-sm text-white px-4 py-2 rounded-full shadow-lg text-sm border border-emerald/20">
-            {t('lobby.swipeToNavigate', 'Swipe to navigate')} ↔️
+            {t('lobby.swipeToNavigate', 'Desliza para navegar')} ↔️
           </div>
         </motion.div>
       )}

@@ -20,6 +20,8 @@ import {
 } from "@/components/ui/collapsible";
 import { ChevronDown, Filter, Search, SortDesc } from "lucide-react";
 import { useTranslation } from '@/hooks/useTranslation';
+import { Badge } from '@/components/ui/badge';
+import { useDeviceInfo } from '@/hooks/use-mobile';
 
 interface LobbyFiltersProps {
   filters: TableFilters;
@@ -31,7 +33,28 @@ export function LobbyFilters({ filters, onChange, onReset }: LobbyFiltersProps) 
   const [blindsRange, setBlindsRange] = useState<number[]>(filters.blindsRange);
   const [buyInRange, setBuyInRange] = useState<number[]>(filters.buyInRange);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [activeFiltersCount, setActiveFiltersCount] = useState(0);
   const { t } = useTranslation();
+  const { isMobile } = useDeviceInfo();
+  
+  // Count active filters
+  useEffect(() => {
+    let count = 0;
+    
+    if (filters.searchQuery) count++;
+    if (filters.tableType !== 'ALL') count++;
+    if (filters.showActive) count++;
+    if (!filters.showFull) count++;
+    if (!filters.showEmpty) count++;
+    if (!filters.showPrivate) count++;
+    if (filters.blindsRange[0] !== DEFAULT_FILTERS.blindsRange[0] ||
+        filters.blindsRange[1] !== DEFAULT_FILTERS.blindsRange[1]) count++;
+    if (filters.buyInRange[0] !== DEFAULT_FILTERS.buyInRange[0] ||
+        filters.buyInRange[1] !== DEFAULT_FILTERS.buyInRange[1]) count++;
+    if (filters.sortBy !== DEFAULT_FILTERS.sortBy) count++;
+    
+    setActiveFiltersCount(count);
+  }, [filters]);
   
   // Debounce range updates
   useEffect(() => {
@@ -61,7 +84,7 @@ export function LobbyFilters({ filters, onChange, onReset }: LobbyFiltersProps) 
           <Input
             type="text"
             id="search"
-            placeholder={t('searchTablesByName', 'Search tables by name...')}
+            placeholder={t('searchTablesByName', 'Buscar mesas por nombre...')}
             value={filters.searchQuery}
             onChange={(e) => updateFilter({ searchQuery: e.target.value })}
             className="pl-10"
@@ -76,7 +99,7 @@ export function LobbyFilters({ filters, onChange, onReset }: LobbyFiltersProps) 
             onClick={() => updateFilter({ showActive: !filters.showActive })}
             className="whitespace-nowrap"
           >
-            {t('activeGames', 'Active Games')}
+            {t('activeGames', 'Juegos Activos')}
           </Button>
           
           <Button 
@@ -85,15 +108,20 @@ export function LobbyFilters({ filters, onChange, onReset }: LobbyFiltersProps) 
             onClick={() => updateFilter({ showFull: !filters.showFull })}
             className="whitespace-nowrap"
           >
-            {filters.showFull ? t('hideFull', 'Hide Full') : t('showFull', 'Show Full')}
+            {filters.showFull ? t('hideFull', 'Ocultar Completas') : t('showFull', 'Mostrar Completas')}
           </Button>
           
           {/* Filter Toggle Button */}
           <CollapsibleTrigger asChild onClick={() => setIsFilterOpen(!isFilterOpen)}>
-            <Button variant="outline" size="sm" className="whitespace-nowrap">
+            <Button variant="outline" size="sm" className="whitespace-nowrap relative">
               <Filter className="h-4 w-4 mr-2" />
-              {t('moreFilters', 'More Filters')}
+              {t('moreFilters', 'Más Filtros')}
               <ChevronDown className={`h-4 w-4 ml-2 transition-transform ${isFilterOpen ? 'rotate-180' : ''}`} />
+              {activeFiltersCount > 0 && (
+                <Badge className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0">
+                  {activeFiltersCount}
+                </Badge>
+              )}
             </Button>
           </CollapsibleTrigger>
           
@@ -102,8 +130,9 @@ export function LobbyFilters({ filters, onChange, onReset }: LobbyFiltersProps) 
             size="sm" 
             onClick={onReset}
             className="whitespace-nowrap"
+            disabled={activeFiltersCount === 0}
           >
-            {t('reset', 'Reset')}
+            {t('reset', 'Reiniciar')}
           </Button>
         </div>
       </div>
@@ -111,51 +140,51 @@ export function LobbyFilters({ filters, onChange, onReset }: LobbyFiltersProps) 
       {/* Advanced Filters */}
       <Collapsible open={isFilterOpen} onOpenChange={setIsFilterOpen}>
         <CollapsibleContent>
-          <div className="bg-navy/30 border border-emerald/10 rounded-lg p-6 mt-2">
+          <div className="bg-navy/30 border border-emerald/10 rounded-lg p-4 md:p-6 mt-2">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Table Type */}
               <div className="space-y-2">
-                <Label htmlFor="table-type">{t('tableType', 'Table Type')}</Label>
+                <Label htmlFor="table-type">{t('tableType', 'Tipo de Mesa')}</Label>
                 <Select 
                   value={filters.tableType} 
                   onValueChange={(value) => updateFilter({ tableType: value as TableType })}
                 >
                   <SelectTrigger id="table-type">
-                    <SelectValue placeholder={t('all', 'All')} />
+                    <SelectValue placeholder={t('all', 'Todas')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="ALL">{t('allTypes', 'All Types')}</SelectItem>
+                    <SelectItem value="ALL">{t('allTypes', 'Todos los Tipos')}</SelectItem>
                     <SelectItem value="CASH">{t('cashGame', 'Cash Game')}</SelectItem>
-                    <SelectItem value="TOURNAMENT">{t('tournament', 'Tournament')}</SelectItem>
+                    <SelectItem value="TOURNAMENT">{t('tournament', 'Torneo')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
                 
               {/* Sorting */}
               <div className="space-y-2">
-                <Label htmlFor="sort-by">{t('sortBy', 'Sort By')}</Label>
+                <Label htmlFor="sort-by">{t('sortBy', 'Ordenar Por')}</Label>
                 <Select 
                   value={filters.sortBy} 
                   onValueChange={(value) => updateFilter({ sortBy: value as any })}
                 >
                   <SelectTrigger id="sort-by">
-                    <SelectValue placeholder={t('latest', 'Latest')} />
+                    <SelectValue placeholder={t('latest', 'Recientes')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="activity">{t('mostActive', 'Most Active')}</SelectItem>
-                    <SelectItem value="players">{t('mostPlayers', 'Most Players')}</SelectItem>
-                    <SelectItem value="newest">{t('newest', 'Newest')}</SelectItem>
-                    <SelectItem value="blinds_asc">{t('smallestBlinds', 'Smallest Blinds')}</SelectItem>
-                    <SelectItem value="blinds_desc">{t('largestBlinds', 'Largest Blinds')}</SelectItem>
+                    <SelectItem value="activity">{t('mostActive', 'Más Activas')}</SelectItem>
+                    <SelectItem value="players">{t('mostPlayers', 'Más Jugadores')}</SelectItem>
+                    <SelectItem value="newest">{t('newest', 'Más Nuevas')}</SelectItem>
+                    <SelectItem value="blinds_asc">{t('smallestBlinds', 'Ciegas Menores')}</SelectItem>
+                    <SelectItem value="blinds_desc">{t('largestBlinds', 'Ciegas Mayores')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
               
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+            <div className={`grid grid-cols-1 ${isMobile ? '' : 'md:grid-cols-2'} gap-4 mt-4`}>
               {/* Blinds Range */}
               <div className="space-y-2">
-                <Label>{t('blindsRange', 'Blinds Range')} ({blindsRange[0]} - {blindsRange[1]})</Label>
+                <Label>{t('blindsRange', 'Rango de Ciegas')} ({blindsRange[0]} - {blindsRange[1]})</Label>
                 <Slider
                   defaultValue={filters.blindsRange}
                   min={0}
@@ -167,7 +196,7 @@ export function LobbyFilters({ filters, onChange, onReset }: LobbyFiltersProps) 
                 
               {/* Buy-in Range */}
               <div className="space-y-2">
-                <Label>{t('buyInRange', 'Buy-in Range')} ({buyInRange[0]} - {buyInRange[1]})</Label>
+                <Label>{t('buyInRange', 'Rango de Compra')} ({buyInRange[0]} - {buyInRange[1]})</Label>
                 <Slider
                   defaultValue={filters.buyInRange}
                   min={0}
@@ -178,7 +207,7 @@ export function LobbyFilters({ filters, onChange, onReset }: LobbyFiltersProps) 
               </div>
             </div>
               
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+            <div className={`grid grid-cols-1 ${isMobile ? 'grid-cols-2' : 'md:grid-cols-3'} gap-4 mt-4`}>
               {/* Show Full Tables */}
               <div className="flex items-center space-x-2">
                 <Switch
@@ -186,7 +215,7 @@ export function LobbyFilters({ filters, onChange, onReset }: LobbyFiltersProps) 
                   checked={filters.showFull}
                   onCheckedChange={(checked) => updateFilter({ showFull: checked })}
                 />
-                <Label htmlFor="show-full">{t('showFullTables', 'Show Full Tables')}</Label>
+                <Label htmlFor="show-full">{t('showFullTables', 'Mostrar Mesas Completas')}</Label>
               </div>
                 
               {/* Show Empty Tables */}
@@ -196,7 +225,7 @@ export function LobbyFilters({ filters, onChange, onReset }: LobbyFiltersProps) 
                   checked={filters.showEmpty}
                   onCheckedChange={(checked) => updateFilter({ showEmpty: checked })}
                 />
-                <Label htmlFor="show-empty">{t('showEmptyTables', 'Show Empty Tables')}</Label>
+                <Label htmlFor="show-empty">{t('showEmptyTables', 'Mostrar Mesas Vacías')}</Label>
               </div>
                 
               {/* Show Private Tables */}
@@ -206,7 +235,7 @@ export function LobbyFilters({ filters, onChange, onReset }: LobbyFiltersProps) 
                   checked={filters.showPrivate}
                   onCheckedChange={(checked) => updateFilter({ showPrivate: checked })}
                 />
-                <Label htmlFor="show-private">{t('showPrivateTables', 'Show Private Tables')}</Label>
+                <Label htmlFor="show-private">{t('showPrivateTables', 'Mostrar Mesas Privadas')}</Label>
               </div>
             </div>
           </div>

@@ -1,8 +1,9 @@
 
-import { Activity, Clock, Users } from "lucide-react";
-import { useTranslation } from '@/hooks/useTranslation';
 import { LobbyTable } from '@/types/lobby';
-import { CardContent } from "@/components/ui/card";
+import { Users, Clock, Activity, DollarSign } from 'lucide-react';
+import { TableTypeBadge } from './TableTypeBadge';
+import { TableStatusBadge } from './TableStatusBadge';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface TableInfoGridProps {
   table: LobbyTable;
@@ -14,55 +15,55 @@ interface TableInfoGridProps {
 export function TableInfoGrid({ 
   table, 
   lastActivityTime, 
-  activityStatus, 
+  activityStatus,
   activePlayerCount 
 }: TableInfoGridProps) {
   const { t } = useTranslation();
   
   return (
-    <CardContent className="pb-4 pt-2">
-      <div className="grid grid-cols-2 gap-2 text-sm">
-        <div>
-          <p className="text-gray-400">{t('blinds')}</p>
-          <p className="font-medium">{table.small_blind} / {table.big_blind}</p>
+    <div className="p-4 pt-0">
+      <div className="grid grid-cols-2 gap-y-2 text-sm">
+        <div className="flex items-center text-gray-300">
+          <Users className="h-4 w-4 mr-1.5 text-emerald-400" aria-hidden="true" />
+          <span>
+            {t('playersCount', 'Jugadores')}: <span className="font-semibold text-white">{table.current_players}/{table.max_players}</span>
+          </span>
         </div>
-        <div>
-          <p className="text-gray-400">{t('buyIn')}</p>
-          <p className="font-medium">{table.min_buy_in} - {table.max_buy_in}</p>
+        
+        <div className="flex items-center text-gray-300">
+          <DollarSign className="h-4 w-4 mr-1.5 text-emerald-400" aria-hidden="true" />
+          <span>
+            {t('blinds', 'Ciegas')}: <span className="font-semibold text-white">${table.small_blind}/{table.big_blind}</span>
+          </span>
         </div>
-        <div className="flex items-center gap-1">
-          <Users className={`h-4 w-4 ${table.current_players > 0 ? 'text-emerald' : 'text-gray-400'}`} />
-          <div>
-            <p className="text-gray-400">{t('players')}</p>
-            <p className="font-medium">
-              <span>{table.current_players} / {table.max_players}</span>
-              {activePlayerCount > 0 && (
-                <span className="text-emerald ml-1">({activePlayerCount} {t('active')})</span>
-              )}
-            </p>
+        
+        <div className="flex items-center text-gray-300">
+          <Activity className={`h-4 w-4 mr-1.5 ${activityStatus === 'active' ? 'text-emerald-400 animate-pulse' : activityStatus === 'idle' ? 'text-amber-400' : 'text-gray-400'}`} aria-hidden="true" />
+          <div className="flex items-center">
+            <span>{t('activity', 'Actividad')}: </span>
+            {activePlayerCount > 0 ? (
+              <span className="font-semibold text-white ml-1">
+                {activePlayerCount} {t('activePlayers', 'jugando')}
+              </span>
+            ) : (
+              <span className="text-gray-400 ml-1">{t('inactive', 'inactiva')}</span>
+            )}
           </div>
         </div>
-        <div className="flex items-center gap-1">
-          <Activity className={`h-4 w-4 ${
-            activityStatus === 'active' ? 'text-emerald' :
-            activityStatus === 'idle' ? 'text-amber-400' : 
-            'text-gray-500'
-          }`} />
-          <div>
-            <p className="text-gray-400">{t('activity')}</p>
-            <p className="text-xs font-medium">{lastActivityTime}</p>
-          </div>
+        
+        <div className="flex items-center text-gray-300">
+          <Clock className="h-4 w-4 mr-1.5 text-emerald-400" aria-hidden="true" />
+          <span className="text-gray-400 overflow-hidden text-ellipsis whitespace-nowrap">{lastActivityTime}</span>
         </div>
-        {table.hand_number > 0 && (
-          <div className="flex items-center gap-1 col-span-2">
-            <Clock className="h-4 w-4 text-gray-400" />
-            <div>
-              <p className="text-gray-400">{t('currentHand', 'Current Hand')}</p>
-              <p className="font-medium">#{table.hand_number}</p>
-            </div>
-          </div>
-        )}
+        
+        <div className="col-span-2 flex space-x-2 mt-1.5">
+          <TableTypeBadge type={table.table_type} />
+          <TableStatusBadge 
+            status={table.status} 
+            isPrivate={table.is_private}
+          />
+        </div>
       </div>
-    </CardContent>
+    </div>
   );
 }

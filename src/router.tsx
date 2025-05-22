@@ -12,7 +12,6 @@ import ProfilePage from '@/pages/profile/ProfilePage';
 import FundsPage from '@/pages/Funds/FundsPage';
 import Settings from '@/pages/settings/Settings';
 import { TournamentsRoutes } from './router/TournamentsRoutes';
-import AdminRoutes from './router/AdminRoutes';
 import AdminLayout from '@/pages/Admin/AdminLayout';
 import Dashboard from '@/pages/Admin/Dashboard';
 import Users from '@/pages/Admin/Users';

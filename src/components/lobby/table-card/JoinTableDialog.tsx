@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { useTranslation } from '@/hooks/useTranslation';
 import { LobbyTable } from '@/types/lobby';
 import { useJoinTable } from '@/hooks/useJoinTable';
+import { motion } from 'framer-motion';
 import {
   Dialog,
   DialogContent,
@@ -33,28 +34,47 @@ export function JoinTableDialog({ table }: JoinTableDialogProps) {
     }
   };
 
+  const isFull = table.current_players >= table.max_players;
+
   return (
     <Dialog open={isJoining} onOpenChange={setIsJoining}>
       <DialogTrigger asChild>
         <Button 
-          className="w-full" 
-          disabled={table.current_players >= table.max_players}
-          variant={table.current_players >= table.max_players ? "outline" : "primary"}
+          className="w-full relative overflow-hidden group" 
+          disabled={isFull}
+          variant={isFull ? "outline" : "primary"}
         >
-          {table.current_players >= table.max_players ? t('tableFull', 'Table Full') : t('joinTable', 'Join Table')}
+          <motion.div 
+            className="absolute inset-0 bg-emerald-500/20" 
+            initial={false}
+            animate={{ x: isFull ? '0%' : '100%' }}
+            transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+            style={{ display: isFull ? 'none' : 'block' }}
+          />
+          <motion.span 
+            className="relative z-10"
+            animate={{ scale: [1, 1.05, 1] }}
+            transition={{ repeat: Infinity, duration: 2, repeatType: "reverse" }}
+          >
+            {isFull ? t('tableFull', 'Mesa Llena') : t('joinTable', 'Unirse a la Mesa')}
+          </motion.span>
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{t('joinTableName', 'Join Table')}: {table.name}</DialogTitle>
+          <DialogTitle>{t('joinTableName', 'Unirse a la Mesa')}: {table.name}</DialogTitle>
           <DialogDescription>
-            {t('enterBuyIn', 'Enter your buy-in amount to join this table.')}
+            {t('enterBuyIn', 'Ingresa tu cantidad de buy-in para unirte a esta mesa.')}
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-4 py-4">
+        <motion.div 
+          className="space-y-4 py-4"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
           <div className="space-y-2">
             <label className="text-sm font-medium">
-              {t('buyInAmount', 'Buy-in Amount')} ({table.min_buy_in} - {table.max_buy_in})
+              {t('buyInAmount', 'Cantidad de Buy-in')} ({table.min_buy_in} - {table.max_buy_in})
             </label>
             <div className="relative">
               <Input
@@ -70,25 +90,40 @@ export function JoinTableDialog({ table }: JoinTableDialogProps) {
           </div>
           
           {table.is_private && (
-            <div className="space-y-2">
+            <motion.div 
+              className="space-y-2"
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              transition={{ delay: 0.2 }}
+            >
               <label className="text-sm font-medium">
-                {t('password', 'Password')}
+                {t('password', 'Contraseña')}
               </label>
               <Input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder={t('enterTablePassword', 'Enter table password')}
+                placeholder={t('enterTablePassword', 'Ingresa la contraseña de la mesa')}
               />
-            </div>
+            </motion.div>
           )}
-        </div>
+        </motion.div>
         <DialogFooter>
           <Button variant="outline" onClick={() => setIsJoining(false)}>
-            {t('cancel', 'Cancel')}
+            {t('cancel', 'Cancelar')}
           </Button>
-          <Button onClick={handleJoin} disabled={loading}>
-            {loading ? t('joining', 'Joining...') : t('joinNow', 'Join Now')}
+          <Button 
+            onClick={handleJoin} 
+            disabled={loading}
+          >
+            {loading ? (
+              <div className="flex items-center">
+                <span className="animate-spin mr-2 h-4 w-4 border-t-2 border-b-2 border-white rounded-full"></span>
+                {t('joining', 'Uniéndose...')}
+              </div>
+            ) : (
+              t('joinNow', 'Unirse Ahora')
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>

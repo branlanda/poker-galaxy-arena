@@ -1,17 +1,16 @@
 
-import { Badge } from "@/components/ui/badge";
-import { Flame } from "lucide-react";
 import { useTranslation } from '@/hooks/useTranslation';
 
-export function HotTableIndicator() {
+interface HotTableIndicatorProps {
+  isNew?: boolean;
+}
+
+export function HotTableIndicator({ isNew = false }: HotTableIndicatorProps) {
   const { t } = useTranslation();
   
   return (
-    <div className="absolute top-0 right-0 mt-2 mr-2 z-10">
-      <Badge variant="secondary" className="bg-amber-500/20 text-amber-400 flex items-center gap-1">
-        <Flame size={14} className="animate-pulse" />
-        {t('hot', 'Hot')}
-      </Badge>
+    <div className={`absolute -top-1 -right-1 transform rotate-12 ${isNew ? 'bg-amber-500' : 'bg-emerald-600'} text-white text-xs font-bold px-4 py-1 rounded shadow-lg z-10`}>
+      {isNew ? t('newTable', '¡NUEVA!') : t('hotTable', '¡POPULAR!')}
     </div>
   );
 }

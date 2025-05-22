@@ -14,6 +14,7 @@ import { Plus } from 'lucide-react';
 import { TableSettingsForm } from './TableSettingsForm';
 import { useTableForm } from '@/hooks/useTableForm';
 import { useTranslation } from '@/hooks/useTranslation';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export function CreateTableDialog() {
   const [open, setOpen] = useState(false);
@@ -31,23 +32,46 @@ export function CreateTableDialog() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button>
-          <Plus className="h-4 w-4 mr-2" aria-hidden="true" /> {t('createTable')}
+          <Plus className="h-4 w-4 mr-2" aria-hidden="true" /> {t('createTable', 'Crear Mesa')}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>{t('createTable')}</DialogTitle>
+          <DialogTitle>{t('createTable', 'Crear Mesa')}</DialogTitle>
           <DialogDescription>
-            {t('tableSettings')}
+            {t('tableSettings', 'Configura los ajustes de tu mesa de póker')}
           </DialogDescription>
         </DialogHeader>
-        <TableSettingsForm {...formState} />
+        
+        <AnimatePresence mode="wait">
+          <motion.div
+            key="form"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+          >
+            <TableSettingsForm {...formState} />
+          </motion.div>
+        </AnimatePresence>
+        
         <DialogFooter>
           <Button variant="outline" onClick={() => setOpen(false)}>
-            {t('cancel')}
+            {t('cancel', 'Cancelar')}
           </Button>
-          <Button onClick={onSubmit} disabled={loading || !formState.name}>
-            {loading ? t('creating', 'Creating...') : t('createTable')}
+          <Button 
+            onClick={onSubmit} 
+            disabled={loading || !formState.name}
+            className="relative"
+          >
+            {loading ? (
+              <div className="flex items-center">
+                <span className="animate-spin mr-2 h-4 w-4 border-t-2 border-b-2 border-white rounded-full"></span>
+                {t('creating', 'Creando...')}
+              </div>
+            ) : (
+              <>{t('createTable', 'Crear Mesa')}</>
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>
