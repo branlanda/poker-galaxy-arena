@@ -1,19 +1,17 @@
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { TableFilters, TableType } from '@/types/lobby';
+import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/input";
-import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { 
+import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { TableFilters, DEFAULT_FILTERS, TableType } from '@/types/lobby';
-import { Search, Filter } from 'lucide-react';
 
 interface LobbyFiltersProps {
   filters: TableFilters;
@@ -22,152 +20,123 @@ interface LobbyFiltersProps {
 }
 
 export function LobbyFilters({ filters, onChange, onReset }: LobbyFiltersProps) {
-  const [showFilters, setShowFilters] = useState(false);
+  const [blindsRange, setBlindsRange] = useState<number[]>(filters.blindsRange);
+  const [buyInRange, setBuyInRange] = useState<number[]>(filters.buyInRange);
   
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onChange({ ...filters, searchQuery: e.target.value });
-  };
+  // Debounce range updates
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      onChange({
+        ...filters,
+        blindsRange: [blindsRange[0], blindsRange[1]],
+        buyInRange: [buyInRange[0], buyInRange[1]],
+      });
+    }, 500); // 500ms debounce
+    
+    return () => clearTimeout(timer);
+  }, [blindsRange, buyInRange]);
   
-  const handleTypeChange = (value: string) => {
-    onChange({ ...filters, tableType: value as TableType | 'ALL' });
-  };
-  
-  const handleBlindsChange = (value: number[]) => {
-    onChange({ ...filters, blindsRange: [value[0], value[1]] });
-  };
-  
-  const handleBuyInChange = (value: number[]) => {
-    onChange({ ...filters, buyInRange: [value[0], value[1]] });
-  };
-  
-  const handleShowFullChange = (checked: boolean) => {
-    onChange({ ...filters, showFull: checked });
-  };
-  
-  const handleShowEmptyChange = (checked: boolean) => {
-    onChange({ ...filters, showEmpty: checked });
-  };
-  
-  const handleShowPrivateChange = (checked: boolean) => {
-    onChange({ ...filters, showPrivate: checked });
+  const updateFilter = (newFilters: Partial<TableFilters>) => {
+    onChange({ ...filters, ...newFilters });
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex gap-2">
-        <div className="relative flex-1">
-          <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
+    <div className="bg-navy/30 border border-emerald/10 rounded-lg p-6">
+      <h2 className="text-xl font-semibold mb-4">Filters</h2>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Search Query */}
+        <div className="space-y-2">
+          <Label htmlFor="search">Search Table</Label>
           <Input
-            placeholder="Search tables..."
+            type="text"
+            id="search"
+            placeholder="Search by table name..."
             value={filters.searchQuery}
-            onChange={handleSearchChange}
-            className="pl-8"
+            onChange={(e) => updateFilter({ searchQuery: e.target.value })}
           />
         </div>
-        <Button 
-          variant="outline" 
-          size="icon" 
-          onClick={() => setShowFilters(!showFilters)}
-          className={showFilters ? "bg-emerald/10" : ""}
-        >
-          <Filter className="h-4 w-4" />
-        </Button>
-        {(showFilters && JSON.stringify(filters) !== JSON.stringify(DEFAULT_FILTERS)) && (
-          <Button variant="ghost" size="sm" onClick={onReset}>
-            Reset
-          </Button>
-        )}
+        
+        {/* Table Type */}
+        <div className="space-y-2">
+          <Label htmlFor="table-type">Table Type</Label>
+          <Select 
+            value={filters.tableType} 
+            onValueChange={(value) => updateFilter({ tableType: value as TableType })}
+          >
+            <SelectTrigger id="table-type">
+              <SelectValue placeholder="All" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ALL">All Types</SelectItem>
+              <SelectItem value="CASH">Cash Game</SelectItem>
+              <SelectItem value="TOURNAMENT">Tournament</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
       
-      {showFilters && (
-        <div className="border border-emerald/10 rounded-lg p-4 bg-navy/50 space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label>Game Type</Label>
-              <Select 
-                value={filters.tableType} 
-                onValueChange={handleTypeChange}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ALL">All Types</SelectItem>
-                  <SelectItem value="CASH">Cash Game</SelectItem>
-                  <SelectItem value="TOURNAMENT">Tournament</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label>Big Blind Range</Label>
-                  <span className="text-xs text-gray-400">
-                    {filters.blindsRange[0]} - {filters.blindsRange[1]}
-                  </span>
-                </div>
-                <Slider 
-                  defaultValue={[0, 10000]} 
-                  min={0} 
-                  max={10000} 
-                  step={10} 
-                  value={[filters.blindsRange[0], filters.blindsRange[1]]} 
-                  onValueChange={handleBlindsChange}
-                />
-              </div>
-            </div>
-            
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label>Buy-in Range</Label>
-                  <span className="text-xs text-gray-400">
-                    {filters.buyInRange[0]} - {filters.buyInRange[1]}
-                  </span>
-                </div>
-                <Slider 
-                  defaultValue={[0, 10000]} 
-                  min={0} 
-                  max={10000} 
-                  step={100} 
-                  value={[filters.buyInRange[0], filters.buyInRange[1]]} 
-                  onValueChange={handleBuyInChange}
-                />
-              </div>
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="flex items-center space-x-2">
-              <Switch 
-                id="show-full" 
-                checked={filters.showFull}
-                onCheckedChange={handleShowFullChange}
-              />
-              <Label htmlFor="show-full">Show Full Tables</Label>
-            </div>
-            
-            <div className="flex items-center space-x-2">
-              <Switch 
-                id="show-empty" 
-                checked={filters.showEmpty}
-                onCheckedChange={handleShowEmptyChange}
-              />
-              <Label htmlFor="show-empty">Show Empty Tables</Label>
-            </div>
-            
-            <div className="flex items-center space-x-2">
-              <Switch 
-                id="show-private" 
-                checked={filters.showPrivate}
-                onCheckedChange={handleShowPrivateChange}
-              />
-              <Label htmlFor="show-private">Show Private Tables</Label>
-            </div>
-          </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+        {/* Blinds Range */}
+        <div className="space-y-2">
+          <Label>Blinds Range ({blindsRange[0]} - {blindsRange[1]})</Label>
+          <Slider
+            defaultValue={filters.blindsRange}
+            min={0}
+            max={10000}
+            step={100}
+            onValueChange={(value) => setBlindsRange(value)}
+          />
         </div>
-      )}
+        
+        {/* Buy-in Range */}
+        <div className="space-y-2">
+          <Label>Buy-in Range ({buyInRange[0]} - {buyInRange[1]})</Label>
+          <Slider
+            defaultValue={filters.buyInRange}
+            min={0}
+            max={10000}
+            step={100}
+            onValueChange={(value) => setBuyInRange(value)}
+          />
+        </div>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+        {/* Show Full Tables */}
+        <div className="flex items-center space-x-2">
+          <Switch
+            id="show-full"
+            checked={filters.showFull}
+            onCheckedChange={(checked) => updateFilter({ showFull: checked })}
+          />
+          <Label htmlFor="show-full">Show Full Tables</Label>
+        </div>
+        
+        {/* Show Empty Tables */}
+        <div className="flex items-center space-x-2">
+          <Switch
+            id="show-empty"
+            checked={filters.showEmpty}
+            onCheckedChange={(checked) => updateFilter({ showEmpty: checked })}
+          />
+          <Label htmlFor="show-empty">Show Empty Tables</Label>
+        </div>
+        
+        {/* Show Private Tables */}
+        <div className="flex items-center space-x-2">
+          <Switch
+            id="show-private"
+            checked={filters.showPrivate}
+            onCheckedChange={(checked) => updateFilter({ showPrivate: checked })}
+          />
+          <Label htmlFor="show-private">Show Private Tables</Label>
+        </div>
+      </div>
+      
+      <Button variant="outline" className="mt-6 w-full" onClick={onReset}>
+        Reset Filters
+      </Button>
     </div>
   );
 }

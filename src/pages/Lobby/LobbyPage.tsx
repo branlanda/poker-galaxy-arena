@@ -6,7 +6,7 @@ import { LobbyFilters } from '@/components/lobby/LobbyFilters';
 import { TableCard } from '@/components/lobby/TableCard';
 import { CreateTableDialog } from '@/components/lobby/CreateTableDialog';
 import { useAuth } from '@/stores/auth';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/Button';
 import { Link } from 'react-router-dom';
 
 export default function LobbyPage() {

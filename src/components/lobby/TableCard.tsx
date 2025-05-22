@@ -1,6 +1,6 @@
 
 import { LobbyTable } from '@/types/lobby';
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 import {
   Card,
   CardContent,

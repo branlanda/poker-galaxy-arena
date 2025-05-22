@@ -1,6 +1,6 @@
 
 export type TableStatus = 'WAITING' | 'ACTIVE' | 'PAUSED' | 'FINISHED';
-export type TableType = 'CASH' | 'TOURNAMENT';
+export type TableType = 'CASH' | 'TOURNAMENT' | 'ALL';
 export type PlayerStatus = 'SITTING' | 'ACTIVE' | 'AWAY' | 'LEFT';
 
 export interface LobbyTable {

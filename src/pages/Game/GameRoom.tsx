@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/Button';
 import { LobbyTable, PlayerAtTable } from '@/types/lobby';
 import { useAuth } from '@/stores/auth';
 
@@ -41,7 +41,7 @@ export default function GameRoom() {
           return;
         }
         
-        setTable(tableData);
+        setTable(tableData as LobbyTable);
         
         // Get players at table
         const { data: playersData, error: playersError } = await supabase
@@ -51,7 +51,7 @@ export default function GameRoom() {
           
         if (playersError) throw playersError;
         
-        setPlayers(playersData);
+        setPlayers(playersData as PlayerAtTable[]);
       } catch (error: any) {
         toast({
           title: 'Error',

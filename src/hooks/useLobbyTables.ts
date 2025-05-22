@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { LobbyTable, TableFilters } from '@/types/lobby';
+import { LobbyTable, TableFilters, TableType, TableStatus } from '@/types/lobby';
 import { useToast } from '@/hooks/use-toast';
 
 export function useLobbyTables(filters: TableFilters) {
@@ -61,7 +61,14 @@ export function useLobbyTables(filters: TableFilters) {
         
         if (error) throw new Error(error.message);
         
-        setTables(data);
+        // Cast the data to the correct type
+        const typedData = data.map(item => ({
+          ...item,
+          table_type: item.table_type as TableType,
+          status: item.status as TableStatus
+        }));
+        
+        setTables(typedData);
       } catch (err: any) {
         setError(err.message);
         toast({
@@ -88,12 +95,22 @@ export function useLobbyTables(filters: TableFilters) {
         (payload) => {
           // Handle different events
           if (payload.eventType === 'INSERT') {
-            setTables(current => [payload.new as LobbyTable, ...current]);
+            const newTable = {
+              ...payload.new,
+              table_type: payload.new.table_type as TableType,
+              status: payload.new.status as TableStatus
+            } as LobbyTable;
+            setTables(current => [newTable, ...current]);
           } 
           else if (payload.eventType === 'UPDATE') {
+            const updatedTable = {
+              ...payload.new,
+              table_type: payload.new.table_type as TableType,
+              status: payload.new.status as TableStatus
+            } as LobbyTable;
             setTables(current => 
               current.map(table => 
-                table.id === payload.new.id ? payload.new as LobbyTable : table
+                table.id === payload.new.id ? updatedTable : table
               )
             );
           }
