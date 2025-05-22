@@ -7,8 +7,8 @@ import { I18nextProvider } from 'react-i18next';
 import i18n from '@/i18n';
 
 // Mock the language store
-jest.mock('@/stores/language', () => ({
-  useLanguage: jest.fn(),
+vi.mock('@/stores/language', () => ({
+  useLanguage: vi.fn(),
   languages: [
     { code: 'en', name: 'English', flag: '🇺🇸' },
     { code: 'es', name: 'Español', flag: '🇪🇸' },
@@ -16,10 +16,10 @@ jest.mock('@/stores/language', () => ({
 }));
 
 describe('LanguageSelector', () => {
-  const mockSetLanguage = jest.fn();
+  const mockSetLanguage = vi.fn();
   
   beforeEach(() => {
-    (useLanguage as jest.Mock).mockReturnValue({
+    (useLanguage as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
       currentLanguage: { code: 'en', name: 'English', flag: '🇺🇸' },
       setLanguage: mockSetLanguage,
     });
