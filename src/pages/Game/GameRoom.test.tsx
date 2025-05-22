@@ -1,6 +1,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@/test/utils';
+import { render, screen, waitFor } from '@testing-library/react';
+import '@testing-library/jest-dom';
 import GameRoom from './GameRoom';
 import { useGameStore } from '@/stores/game';
 import { useAuth } from '@/stores/auth';
@@ -18,6 +19,24 @@ vi.mock('@/hooks/use-toast', () => ({
   useToast: () => ({
     toast: vi.fn(),
   }),
+}));
+
+vi.mock('@/integrations/supabase/client', () => ({
+  supabase: {
+    from: vi.fn().mockReturnThis(),
+    select: vi.fn().mockReturnThis(),
+    eq: vi.fn().mockReturnThis(),
+    single: vi.fn().mockResolvedValue({
+      data: {
+        name: 'Test Table',
+        small_blind: 1,
+        big_blind: 2,
+        min_buy_in: 100,
+        max_buy_in: 200
+      },
+      error: null
+    }),
+  }
 }));
 
 describe('GameRoom Component', () => {
@@ -66,24 +85,6 @@ describe('GameRoom Component', () => {
     (useAuth as any).mockReturnValue({
       user: { id: 'user-123', email: 'player@example.com' },
     });
-    
-    // Mock Supabase responses for table data
-    (vi.mocked(supabase.from) as any).mockImplementation(() => ({
-      select: () => ({
-        eq: () => ({
-          single: () => Promise.resolve({ 
-            data: { 
-              name: 'Test Table', 
-              small_blind: 1, 
-              big_blind: 2,
-              min_buy_in: 100,
-              max_buy_in: 200
-            }, 
-            error: null 
-          }),
-        }),
-      }),
-    }));
   });
 
   it('renders the game room and initializes the game', async () => {

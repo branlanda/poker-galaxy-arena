@@ -24,31 +24,21 @@ export interface WalletState {
   transactions: Transaction[];
 }
 
-// Define actions with proper typing
+// Define actions interface without StoreAction constraint
 export interface WalletActions {
-  setAddress: StoreAction<WalletState, [string | null]>;
-  setBalance: StoreAction<WalletState, [number]>;
-  setEthBalance: StoreAction<WalletState, [string | null]>;
-  setConnecting: StoreAction<WalletState, [boolean]>;
-  addTransaction: StoreAction<WalletState, [Transaction]>;
-  updateTransaction: StoreAction<WalletState, [string, TransactionStatus]>;
-  loadTransactions: StoreAction<WalletState, [], Promise<void>>;
-  depositFunds: StoreAction<WalletState, [number], Promise<string | null>>;
-  withdrawFunds: StoreAction<WalletState, [string, number], Promise<string | null>>;
-}
-
-// Create the store
-export const useWalletStore = create<WalletState & {
   setAddress: (address: string | null) => void;
   setBalance: (balance: number) => void;
-  setEthBalance: (balance: string | null) => void;
+  setEthBalance: (ethBalance: string | null) => void;
   setConnecting: (connecting: boolean) => void;
   addTransaction: (transaction: Transaction) => void;
   updateTransaction: (id: string, status: TransactionStatus) => void;
   loadTransactions: () => Promise<void>;
   depositFunds: (amount: number) => Promise<string | null>;
   withdrawFunds: (address: string, amount: number) => Promise<string | null>;
-}>((set, get) => ({
+}
+
+// Create the store
+export const useWalletStore = create<WalletState & WalletActions>((set, get) => ({
   address: null,
   balance: 0,
   ethBalance: null,
@@ -86,7 +76,7 @@ export const useWalletStore = create<WalletState & {
         hash: entry.tx_hash || '',
         amount: entry.amount,
         type: entry.tx_type === 'DEPOSIT' ? 'deposit' : 'withdraw',
-        status: (entry.meta?.status as TransactionStatus) || 'confirmed',
+        status: ((entry.meta as any)?.status as TransactionStatus) || 'confirmed',
         timestamp: new Date(entry.created_at),
       }));
       

@@ -2,6 +2,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { BetActions } from './BetActions';
 import { useGameStore } from '@/stores/game';
+import { vi } from 'vitest';
 
 // Mock the useGameStore
 const mockPlaceBet = async (playerId: string, amount: number, action: any) => {

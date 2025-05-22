@@ -1,6 +1,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@/test/utils';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import '@testing-library/jest-dom';
 import { toast } from 'sonner';
 import Login from './Login';
 import { supabase } from '@/integrations/supabase/client';
@@ -16,6 +17,15 @@ vi.mock('sonner', () => ({
 
 vi.mock('@/stores/auth', () => ({
   useAuth: vi.fn(),
+}));
+
+vi.mock('@/integrations/supabase/client', () => ({
+  supabase: {
+    auth: {
+      signInWithPassword: vi.fn(),
+      getSession: vi.fn(),
+    }
+  },
 }));
 
 describe('Login Component', () => {

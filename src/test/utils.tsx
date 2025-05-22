@@ -2,7 +2,11 @@
 import React, { ReactElement } from 'react';
 import { render, RenderOptions } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
-import { Web3Provider } from '@/providers/Web3Provider';
+
+// Mock Web3Provider since we can't import from @/providers/Web3Provider
+const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  return <>{children}</>;
+};
 
 // Create a custom wrapper component that includes all providers
 const AllProviders: React.FC<{ children: React.ReactNode }> = ({ children }) => {
