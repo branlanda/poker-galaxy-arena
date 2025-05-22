@@ -7,7 +7,6 @@ import { TableCard } from '@/components/lobby/TableCard';
 import { CreateTableDialog } from '@/components/lobby/CreateTableDialog';
 import { useAuth } from '@/stores/auth';
 import { Button } from '@/components/ui/Button';
-import { Link } from 'react-router-dom';
 
 export default function LobbyPage() {
   const [filters, setFilters] = useState<TableFilters>(DEFAULT_FILTERS);
