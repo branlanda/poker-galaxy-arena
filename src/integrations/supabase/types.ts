@@ -705,6 +705,60 @@ export type Database = {
           },
         ]
       }
+      lobby_tables: {
+        Row: {
+          big_blind: number
+          created_at: string
+          creator_id: string
+          current_players: number
+          id: string
+          is_private: boolean
+          max_buy_in: number
+          max_players: number
+          min_buy_in: number
+          name: string
+          password: string | null
+          small_blind: number
+          status: string
+          table_type: string
+          updated_at: string
+        }
+        Insert: {
+          big_blind: number
+          created_at?: string
+          creator_id: string
+          current_players?: number
+          id?: string
+          is_private?: boolean
+          max_buy_in: number
+          max_players?: number
+          min_buy_in: number
+          name: string
+          password?: string | null
+          small_blind: number
+          status?: string
+          table_type?: string
+          updated_at?: string
+        }
+        Update: {
+          big_blind?: number
+          created_at?: string
+          creator_id?: string
+          current_players?: number
+          id?: string
+          is_private?: boolean
+          max_buy_in?: number
+          max_players?: number
+          min_buy_in?: number
+          name?: string
+          password?: string | null
+          small_blind?: number
+          status?: string
+          table_type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       player_reputation: {
         Row: {
           player_id: string
@@ -773,6 +827,44 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      players_at_table: {
+        Row: {
+          id: string
+          joined_at: string
+          player_id: string
+          seat_number: number | null
+          stack: number
+          status: string
+          table_id: string
+        }
+        Insert: {
+          id?: string
+          joined_at?: string
+          player_id: string
+          seat_number?: number | null
+          stack: number
+          status?: string
+          table_id: string
+        }
+        Update: {
+          id?: string
+          joined_at?: string
+          player_id?: string
+          seat_number?: number | null
+          stack?: number
+          status?: string
+          table_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "players_at_table_table_id_fkey"
+            columns: ["table_id"]
+            isOneToOne: false
+            referencedRelation: "lobby_tables"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {

@@ -30,10 +30,30 @@ const Navbar = () => {
   return (
     <nav className="bg-navy border-b border-emerald/10 py-2">
       <div className="container mx-auto px-4 flex items-center justify-between">
-        <Link to="/" className="flex items-center">
-          <Logo size="sm" />
-          <span className="text-xl font-bold text-emerald ml-2">PokerP2P</span>
-        </Link>
+        <div className="flex items-center space-x-6">
+          <Link to="/" className="flex items-center">
+            <Logo size="sm" />
+            <span className="text-xl font-bold text-emerald ml-2">PokerP2P</span>
+          </Link>
+          
+          <div className="hidden md:flex items-center space-x-4">
+            <Link to="/lobby" className="text-gray-300 hover:text-emerald">
+              Lobby
+            </Link>
+            {user && (
+              <>
+                <Link to="/funds" className="text-gray-300 hover:text-emerald">
+                  Funds
+                </Link>
+              </>
+            )}
+            {isAdmin && (
+              <Link to="/admin" className="text-emerald hover:text-emerald-400">
+                Admin
+              </Link>
+            )}
+          </div>
+        </div>
         
         <div className="flex gap-2 md:gap-4 items-center">
           <LanguageSelector />
@@ -67,12 +87,15 @@ const Navbar = () => {
                         <Link to="/funds" className="text-sm text-gray-300 hover:text-emerald px-3 py-2 rounded hover:bg-navy/60">
                           Funds
                         </Link>
+                        <Link to="/lobby" className="text-sm text-gray-300 hover:text-emerald px-3 py-2 rounded hover:bg-navy/60 md:hidden">
+                          Lobby
+                        </Link>
                         <Link to="/settings" className="text-sm text-gray-300 hover:text-emerald px-3 py-2 rounded hover:bg-navy/60">
                           Settings
                         </Link>
                         <hr className="border-emerald/10 my-1" />
                         {isAdmin && (
-                          <Link to="/admin" className="text-sm text-emerald px-3 py-2 rounded hover:bg-navy/60">
+                          <Link to="/admin" className="text-sm text-emerald px-3 py-2 rounded hover:bg-navy/60 md:hidden">
                             Admin
                           </Link>
                         )}

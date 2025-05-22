@@ -8,6 +8,8 @@ import DashboardPage from './pages/Index';
 import FundsPage from './pages/Funds/FundsPage';
 import ProfilePage from './pages/profile/ProfilePage';
 import SettingsPage from './pages/settings/Settings';
+import LobbyPage from './pages/Lobby/LobbyPage';
+import GameRoom from './pages/Game/GameRoom';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import { useAuthSync } from './hooks/useAuthSync';
 import NotFound from './pages/NotFound';
@@ -44,10 +46,17 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignUpPage />} />
         
-        {/* Public route */}
+        {/* Public routes */}
         <Route path="/" element={<DashboardPage />} />
+        <Route path="/lobby" element={<LobbyPage />} />
         
         {/* Protected routes */}
+        <Route path="/game/:tableId" element={
+          <ProtectedRoute>
+            <GameRoom />
+          </ProtectedRoute>
+        } />
+        
         <Route path="/profile" element={
           <ProtectedRoute>
             <ProfilePage />
