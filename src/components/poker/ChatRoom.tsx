@@ -1,12 +1,11 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { RoomMessage } from '@/types/lobby';
 import { useAuth } from '@/stores/auth';
-import { useToast } from '@/hooks/use-toast';
-import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/input';
-import { Loader2, Send } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Send } from 'lucide-react';
 import { RoomMessageType } from '@/types/supabase';
 
 interface ChatRoomProps {
@@ -14,145 +13,134 @@ interface ChatRoomProps {
 }
 
 export function ChatRoom({ tableId }: ChatRoomProps) {
-  const [messages, setMessages] = useState<RoomMessage[]>([]);
-  const [newMessage, setNewMessage] = useState('');
-  const [loading, setLoading] = useState(true);
   const { user } = useAuth();
-  const { toast } = useToast();
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [messages, setMessages] = useState<RoomMessageType[]>([]);
+  const [newMessage, setNewMessage] = useState('');
+  const [loading, setLoading] = useState(false);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
 
-  // Fetch initial messages
+  // Fetch existing messages
   useEffect(() => {
     const fetchMessages = async () => {
       try {
-        // Cast result to any to bypass TypeScript errors with room_messages table
-        // This is a temporary workaround until Supabase types are regenerated
+        // Use the type assertion to workaround type issues until Supabase types are regenerated
         const { data, error } = await supabase
-          .from('room_messages')
+          .from('room_messages' as any)
           .select('*')
           .eq('table_id', tableId)
           .order('created_at', { ascending: true })
-          .limit(50) as { data: RoomMessageType[] | null, error: any };
-
-        if (error) throw error;
-        setMessages(data as unknown as RoomMessage[]);
-      } catch (error: any) {
-        console.error('Error fetching messages:', error);
-      } finally {
-        setLoading(false);
+          .limit(50) as { data: RoomMessageType[], error: any };
+          
+        if (error) {
+          console.error('Error fetching messages:', error);
+          return;
+        }
+        
+        setMessages(data || []);
+      } catch (err) {
+        console.error('Error in fetchMessages:', err);
       }
     };
-
+    
     fetchMessages();
-
+    
     // Subscribe to new messages
     const channel = supabase
-      .channel('room_messages_changes')
-      .on('postgres_changes', 
-        { 
-          event: 'INSERT', 
-          schema: 'public', 
+      .channel('table-chat')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
           table: 'room_messages',
-          filter: `table_id=eq.${tableId}`
+          filter: `table_id=eq.${tableId}`,
         },
-        (payload) => {
-          setMessages(current => [...current, payload.new as unknown as RoomMessage]);
+        (payload: { new: RoomMessageType }) => {
+          setMessages((prev) => [...prev, payload.new]);
         }
       )
       .subscribe();
-
+      
     return () => {
       supabase.removeChannel(channel);
     };
   }, [tableId]);
-
-  // Scroll to bottom when messages change
+  
+  // Auto-scroll to bottom when new message arrives
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (scrollAreaRef.current) {
+      const scrollContainer = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
+      if (scrollContainer) {
+        scrollContainer.scrollTop = scrollContainer.scrollHeight;
+      }
+    }
   }, [messages]);
-
+  
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (!user || !newMessage.trim()) return;
-
+    
+    setLoading(true);
     try {
-      // Cast to any to bypass TypeScript errors with room_messages table
+      // Use the type assertion to workaround type issues until Supabase types are regenerated
       const { error } = await supabase
-        .from('room_messages')
+        .from('room_messages' as any)
         .insert({
           table_id: tableId,
           player_id: user.id,
-          player_name: user.alias || user.email || 'Player',
-          message: newMessage.trim()
-        }) as { error: any };
-
-      if (error) throw error;
-      
-      // Clear input field
-      setNewMessage('');
-    } catch (error: any) {
-      toast({
-        title: 'Error',
-        description: `Failed to send message: ${error.message}`,
-        variant: 'destructive',
-      });
+          player_name: user.user_metadata?.username || 'Anonymous',
+          message: newMessage.trim(),
+        });
+        
+      if (error) {
+        console.error('Error sending message:', error);
+      } else {
+        setNewMessage('');
+      }
+    } catch (err) {
+      console.error('Error in handleSendMessage:', err);
+    } finally {
+      setLoading(false);
     }
   };
-
+  
   return (
     <div className="flex flex-col h-full">
-      <div className="text-sm font-medium mb-2 bg-navy/50 p-2 rounded-t">
-        Table Chat
-      </div>
-      
-      <div className="flex-grow overflow-y-auto bg-navy/30 p-2 rounded-t space-y-2 mb-2 max-h-[300px]">
-        {loading ? (
-          <div className="flex justify-center items-center h-full">
-            <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
-          </div>
-        ) : messages.length > 0 ? (
-          messages.map((msg) => (
-            <div 
-              key={msg.id} 
-              className={`p-2 rounded text-sm ${
-                user && msg.player_id === user.id
-                  ? 'bg-emerald/10 ml-6'
-                  : 'bg-navy/50 mr-6'
-              }`}
-            >
-              <div className="flex justify-between items-center mb-1">
-                <span className="font-medium text-emerald">
-                  {user && msg.player_id === user.id ? 'You' : msg.player_name}
-                </span>
-                <span className="text-gray-400 text-xs">
-                  {new Date(msg.created_at).toLocaleTimeString()}
-                </span>
+      <ScrollArea className="flex-grow" ref={scrollAreaRef}>
+        <div className="p-4 space-y-4">
+          {messages.length === 0 ? (
+            <p className="text-center text-gray-400 py-4">No messages yet. Start the conversation!</p>
+          ) : (
+            messages.map((msg) => (
+              <div key={msg.id} className={`max-w-[80%] ${msg.player_id === user?.id ? 'ml-auto' : ''}`}>
+                <div className={`rounded-lg p-3 ${
+                  msg.player_id === user?.id 
+                    ? 'bg-emerald/20 text-white' 
+                    : 'bg-gray-700/50 text-gray-200'
+                }`}>
+                  {msg.player_id !== user?.id && (
+                    <p className="text-xs font-medium text-emerald">{msg.player_name}</p>
+                  )}
+                  <p>{msg.message}</p>
+                </div>
+                <p className="text-xs text-gray-400 mt-1">
+                  {new Date(msg.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                </p>
               </div>
-              <p className="break-words">{msg.message}</p>
-            </div>
-          ))
-        ) : (
-          <div className="text-center text-gray-400 py-4">
-            No messages yet. Start the conversation!
-          </div>
-        )}
-        <div ref={messagesEndRef} />
-      </div>
+            ))
+          )}
+        </div>
+      </ScrollArea>
       
-      <form onSubmit={handleSendMessage} className="flex space-x-2">
+      <form onSubmit={handleSendMessage} className="border-t border-gray-800 p-2 flex gap-2">
         <Input
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
-          placeholder="Type your message..."
-          disabled={!user}
-          className="bg-navy/30 border-emerald/20 focus:border-emerald/40"
+          placeholder="Type a message..."
+          disabled={!user || loading}
+          className="bg-gray-800"
         />
-        <Button 
-          type="submit" 
-          size="icon" 
-          disabled={!user || !newMessage.trim()}
-        >
+        <Button type="submit" size="icon" disabled={!user || loading || !newMessage.trim()}>
           <Send className="h-4 w-4" />
         </Button>
       </form>

@@ -1,10 +1,10 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { LobbyTable, TableFilters, DEFAULT_FILTERS } from '@/types/lobby';
 
-export const useLobbyTables = () => {
+export const useLobbyTables = (filters: TableFilters = DEFAULT_FILTERS) => {
   const [tables, setTables] = useState<LobbyTable[]>([]);
-  const [filteredTables, setFilteredTables] = useState<LobbyTable[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -43,8 +43,7 @@ export const useLobbyTables = () => {
       results = results.filter(table => !table.is_private);
     }
     
-    setFilteredTables(results);
-    setLoading(false);
+    return results;
   };
 
   const fetchTables = async () => {
@@ -66,13 +65,10 @@ export const useLobbyTables = () => {
       
       // Cast data to LobbyTable[] to satisfy TypeScript
       setTables(data as unknown as LobbyTable[]);
-      
-      // Set initial filtered tables based on default filters
-      filterTablesHandler(DEFAULT_FILTERS);
+      setLoading(false);
     } catch (err) {
       console.error('Error in fetchTables:', err);
       setError('An unexpected error occurred');
-    } finally {
       setLoading(false);
     }
   };
@@ -82,8 +78,7 @@ export const useLobbyTables = () => {
   }, []);
 
   return {
-    tables,
-    filteredTables,
+    tables: filterTablesHandler(filters),
     loading,
     error,
     filterTablesHandler
