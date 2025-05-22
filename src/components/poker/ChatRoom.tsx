@@ -7,6 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/input';
 import { Loader2, Send } from 'lucide-react';
+import { RoomMessageType } from '@/types/supabase';
 
 interface ChatRoomProps {
   tableId: string;
@@ -24,15 +25,17 @@ export function ChatRoom({ tableId }: ChatRoomProps) {
   useEffect(() => {
     const fetchMessages = async () => {
       try {
+        // Cast result to any to bypass TypeScript errors with room_messages table
+        // This is a temporary workaround until Supabase types are regenerated
         const { data, error } = await supabase
           .from('room_messages')
           .select('*')
           .eq('table_id', tableId)
           .order('created_at', { ascending: true })
-          .limit(50);
+          .limit(50) as { data: RoomMessageType[] | null, error: any };
 
         if (error) throw error;
-        setMessages(data as RoomMessage[]);
+        setMessages(data as unknown as RoomMessage[]);
       } catch (error: any) {
         console.error('Error fetching messages:', error);
       } finally {
@@ -53,7 +56,7 @@ export function ChatRoom({ tableId }: ChatRoomProps) {
           filter: `table_id=eq.${tableId}`
         },
         (payload) => {
-          setMessages(current => [...current, payload.new as RoomMessage]);
+          setMessages(current => [...current, payload.new as unknown as RoomMessage]);
         }
       )
       .subscribe();
@@ -74,6 +77,7 @@ export function ChatRoom({ tableId }: ChatRoomProps) {
     if (!user || !newMessage.trim()) return;
 
     try {
+      // Cast to any to bypass TypeScript errors with room_messages table
       const { error } = await supabase
         .from('room_messages')
         .insert({
@@ -81,7 +85,7 @@ export function ChatRoom({ tableId }: ChatRoomProps) {
           player_id: user.id,
           player_name: user.alias || user.email || 'Player',
           message: newMessage.trim()
-        });
+        }) as { error: any };
 
       if (error) throw error;
       
