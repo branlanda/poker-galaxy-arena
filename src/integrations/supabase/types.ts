@@ -9,6 +9,39 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      achievements: {
+        Row: {
+          category: string
+          created_at: string | null
+          description: string
+          icon_url: string | null
+          id: string
+          name: string
+          points: number
+          requirements: Json
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          description: string
+          icon_url?: string | null
+          id?: string
+          name: string
+          points?: number
+          requirements: Json
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          description?: string
+          icon_url?: string | null
+          id?: string
+          name?: string
+          points?: number
+          requirements?: Json
+        }
+        Relationships: []
+      }
       cash_tables: {
         Row: {
           big_blind: number
@@ -72,6 +105,48 @@ export type Database = {
         }
         Relationships: []
       }
+      cosmetic_items: {
+        Row: {
+          category: string
+          created_at: string | null
+          description: string | null
+          id: string
+          image_url: string | null
+          is_premium: boolean | null
+          name: string
+          preview_url: string | null
+          price: number | null
+          rarity: string
+          unlock_requirements: Json | null
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_premium?: boolean | null
+          name: string
+          preview_url?: string | null
+          price?: number | null
+          rarity: string
+          unlock_requirements?: Json | null
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_premium?: boolean | null
+          name?: string
+          preview_url?: string | null
+          price?: number | null
+          rarity?: string
+          unlock_requirements?: Json | null
+        }
+        Relationships: []
+      }
       daily_hash_root: {
         Row: {
           day: string
@@ -87,6 +162,204 @@ export type Database = {
           day?: string
           hash_root?: string
           inserted_at?: string | null
+        }
+        Relationships: []
+      }
+      daily_missions: {
+        Row: {
+          created_at: string | null
+          description: string
+          id: string
+          is_active: boolean | null
+          name: string
+          requirements: Json
+          reward_chips: number | null
+          reward_xp: number
+        }
+        Insert: {
+          created_at?: string | null
+          description: string
+          id?: string
+          is_active?: boolean | null
+          name: string
+          requirements: Json
+          reward_chips?: number | null
+          reward_xp?: number
+        }
+        Update: {
+          created_at?: string | null
+          description?: string
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          requirements?: Json
+          reward_chips?: number | null
+          reward_xp?: number
+        }
+        Relationships: []
+      }
+      event_participants: {
+        Row: {
+          event_id: string
+          id: string
+          player_id: string
+          registration_time: string | null
+        }
+        Insert: {
+          event_id: string
+          id?: string
+          player_id: string
+          registration_time?: string | null
+        }
+        Update: {
+          event_id?: string
+          id?: string
+          player_id?: string
+          registration_time?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_participants_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "special_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      forum_categories: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          icon: string | null
+          id: string
+          name: string
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name: string
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
+      forum_posts: {
+        Row: {
+          author_id: string
+          content: string
+          created_at: string | null
+          id: string
+          is_edited: boolean | null
+          topic_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          author_id: string
+          content: string
+          created_at?: string | null
+          id?: string
+          is_edited?: boolean | null
+          topic_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          author_id?: string
+          content?: string
+          created_at?: string | null
+          id?: string
+          is_edited?: boolean | null
+          topic_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forum_posts_topic_id_fkey"
+            columns: ["topic_id"]
+            isOneToOne: false
+            referencedRelation: "forum_topics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      forum_topics: {
+        Row: {
+          author_id: string
+          category_id: string
+          created_at: string | null
+          id: string
+          is_locked: boolean | null
+          is_pinned: boolean | null
+          last_post_at: string | null
+          title: string
+          view_count: number | null
+        }
+        Insert: {
+          author_id: string
+          category_id: string
+          created_at?: string | null
+          id?: string
+          is_locked?: boolean | null
+          is_pinned?: boolean | null
+          last_post_at?: string | null
+          title: string
+          view_count?: number | null
+        }
+        Update: {
+          author_id?: string
+          category_id?: string
+          created_at?: string | null
+          id?: string
+          is_locked?: boolean | null
+          is_pinned?: boolean | null
+          last_post_at?: string | null
+          title?: string
+          view_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forum_topics_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "forum_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      friends: {
+        Row: {
+          created_at: string | null
+          friend_id: string
+          id: string
+          status: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          friend_id: string
+          id?: string
+          status?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          friend_id?: string
+          id?: string
+          status?: string
+          updated_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -657,6 +930,208 @@ export type Database = {
         }
         Relationships: []
       }
+      home_game_members: {
+        Row: {
+          home_game_id: string
+          id: string
+          joined_at: string | null
+          player_id: string
+          role: string
+        }
+        Insert: {
+          home_game_id: string
+          id?: string
+          joined_at?: string | null
+          player_id: string
+          role?: string
+        }
+        Update: {
+          home_game_id?: string
+          id?: string
+          joined_at?: string | null
+          player_id?: string
+          role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "home_game_members_home_game_id_fkey"
+            columns: ["home_game_id"]
+            isOneToOne: false
+            referencedRelation: "home_games"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      home_games: {
+        Row: {
+          access_code: string | null
+          big_blind: number
+          created_at: string | null
+          creator_id: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          is_recurring: boolean | null
+          max_buy_in: number
+          max_players: number
+          min_buy_in: number
+          name: string
+          recurrence_pattern: string | null
+          scheduled_for: string | null
+          small_blind: number
+        }
+        Insert: {
+          access_code?: string | null
+          big_blind: number
+          created_at?: string | null
+          creator_id: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_recurring?: boolean | null
+          max_buy_in: number
+          max_players?: number
+          min_buy_in: number
+          name: string
+          recurrence_pattern?: string | null
+          scheduled_for?: string | null
+          small_blind: number
+        }
+        Update: {
+          access_code?: string | null
+          big_blind?: number
+          created_at?: string | null
+          creator_id?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_recurring?: boolean | null
+          max_buy_in?: number
+          max_players?: number
+          min_buy_in?: number
+          name?: string
+          recurrence_pattern?: string | null
+          scheduled_for?: string | null
+          small_blind?: number
+        }
+        Relationships: []
+      }
+      influencer_codes: {
+        Row: {
+          benefit_description: string | null
+          code: string
+          created_at: string | null
+          description: string | null
+          expires_at: string | null
+          id: string
+          influencer_id: string
+          is_active: boolean | null
+          max_uses: number | null
+          reward_chips: number | null
+          uses_count: number | null
+        }
+        Insert: {
+          benefit_description?: string | null
+          code: string
+          created_at?: string | null
+          description?: string | null
+          expires_at?: string | null
+          id?: string
+          influencer_id: string
+          is_active?: boolean | null
+          max_uses?: number | null
+          reward_chips?: number | null
+          uses_count?: number | null
+        }
+        Update: {
+          benefit_description?: string | null
+          code?: string
+          created_at?: string | null
+          description?: string | null
+          expires_at?: string | null
+          id?: string
+          influencer_id?: string
+          is_active?: boolean | null
+          max_uses?: number | null
+          reward_chips?: number | null
+          uses_count?: number | null
+        }
+        Relationships: []
+      }
+      leaderboard_entries: {
+        Row: {
+          id: string
+          leaderboard_id: string
+          player_id: string
+          rank: number | null
+          score: number
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          leaderboard_id: string
+          player_id: string
+          rank?: number | null
+          score?: number
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          leaderboard_id?: string
+          player_id?: string
+          rank?: number | null
+          score?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leaderboard_entries_leaderboard_id_fkey"
+            columns: ["leaderboard_id"]
+            isOneToOne: false
+            referencedRelation: "leaderboards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leaderboards: {
+        Row: {
+          category: string
+          created_at: string | null
+          description: string | null
+          end_date: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          period: string
+          prize_pool: number | null
+          start_date: string | null
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          period: string
+          prize_pool?: number | null
+          start_date?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          period?: string
+          prize_pool?: number | null
+          start_date?: string | null
+        }
+        Relationships: []
+      }
       ledger_entries: {
         Row: {
           amount: number
@@ -704,6 +1179,27 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      level_definitions: {
+        Row: {
+          level: number
+          rewards: Json | null
+          title: string | null
+          xp_required: number
+        }
+        Insert: {
+          level: number
+          rewards?: Json | null
+          title?: string | null
+          xp_required: number
+        }
+        Update: {
+          level?: number
+          rewards?: Json | null
+          title?: string | null
+          xp_required?: number
+        }
+        Relationships: []
       }
       lobby_tables: {
         Row: {
@@ -758,6 +1254,204 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      notifications: {
+        Row: {
+          action_url: string | null
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          is_read: boolean | null
+          message: string
+          notification_type: string
+          player_id: string
+          title: string
+        }
+        Insert: {
+          action_url?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message: string
+          notification_type: string
+          player_id: string
+          title: string
+        }
+        Update: {
+          action_url?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message?: string
+          notification_type?: string
+          player_id?: string
+          title?: string
+        }
+        Relationships: []
+      }
+      player_achievements: {
+        Row: {
+          achievement_id: string
+          completed: boolean | null
+          id: string
+          player_id: string
+          progress: number | null
+          unlocked_at: string | null
+        }
+        Insert: {
+          achievement_id: string
+          completed?: boolean | null
+          id?: string
+          player_id: string
+          progress?: number | null
+          unlocked_at?: string | null
+        }
+        Update: {
+          achievement_id?: string
+          completed?: boolean | null
+          id?: string
+          player_id?: string
+          progress?: number | null
+          unlocked_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "player_achievements_achievement_id_fkey"
+            columns: ["achievement_id"]
+            isOneToOne: false
+            referencedRelation: "achievements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      player_activities: {
+        Row: {
+          activity_type: string
+          content: string | null
+          created_at: string | null
+          id: string
+          is_public: boolean | null
+          metadata: Json | null
+          player_id: string
+        }
+        Insert: {
+          activity_type: string
+          content?: string | null
+          created_at?: string | null
+          id?: string
+          is_public?: boolean | null
+          metadata?: Json | null
+          player_id: string
+        }
+        Update: {
+          activity_type?: string
+          content?: string | null
+          created_at?: string | null
+          id?: string
+          is_public?: boolean | null
+          metadata?: Json | null
+          player_id?: string
+        }
+        Relationships: []
+      }
+      player_cosmetics: {
+        Row: {
+          acquired_at: string | null
+          id: string
+          is_equipped: boolean | null
+          item_id: string
+          player_id: string
+        }
+        Insert: {
+          acquired_at?: string | null
+          id?: string
+          is_equipped?: boolean | null
+          item_id: string
+          player_id: string
+        }
+        Update: {
+          acquired_at?: string | null
+          id?: string
+          is_equipped?: boolean | null
+          item_id?: string
+          player_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "player_cosmetics_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "cosmetic_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      player_levels: {
+        Row: {
+          current_level: number
+          current_xp: number
+          id: string
+          player_id: string
+          total_xp_earned: number
+          updated_at: string | null
+        }
+        Insert: {
+          current_level?: number
+          current_xp?: number
+          id?: string
+          player_id: string
+          total_xp_earned?: number
+          updated_at?: string | null
+        }
+        Update: {
+          current_level?: number
+          current_xp?: number
+          id?: string
+          player_id?: string
+          total_xp_earned?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      player_missions: {
+        Row: {
+          assigned_at: string | null
+          completed_at: string | null
+          expires_at: string
+          id: string
+          mission_id: string
+          player_id: string
+          progress: number | null
+        }
+        Insert: {
+          assigned_at?: string | null
+          completed_at?: string | null
+          expires_at: string
+          id?: string
+          mission_id: string
+          player_id: string
+          progress?: number | null
+        }
+        Update: {
+          assigned_at?: string | null
+          completed_at?: string | null
+          expires_at?: string
+          id?: string
+          mission_id?: string
+          player_id?: string
+          progress?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "player_missions_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "daily_missions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       player_reputation: {
         Row: {
@@ -866,6 +1560,36 @@ export type Database = {
           },
         ]
       }
+      private_messages: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          is_read: boolean | null
+          recipient_id: string
+          sender_id: string
+          subject: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          recipient_id: string
+          sender_id: string
+          subject?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          recipient_id?: string
+          sender_id?: string
+          subject?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           alias: string | null
@@ -942,6 +1666,48 @@ export type Database = {
           },
         ]
       }
+      special_events: {
+        Row: {
+          banner_url: string | null
+          created_at: string | null
+          description: string | null
+          end_date: string
+          id: string
+          is_active: boolean | null
+          name: string
+          rewards: Json | null
+          sponsor_info: Json | null
+          start_date: string
+          theme: string | null
+        }
+        Insert: {
+          banner_url?: string | null
+          created_at?: string | null
+          description?: string | null
+          end_date: string
+          id?: string
+          is_active?: boolean | null
+          name: string
+          rewards?: Json | null
+          sponsor_info?: Json | null
+          start_date: string
+          theme?: string | null
+        }
+        Update: {
+          banner_url?: string | null
+          created_at?: string | null
+          description?: string | null
+          end_date?: string
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          rewards?: Json | null
+          sponsor_info?: Json | null
+          start_date?: string
+          theme?: string | null
+        }
+        Relationships: []
+      }
       telemetry_raw: {
         Row: {
           created_at: string | null
@@ -978,6 +1744,38 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "vw_player_balance"
             referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      tournament_chat_messages: {
+        Row: {
+          created_at: string | null
+          id: string
+          message: string
+          player_id: string
+          tournament_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          message: string
+          player_id: string
+          tournament_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          message?: string
+          player_id?: string
+          tournament_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_chat_messages_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments_new"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1030,6 +1828,167 @@ export type Database = {
           },
         ]
       }
+      tournament_registrations: {
+        Row: {
+          addons: number | null
+          chips: number
+          final_position: number | null
+          id: string
+          is_active: boolean | null
+          payout: number | null
+          player_id: string
+          rebuys: number | null
+          registration_time: string | null
+          tournament_id: string
+        }
+        Insert: {
+          addons?: number | null
+          chips: number
+          final_position?: number | null
+          id?: string
+          is_active?: boolean | null
+          payout?: number | null
+          player_id: string
+          rebuys?: number | null
+          registration_time?: string | null
+          tournament_id: string
+        }
+        Update: {
+          addons?: number | null
+          chips?: number
+          final_position?: number | null
+          id?: string
+          is_active?: boolean | null
+          payout?: number | null
+          player_id?: string
+          rebuys?: number | null
+          registration_time?: string | null
+          tournament_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_registrations_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments_new"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tournament_rounds: {
+        Row: {
+          ante: number | null
+          big_blind: number
+          duration_minutes: number
+          end_time: string | null
+          id: string
+          round_number: number
+          small_blind: number
+          start_time: string | null
+          tournament_id: string
+        }
+        Insert: {
+          ante?: number | null
+          big_blind: number
+          duration_minutes: number
+          end_time?: string | null
+          id?: string
+          round_number: number
+          small_blind: number
+          start_time?: string | null
+          tournament_id: string
+        }
+        Update: {
+          ante?: number | null
+          big_blind?: number
+          duration_minutes?: number
+          end_time?: string | null
+          id?: string
+          round_number?: number
+          small_blind?: number
+          start_time?: string | null
+          tournament_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_rounds_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments_new"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tournament_seats: {
+        Row: {
+          id: string
+          is_active: boolean | null
+          player_id: string
+          seat_number: number
+          table_id: string
+        }
+        Insert: {
+          id?: string
+          is_active?: boolean | null
+          player_id: string
+          seat_number: number
+          table_id: string
+        }
+        Update: {
+          id?: string
+          is_active?: boolean | null
+          player_id?: string
+          seat_number?: number
+          table_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_seats_table_id_fkey"
+            columns: ["table_id"]
+            isOneToOne: false
+            referencedRelation: "tournament_tables"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tournament_tables: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_final_table: boolean | null
+          max_seats: number
+          status: string | null
+          table_number: number
+          tournament_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_final_table?: boolean | null
+          max_seats?: number
+          status?: string | null
+          table_number: number
+          tournament_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_final_table?: boolean | null
+          max_seats?: number
+          status?: string | null
+          table_number?: number
+          tournament_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_tables_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments_new"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tournaments: {
         Row: {
           blind_json: Json
@@ -1075,6 +2034,99 @@ export type Database = {
           starting_stack?: number
           uuid?: string
           variant?: Database["public"]["Enums"]["table_variant"]
+        }
+        Relationships: []
+      }
+      tournaments_new: {
+        Row: {
+          access_code: string | null
+          addon_allowed: boolean | null
+          banner_url: string | null
+          blind_structure: Json
+          buy_in: number | null
+          created_at: string | null
+          created_by: string | null
+          current_level: number | null
+          description: string | null
+          fee_percent: number
+          id: string
+          is_featured: boolean | null
+          is_private: boolean | null
+          late_registration_minutes: number | null
+          max_players: number
+          min_players: number
+          name: string
+          payout_structure: Json
+          prize_pool: number | null
+          rebuy_allowed: boolean | null
+          registration_close_time: string | null
+          registration_open_time: string
+          rules: string | null
+          start_time: string
+          starting_chips: number
+          status: Database["public"]["Enums"]["tournament_status"]
+          tournament_type: Database["public"]["Enums"]["tournament_type"]
+          updated_at: string | null
+        }
+        Insert: {
+          access_code?: string | null
+          addon_allowed?: boolean | null
+          banner_url?: string | null
+          blind_structure?: Json
+          buy_in?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          current_level?: number | null
+          description?: string | null
+          fee_percent?: number
+          id?: string
+          is_featured?: boolean | null
+          is_private?: boolean | null
+          late_registration_minutes?: number | null
+          max_players?: number
+          min_players?: number
+          name: string
+          payout_structure?: Json
+          prize_pool?: number | null
+          rebuy_allowed?: boolean | null
+          registration_close_time?: string | null
+          registration_open_time: string
+          rules?: string | null
+          start_time: string
+          starting_chips?: number
+          status?: Database["public"]["Enums"]["tournament_status"]
+          tournament_type?: Database["public"]["Enums"]["tournament_type"]
+          updated_at?: string | null
+        }
+        Update: {
+          access_code?: string | null
+          addon_allowed?: boolean | null
+          banner_url?: string | null
+          blind_structure?: Json
+          buy_in?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          current_level?: number | null
+          description?: string | null
+          fee_percent?: number
+          id?: string
+          is_featured?: boolean | null
+          is_private?: boolean | null
+          late_registration_minutes?: number | null
+          max_players?: number
+          min_players?: number
+          name?: string
+          payout_structure?: Json
+          prize_pool?: number | null
+          rebuy_allowed?: boolean | null
+          registration_close_time?: string | null
+          registration_open_time?: string
+          rules?: string | null
+          start_time?: string
+          starting_chips?: number
+          status?: Database["public"]["Enums"]["tournament_status"]
+          tournament_type?: Database["public"]["Enums"]["tournament_type"]
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -1168,6 +2220,20 @@ export type Database = {
         | "FINAL_TABLE"
         | "COMPLETED"
         | "CANCELLED"
+      tournament_status:
+        | "SCHEDULED"
+        | "REGISTERING"
+        | "RUNNING"
+        | "BREAK"
+        | "FINAL_TABLE"
+        | "COMPLETED"
+        | "CANCELLED"
+      tournament_type:
+        | "SIT_N_GO"
+        | "FREEROLL"
+        | "MULTI_TABLE"
+        | "SPECIAL_EVENT"
+        | "SATELLITE"
       tx_type:
         | "DEPOSIT"
         | "WITHDRAW"
@@ -1301,6 +2367,22 @@ export const Constants = {
         "FINAL_TABLE",
         "COMPLETED",
         "CANCELLED",
+      ],
+      tournament_status: [
+        "SCHEDULED",
+        "REGISTERING",
+        "RUNNING",
+        "BREAK",
+        "FINAL_TABLE",
+        "COMPLETED",
+        "CANCELLED",
+      ],
+      tournament_type: [
+        "SIT_N_GO",
+        "FREEROLL",
+        "MULTI_TABLE",
+        "SPECIAL_EVENT",
+        "SATELLITE",
       ],
       tx_type: [
         "DEPOSIT",
