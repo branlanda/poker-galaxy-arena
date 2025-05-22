@@ -4,6 +4,7 @@ import { LanguageSelector } from "./LanguageSelector";
 import { useLanguage } from "@/stores/language";
 import { I18nextProvider } from "react-i18next";
 import i18n from "@/i18n";
+import { vi } from "vitest";
 
 // Mock the language store for Storybook
 vi.mock("@/stores/language", () => ({
