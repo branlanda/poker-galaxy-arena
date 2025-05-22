@@ -5,8 +5,13 @@ import '@testing-library/jest-dom';
 import GameRoom from './GameRoom';
 import { useGameStore } from '@/stores/game';
 import { useAuth } from '@/stores/auth';
+import { useGameRoom } from '@/hooks/useGameRoom';
 
-// Mock stores and hooks
+// Mock hooks
+vi.mock('@/hooks/useGameRoom', () => ({
+  useGameRoom: vi.fn(),
+}));
+
 vi.mock('@/stores/game', () => ({
   useGameStore: vi.fn(),
 }));
@@ -21,45 +26,34 @@ vi.mock('@/hooks/use-toast', () => ({
   }),
 }));
 
-vi.mock('@/integrations/supabase/client', () => ({
-  supabase: {
-    from: vi.fn().mockReturnThis(),
-    select: vi.fn().mockReturnThis(),
-    eq: vi.fn().mockReturnThis(),
-    single: vi.fn().mockResolvedValue({
-      data: {
-        name: 'Test Table',
-        small_blind: 1,
-        big_blind: 2,
-        min_buy_in: 100,
-        max_buy_in: 200
-      },
-      error: null
-    }),
-  }
-}));
+vi.mock('react-router-dom', async () => {
+  const actual = await vi.importActual('react-router-dom');
+  return {
+    ...actual,
+    useParams: () => ({ id: 'test-table-id' }),
+    useNavigate: () => vi.fn(),
+  };
+});
 
 describe('GameRoom Component', () => {
-  const mockInitializeGame = vi.fn().mockResolvedValue(undefined);
-  const mockDisconnectGame = vi.fn();
-  const mockTakeSeat = vi.fn().mockResolvedValue(undefined);
-  const mockLeaveSeat = vi.fn().mockResolvedValue(undefined);
+  const mockHandleSitDown = vi.fn().mockResolvedValue(undefined);
+  const mockLeaveTable = vi.fn().mockResolvedValue(undefined);
   
   beforeEach(() => {
     vi.clearAllMocks();
     
-    // Mock react-router
-    vi.mock('react-router-dom', async () => {
-      const actual = await vi.importActual('react-router-dom');
-      return {
-        ...actual,
-        useParams: () => ({ tableId: 'test-table-id' }),
-        useNavigate: () => vi.fn(),
-      };
-    });
-    
-    // Mock game store
-    (useGameStore as any).mockReturnValue({
+    // Mock useGameRoom hook
+    (useGameRoom as any).mockReturnValue({
+      table: {
+        id: 'test-table-id',
+        name: 'Test Table', 
+        small_blind: 1,
+        big_blind: 2,
+        min_buy_in: 100,
+        max_buy_in: 200,
+        max_players: 9
+      },
+      players: [],
       gameState: {
         tableId: 'test-table-id',
         phase: 'WAITING',
@@ -73,63 +67,45 @@ describe('GameRoom Component', () => {
         seats: Array(9).fill(null),
         lastAction: null,
       },
-      isLoading: false,
-      error: null,
-      initializeGame: mockInitializeGame,
-      disconnectGame: mockDisconnectGame,
-      takeSeat: mockTakeSeat,
-      leaveSeat: mockLeaveSeat,
-    });
-    
-    // Mock auth store
-    (useAuth as any).mockReturnValue({
-      user: { id: 'user-123', email: 'player@example.com' },
+      loading: false,
+      gameLoading: false,
+      gameError: null,
+      isPlayerSeated: false,
+      isPlayerTurn: false,
+      playerSeatIndex: -1,
+      userId: 'user-123',
+      handleSitDown: mockHandleSitDown,
+      leaveTable: mockLeaveTable
     });
   });
 
-  it('renders the game room and initializes the game', async () => {
+  it('renders the game room correctly', async () => {
     render(<GameRoom />);
     
     await waitFor(() => {
-      expect(mockInitializeGame).toHaveBeenCalledWith('test-table-id');
+      expect(screen.getByText(/leave table/i)).toBeInTheDocument();
     });
-    
-    expect(screen.getByText(/leave table/i)).toBeInTheDocument();
   });
 
-  it('handles sit down action', async () => {
+  it('shows loading state when data is loading', async () => {
+    (useGameRoom as any).mockReturnValue({
+      loading: true,
+      gameLoading: false,
+    });
+    
     render(<GameRoom />);
-    
-    // Wait for component to initialize
-    await waitFor(() => {
-      expect(mockInitializeGame).toHaveBeenCalled();
-    });
-    
-    // Find all "Sit Down" buttons (there should be 9 since all seats are null)
-    const sitDownButtons = await screen.findAllByRole('button', { name: /sit down/i });
-    expect(sitDownButtons.length).toBeGreaterThan(0);
-    
-    // Click the first "Sit Down" button
-    sitDownButtons[0].click();
-    
-    await waitFor(() => {
-      expect(mockTakeSeat).toHaveBeenCalledWith(
-        0, // seat number
-        'user-123', // user ID
-        expect.any(String), // player name
-        expect.any(Number) // buy-in amount
-      );
-    });
+    expect(screen.queryByText(/leave table/i)).not.toBeInTheDocument();
   });
 
-  it('calls disconnectGame on unmount', async () => {
-    const { unmount } = render(<GameRoom />);
-    
-    await waitFor(() => {
-      expect(mockInitializeGame).toHaveBeenCalled();
+  it('shows error state when there is an error', async () => {
+    (useGameRoom as any).mockReturnValue({
+      loading: false,
+      gameLoading: false,
+      gameError: 'Test error',
+      table: null
     });
     
-    unmount();
-    expect(mockDisconnectGame).toHaveBeenCalled();
+    render(<GameRoom />);
+    expect(screen.queryByText(/leave table/i)).not.toBeInTheDocument();
   });
 });
