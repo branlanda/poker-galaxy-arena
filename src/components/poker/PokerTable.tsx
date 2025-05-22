@@ -1,158 +1,111 @@
 
-import { GameState } from '@/types/game';
-import { CommunityCards } from '@/components/poker/CommunityCards';
-import { PlayerSeat } from '@/components/poker/PlayerSeat';
-import { PokerChip } from '@/components/poker/PokerChip';
-import { PlayerActions } from '@/components/poker/PlayerActions';
+import { useState, useEffect } from 'react';
+import { SeatState, GameState } from '@/types/game';
+import { PlayerSeat } from './PlayerSeat';
+import { CommunityCards } from './CommunityCards';
+import { PokerChip } from './PokerChip';
+import { BetActions } from './BetActions';
 
 interface PokerTableProps {
   gameState: GameState | null;
   isPlayerSeated: boolean;
   isPlayerTurn: boolean;
-  playerSeatIndex: number;  // This prop needs to match what GameRoom passes
+  playerSeatIndex: number;
   userId: string | undefined;
   onSitDown: (seatNumber: number) => void;
 }
 
-export function PokerTable({ 
-  gameState, 
-  isPlayerSeated, 
-  isPlayerTurn, 
-  playerSeatIndex,  // Renamed from playerSeat to match GameRoom.tsx
+export function PokerTable({
+  gameState,
+  isPlayerSeated,
+  isPlayerTurn,
+  playerSeatIndex,
   userId,
-  onSitDown 
+  onSitDown
 }: PokerTableProps) {
-  // Get current player's seat data if seated
-  const playerSeat = isPlayerSeated && gameState?.seats[playerSeatIndex] 
-    ? gameState.seats[playerSeatIndex] 
-    : null;
+  const [seatPositions, setSeatPositions] = useState<{ top: string; left: string }[]>([]);
+  
+  // Calculate seat positions based on table size and number of seats
+  useEffect(() => {
+    if (!gameState) return;
+    
+    const numSeats = gameState.seats.length;
+    const positions = [];
+    
+    // Calculate positions in a circle
+    for (let i = 0; i < numSeats; i++) {
+      // Angle in radians
+      const angle = (i * 2 * Math.PI / numSeats) - Math.PI / 2;
+      
+      // Position on circle
+      const top = 50 + 40 * Math.sin(angle);
+      const left = 50 + 42 * Math.cos(angle);
+      
+      positions.push({
+        top: `${top}%`,
+        left: `${left}%`
+      });
+    }
+    
+    setSeatPositions(positions);
+  }, [gameState]);
 
+  if (!gameState) return null;
+
+  const playerSeat = isPlayerSeated && playerSeatIndex >= 0 ? gameState.seats[playerSeatIndex] as SeatState : null;
+  
   return (
-    <div className="relative">
-      {/* Elliptical table background */}
-      <div className="aspect-[4/3] w-full bg-green-900/80 rounded-[50%] border-8 border-amber-950 shadow-xl overflow-hidden relative mb-8">
-        {/* Table felt pattern */}
-        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle,_#4444_1px,_transparent_1px)_repeat] bg-[size:20px_20px]"></div>
-        
-        {/* Center pot area */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
-          {gameState?.pot > 0 && (
-            <div className="flex flex-col items-center mb-4">
-              <div className="flex gap-1">
-                <PokerChip value={gameState.pot} size="lg" />
-              </div>
-              <p className="text-white font-medium mt-2">Pot: {gameState.pot}</p>
-            </div>
-          )}
-          
-          {/* Community cards */}
-          <div className="mb-4">
-            <CommunityCards 
-              cards={gameState?.communityCards || []}
-              phase={gameState?.phase || 'WAITING'} 
-            />
-          </div>
-          
-          {/* Game phase display */}
-          <div className="bg-black/30 px-4 py-1 rounded-full">
-            <p className="text-sm font-medium text-gray-300">
-              {gameState?.phase || 'Waiting for players'}
-            </p>
+    <div className="relative w-full aspect-[16/9] max-w-4xl mx-auto bg-emerald-900 rounded-[50%] border-8 border-brown-800 shadow-2xl">
+      {/* Dealer button */}
+      {gameState.dealer >= 0 && gameState.seats[gameState.dealer] && (
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
+          <div className="bg-white text-black font-bold rounded-full w-8 h-8 flex items-center justify-center">
+            D
           </div>
         </div>
-        
-        {/* Player seats - using a 9-seat layout */}
-        <div className="absolute inset-0">
-          {/* Top row - seats 0, 1, 2 */}
-          <div className="absolute top-[5%] left-0 right-0 flex justify-between px-[15%]">
-            <PlayerSeat 
-              position={0}
-              state={gameState?.seats[0] || null}
-              isCurrentPlayer={playerSeatIndex === 0}
-              isActive={gameState?.activePlayerId === gameState?.seats[0]?.playerId}
-              onSitDown={!isPlayerSeated ? onSitDown : undefined}
-            />
-            <PlayerSeat 
-              position={1}
-              state={gameState?.seats[1] || null}
-              isCurrentPlayer={playerSeatIndex === 1}
-              isActive={gameState?.activePlayerId === gameState?.seats[1]?.playerId}
-              onSitDown={!isPlayerSeated ? onSitDown : undefined}
-            />
-            <PlayerSeat 
-              position={2}
-              state={gameState?.seats[2] || null}
-              isCurrentPlayer={playerSeatIndex === 2}
-              isActive={gameState?.activePlayerId === gameState?.seats[2]?.playerId}
-              onSitDown={!isPlayerSeated ? onSitDown : undefined}
-            />
-          </div>
-          
-          {/* Left side - seats 3, 4 */}
-          <div className="absolute left-[2%] top-[40%]">
-            <PlayerSeat 
-              position={3}
-              state={gameState?.seats[3] || null}
-              isCurrentPlayer={playerSeatIndex === 3}
-              isActive={gameState?.activePlayerId === gameState?.seats[3]?.playerId}
-              onSitDown={!isPlayerSeated ? onSitDown : undefined}
-            />
-          </div>
-          
-          {/* Right side - seats 4, 5 */}
-          <div className="absolute right-[2%] top-[40%]">
-            <PlayerSeat 
-              position={4}
-              state={gameState?.seats[4] || null}
-              isCurrentPlayer={playerSeatIndex === 4}
-              isActive={gameState?.activePlayerId === gameState?.seats[4]?.playerId}
-              onSitDown={!isPlayerSeated ? onSitDown : undefined}
-            />
-          </div>
-          
-          {/* Bottom row - seats 5, 6, 7, 8 */}
-          <div className="absolute bottom-[5%] left-0 right-0 flex justify-between px-[10%]">
-            <PlayerSeat 
-              position={5}
-              state={gameState?.seats[5] || null}
-              isCurrentPlayer={playerSeatIndex === 5}
-              isActive={gameState?.activePlayerId === gameState?.seats[5]?.playerId}
-              onSitDown={!isPlayerSeated ? onSitDown : undefined}
-            />
-            <PlayerSeat 
-              position={6}
-              state={gameState?.seats[6] || null}
-              isCurrentPlayer={playerSeatIndex === 6}
-              isActive={gameState?.activePlayerId === gameState?.seats[6]?.playerId}
-              onSitDown={!isPlayerSeated ? onSitDown : undefined}
-            />
-            <PlayerSeat 
-              position={7}
-              state={gameState?.seats[7] || null}
-              isCurrentPlayer={playerSeatIndex === 7}
-              isActive={gameState?.activePlayerId === gameState?.seats[7]?.playerId}
-              onSitDown={!isPlayerSeated ? onSitDown : undefined}
-            />
-            <PlayerSeat 
-              position={8}
-              state={gameState?.seats[8] || null}
-              isCurrentPlayer={playerSeatIndex === 8}
-              isActive={gameState?.activePlayerId === gameState?.seats[8]?.playerId}
-              onSitDown={!isPlayerSeated ? onSitDown : undefined}
-            />
-          </div>
+      )}
+      
+      {/* Pot display */}
+      {gameState.pot > 0 && (
+        <div className="absolute top-[40%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20">
+          <PokerChip value={gameState.pot} size="lg" />
         </div>
+      )}
+      
+      {/* Community cards */}
+      <div className="absolute top-[30%] left-1/2 transform -translate-x-1/2 w-full max-w-md z-10">
+        <CommunityCards cards={gameState.communityCards} phase={gameState.phase} />
       </div>
       
-      {/* Player actions area - only shown when it's the player's turn */}
-      {isPlayerTurn && isPlayerSeated && playerSeat && userId && (
-        <div className="mt-4 flex justify-center">
-          <PlayerActions
-            playerId={userId}
-            currentBet={gameState?.currentBet || 0}
+      {/* Player seats */}
+      {gameState.seats.map((seat, index) => (
+        <div 
+          key={index}
+          className="absolute"
+          style={{
+            top: seatPositions[index]?.top,
+            left: seatPositions[index]?.left,
+            transform: 'translate(-50%, -50%)'
+          }}
+        >
+          <PlayerSeat 
+            position={index}
+            state={seat}
+            isCurrentPlayer={userId && seat?.playerId === userId}
+            isActive={gameState.activePlayerId === seat?.playerId}
+            onSitDown={!isPlayerSeated ? onSitDown : undefined}
+          />
+        </div>
+      ))}
+      
+      {/* Player actions bar */}
+      {isPlayerTurn && playerSeat && (
+        <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-full z-30">
+          <BetActions 
+            playerId={playerSeat.playerId}
+            playerStack={playerSeat.stack}
+            currentBet={gameState.currentBet}
             playerBet={playerSeat.bet}
-            stack={playerSeat.stack}
-            isActive={true}
           />
         </div>
       )}

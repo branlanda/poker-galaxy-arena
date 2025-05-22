@@ -11,12 +11,13 @@ import LobbyPage from '@/pages/Lobby/LobbyPage';
 import ProfilePage from '@/pages/profile/ProfilePage';
 import FundsPage from '@/pages/Funds/FundsPage';
 import Settings from '@/pages/settings/Settings';
-import { TournamentsRoutes } from './router/TournamentsRoutes';
+import { TournamentLobby, TournamentDetail } from '@/pages/Tournaments';
 import AdminLayout from '@/pages/Admin/AdminLayout';
 import Dashboard from '@/pages/Admin/Dashboard';
 import Users from '@/pages/Admin/Users';
 import Tables from '@/pages/Admin/Tables';
 import Ledger from '@/pages/Admin/Ledger';
+import { TournamentsRoutes } from './router/TournamentsRoutes';
 
 const routes: RouteObject[] = [
   {
@@ -60,7 +61,6 @@ const routes: RouteObject[] = [
     element: <Settings />,
   },
   ...TournamentsRoutes,
-  // Admin routes defined directly rather than spreading AdminRoutes component
   {
     path: '/admin',
     element: <AdminLayout />,

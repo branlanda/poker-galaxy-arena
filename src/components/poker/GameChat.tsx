@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/Button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Send } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 
 interface GameChatProps {
   tableId: string;
@@ -29,21 +30,35 @@ export function GameChat({ tableId }: GameChatProps) {
   
   // Fetch existing messages when component mounts
   useEffect(() => {
-    if (!tableId) return;
+    if (!tableId || !user) return;
     
     const fetchMessages = async () => {
       try {
         setLoading(true);
+        
         // Create a custom channel for room messages
-        const channel = supabase.channel(`room:${tableId}`)
+        const channel = supabase.channel(`chat:${tableId}`)
           .on('broadcast', { event: 'new_message' }, (payload) => {
             setMessages(current => [...current, payload.payload as Message]);
           })
           .subscribe();
         
-        // Load initial messages directly
-        const initialMessages: Message[] = [];
-        setMessages(initialMessages);
+        // Load initial messages from database
+        const { data, error } = await supabase
+          .from('table_chat_messages')
+          .select('*')
+          .eq('table_id', tableId)
+          .order('created_at', { ascending: true })
+          .limit(50);
+          
+        if (error) {
+          console.error('Error fetching chat messages:', error);
+          return;
+        }
+        
+        if (data) {
+          setMessages(data as Message[]);
+        }
         
       } catch (err) {
         console.error('Error setting up message channel:', err);
@@ -56,9 +71,9 @@ export function GameChat({ tableId }: GameChatProps) {
     
     return () => {
       // Cleanup channel subscription
-      supabase.removeChannel(supabase.channel(`room:${tableId}`));
+      supabase.removeChannel(supabase.channel(`chat:${tableId}`));
     };
-  }, [tableId]);
+  }, [tableId, user]);
   
   // Auto-scroll to bottom when messages update
   useEffect(() => {
@@ -73,28 +88,44 @@ export function GameChat({ tableId }: GameChatProps) {
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!user || !newMessage.trim()) return;
+    if (!user || !newMessage.trim() || !tableId) return;
     
     try {
       setLoading(true);
       
-      // Send message via broadcast channel instead of database
-      await supabase.channel(`room:${tableId}`).send({
+      const messageData = {
+        id: crypto.randomUUID(),
+        table_id: tableId,
+        player_id: user.id,
+        player_name: user.alias || user.email || 'Anonymous',
+        message: newMessage.trim(),
+        created_at: new Date().toISOString()
+      };
+      
+      // Store message in database for persistence
+      const { error } = await supabase
+        .from('table_chat_messages')
+        .insert([messageData]);
+        
+      if (error) {
+        throw error;
+      }
+      
+      // Broadcast message to all connected clients
+      await supabase.channel(`chat:${tableId}`).send({
         type: 'broadcast',
         event: 'new_message',
-        payload: {
-          id: crypto.randomUUID(),
-          table_id: tableId,
-          player_id: user.id,
-          player_name: user.alias || user.email || 'Anonymous',
-          message: newMessage.trim(),
-          created_at: new Date().toISOString()
-        },
+        payload: messageData,
       });
       
       setNewMessage('');
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error sending message:', err);
+      toast({
+        title: "Failed to send message",
+        description: err.message,
+        variant: "destructive"
+      });
     } finally {
       setLoading(false);
     }
@@ -102,7 +133,7 @@ export function GameChat({ tableId }: GameChatProps) {
   
   return (
     <div className="flex flex-col h-full">
-      <ScrollArea className="flex-grow" ref={scrollAreaRef}>
+      <ScrollArea className="flex-grow h-[280px]" ref={scrollAreaRef}>
         <div className="p-4 space-y-4">
           {messages.length === 0 ? (
             <p className="text-center text-gray-400 py-4">No messages yet</p>
@@ -122,7 +153,7 @@ export function GameChat({ tableId }: GameChatProps) {
                   {msg.player_id !== user?.id && (
                     <p className="text-xs font-medium text-emerald">{msg.player_name}</p>
                   )}
-                  <p>{msg.message}</p>
+                  <p className="break-words">{msg.message}</p>
                 </div>
                 <p className="text-xs text-gray-400 mt-1">
                   {new Date(msg.created_at).toLocaleTimeString([], {

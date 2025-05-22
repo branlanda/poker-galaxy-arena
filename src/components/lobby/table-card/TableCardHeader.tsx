@@ -1,34 +1,30 @@
 
-import { Lock } from "lucide-react";
-import { CardHeader } from "@/components/ui/card";
+import { formatDistanceToNow } from 'date-fns';
 import { useTranslation } from '@/hooks/useTranslation';
-import { TableTypeBadge } from './TableTypeBadge';
-import { TableStatusBadge } from './TableStatusBadge';
-import { LobbyTable } from '@/types/lobby';
+import { HotTableIndicator } from './HotTableIndicator';
 
-interface TableCardHeaderProps {
-  table: LobbyTable;
+export interface TableCardHeaderProps {
+  table: {
+    name: string;
+    creator_id: string;
+  };
   createdTime: string;
+  isNew?: boolean;
+  isHot?: boolean;
 }
 
-export function TableCardHeader({ table, createdTime }: TableCardHeaderProps) {
+export function TableCardHeader({ table, createdTime, isNew = false, isHot = false }: TableCardHeaderProps) {
   const { t } = useTranslation();
   
   return (
-    <CardHeader className="pb-2">
-      <div className="flex justify-between items-start">
-        <div>
-          <h3 className="font-bold text-lg text-emerald truncate flex items-center gap-2">
-            {table.name}
-            {table.is_private && <Lock size={14} className="text-amber-400" />}
-          </h3>
-          <p className="text-gray-400 text-xs">{t('created')} {createdTime}</p>
-        </div>
-        <div className="flex gap-1 flex-wrap justify-end">
-          <TableTypeBadge tableType={table.table_type} />
-          <TableStatusBadge status={table.status} />
-        </div>
-      </div>
-    </CardHeader>
+    <div className="relative">
+      {(isNew || isHot) && (
+        <HotTableIndicator isNew={isNew} />
+      )}
+      <h3 className="text-lg font-semibold truncate">{table.name}</h3>
+      <p className="text-sm text-gray-400">
+        {t('created', 'Created')} {formatDistanceToNow(new Date(createdTime), { addSuffix: true })}
+      </p>
+    </div>
   );
 }
