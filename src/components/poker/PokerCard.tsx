@@ -40,33 +40,69 @@ export const PokerCard: React.FC<PokerCardProps> = ({
     }
   };
   
+  // Get full suit name for accessibility
+  const getSuitName = (suit: string) => {
+    switch (suit) {
+      case 'hearts': return 'Hearts';
+      case 'diamonds': return 'Diamonds';
+      case 'clubs': return 'Clubs';
+      case 'spades': return 'Spades';
+      default: return '';
+    }
+  };
+  
+  // Get card description for screen readers
+  const getCardDescription = (card: Card) => {
+    return `${card.rank} of ${getSuitName(card.suit)}`;
+  };
+  
   if (!card) {
     return null; // Return null if no card provided
   }
   
   return (
-    <div className={`
-      ${sizeClasses[size]} bg-white rounded-md shadow-md
-      overflow-hidden flex items-center justify-center relative
-      ${className}
-    `}>
+    <div 
+      className={`
+        ${sizeClasses[size]} bg-white rounded-md shadow-md
+        overflow-hidden flex items-center justify-center relative
+        ${className}
+      `}
+      role="img"
+      aria-label={faceDown ? 'Face down card' : getCardDescription(card)}
+      tabIndex={0}
+    >
       {faceDown ? (
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-800 to-blue-600 pattern-grid-lg text-opacity-5"></div>
+        <div 
+          className="absolute inset-0 bg-gradient-to-br from-blue-800 to-blue-600 pattern-grid-lg text-opacity-5"
+          aria-hidden="true"
+        ></div>
       ) : (
         <>
-          <div className={`absolute top-1 left-1 ${getCardColor(card.suit)}`}>
+          <div 
+            className={`absolute top-1 left-1 ${getCardColor(card.suit)}`}
+            aria-hidden="true"
+          >
             <div>{card.rank}</div>
             <div>{getSuitSymbol(card.suit)}</div>
           </div>
-          <div className={`text-2xl ${getCardColor(card.suit)}`}>
+          <div 
+            className={`text-2xl ${getCardColor(card.suit)}`}
+            aria-hidden="true"
+          >
             {getSuitSymbol(card.suit)}
           </div>
-          <div className={`absolute bottom-1 right-1 rotate-180 ${getCardColor(card.suit)}`}>
+          <div 
+            className={`absolute bottom-1 right-1 rotate-180 ${getCardColor(card.suit)}`}
+            aria-hidden="true"
+          >
             <div>{card.rank}</div>
             <div>{getSuitSymbol(card.suit)}</div>
           </div>
         </>
       )}
+      <span className="sr-only">
+        {faceDown ? 'Face down card' : getCardDescription(card)}
+      </span>
     </div>
   );
 };
