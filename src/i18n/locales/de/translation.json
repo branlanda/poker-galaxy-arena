@@ -1,0 +1,73 @@
+
+{
+  "welcome": "Willkommen",
+  "playNow": "Jetzt Spielen",
+  "learnMore": "Mehr Erfahren",
+  "login": "Anmelden",
+  "signup": "Registrieren",
+  "logout": "Abmelden",
+  "funds": "Guthaben",
+  "tableSettings": "Tischeinstellungen",
+  "tableName": "Tischname",
+  "smallBlind": "Small Blind",
+  "bigBlind": "Big Blind",
+  "minBuyIn": "Min Buy-in",
+  "maxBuyIn": "Max Buy-in",
+  "maxPlayers": "Max Spieler",
+  "tableType": "Tischtyp",
+  "isPrivate": "Privater Tisch",
+  "password": "Passwort",
+  "createTable": "Tisch Erstellen",
+  "cancel": "Abbrechen",
+  "chat": {
+    "placeholder": "Nachricht schreiben...",
+    "noMessages": "Noch keine Nachrichten. Starten Sie die Unterhaltung!"
+  },
+  "poker": {
+    "leaveTable": "Tisch Verlassen",
+    "blinds": "Blinds",
+    "buyIn": "Buy-in",
+    "hand": "Hand",
+    "chat": "Chat",
+    "players": "Spieler"
+  },
+  "admin": {
+    "dashboard": {
+      "title": "Dashboard",
+      "dau": "Aktive Benutzer (24h)",
+      "rake24h": "Rake letzte 24h",
+      "activeTournaments": "Aktive Turniere",
+      "pendingWithdrawals": "Ausstehende Abhebungen",
+      "rake7d": "Rake letzte 7 Tage"
+    },
+    "sidebar": {
+      "users": "Benutzer",
+      "tables": "Tische",
+      "dashboard": "Dashboard",
+      "ledger": "Hauptbuch"
+    },
+    "users": {
+      "alias": "Alias",
+      "email": "E-Mail",
+      "country": "Land",
+      "balance": "Kontostand",
+      "status": "Status",
+      "search": "Suche nach Alias oder E-Mail...",
+      "documents": "KYC-Dokumente",
+      "approve": "KYC genehmigen",
+      "ban": "Benutzer sperren",
+      "unban": "Benutzer entsperren",
+      "allCountries": "Alle Länder",
+      "anyKyc": "Beliebiges KYC-Level",
+      "allStatus": "Alle Status",
+      "statusActive": "Aktiv",
+      "statusBanned": "Gesperrt",
+      "noResults": "Keine Benutzer gefunden",
+      "registerDate": "Registriert am"
+    }
+  },
+  "errors": {
+    "minBuyInGreaterThanMax": "Das Minimum-Buy-in kann nicht größer sein als das Maximum",
+    "minBuyInTooLow": "Das Minimum-Buy-in sollte mindestens 20 Big Blinds betragen"
+  }
+}

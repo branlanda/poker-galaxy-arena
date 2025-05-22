@@ -1,0 +1,73 @@
+
+{
+  "welcome": "Bienvenido",
+  "playNow": "Jugar Ahora",
+  "learnMore": "Saber Más",
+  "login": "Iniciar Sesión",
+  "signup": "Crear Cuenta",
+  "logout": "Cerrar Sesión",
+  "funds": "Fondos",
+  "tableSettings": "Configuración de Mesa",
+  "tableName": "Nombre de la Mesa",
+  "smallBlind": "Ciega Pequeña",
+  "bigBlind": "Ciega Grande",
+  "minBuyIn": "Compra Mínima",
+  "maxBuyIn": "Compra Máxima",
+  "maxPlayers": "Jugadores Máximos",
+  "tableType": "Tipo de Mesa",
+  "isPrivate": "Mesa Privada",
+  "password": "Contraseña",
+  "createTable": "Crear Mesa",
+  "cancel": "Cancelar",
+  "chat": {
+    "placeholder": "Escribe un mensaje...",
+    "noMessages": "No hay mensajes aún. ¡Inicia la conversación!"
+  },
+  "poker": {
+    "leaveTable": "Abandonar Mesa",
+    "blinds": "Ciegas",
+    "buyIn": "Compra",
+    "hand": "Mano",
+    "chat": "Chat",
+    "players": "Jugadores"
+  },
+  "admin": {
+    "dashboard": {
+      "title": "Panel",
+      "dau": "Usuarios activos (24h)",
+      "rake24h": "Rake últimas 24h",
+      "activeTournaments": "Torneos activos",
+      "pendingWithdrawals": "Retiros pendientes",
+      "rake7d": "Rake últimos 7 días"
+    },
+    "sidebar": {
+      "users": "Usuarios",
+      "tables": "Mesas",
+      "dashboard": "Panel",
+      "ledger": "Ledger de Transacciones"
+    },
+    "users": {
+      "alias": "Alias",
+      "email": "Correo",
+      "country": "País",
+      "balance": "Saldo",
+      "status": "Estado",
+      "search": "Buscar por alias o correo...",
+      "documents": "Documentos KYC",
+      "approve": "Aprobar KYC",
+      "ban": "Banear Usuario",
+      "unban": "Desbanear Usuario",
+      "allCountries": "Todos los Países",
+      "anyKyc": "Cualquier nivel KYC",
+      "allStatus": "Todos los Estados",
+      "statusActive": "Activo",
+      "statusBanned": "Baneado",
+      "noResults": "No se encontraron usuarios",
+      "registerDate": "Registrado el"
+    }
+  },
+  "errors": {
+    "minBuyInGreaterThanMax": "La compra mínima no puede ser mayor que la máxima",
+    "minBuyInTooLow": "La compra mínima debe ser al menos 20 veces la ciega grande"
+  }
+}

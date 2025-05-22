@@ -1,6 +1,11 @@
 
 import type { Preview } from "@storybook/react";
 import '../src/index.css';
+import i18n from '../src/i18n';
+
+// Force the initialization of i18n
+import { I18nextProvider } from 'react-i18next';
+import React from 'react';
 
 const preview: Preview = {
   parameters: {
@@ -24,7 +29,24 @@ const preview: Preview = {
         },
       ],
     },
+    a11y: {
+      // Optional configuration
+      config: {
+        rules: [
+          {
+            // You can adjust which accessibility rules are checked
+            id: 'color-contrast',
+            enabled: true,
+          },
+        ],
+      },
+    },
   },
+  decorators: [
+    (Story) => {
+      return React.createElement(I18nextProvider, { i18n }, Story());
+    },
+  ],
 };
 
 export default preview;

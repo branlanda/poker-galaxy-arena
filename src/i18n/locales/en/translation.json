@@ -1,0 +1,73 @@
+
+{
+  "welcome": "Welcome",
+  "playNow": "Play Now",
+  "learnMore": "Learn More",
+  "login": "Login",
+  "signup": "Sign Up",
+  "logout": "Logout",
+  "funds": "Funds",
+  "tableSettings": "Table Settings",
+  "tableName": "Table Name",
+  "smallBlind": "Small Blind",
+  "bigBlind": "Big Blind",
+  "minBuyIn": "Min Buy-in",
+  "maxBuyIn": "Max Buy-in",
+  "maxPlayers": "Max Players",
+  "tableType": "Table Type",
+  "isPrivate": "Private Table",
+  "password": "Password",
+  "createTable": "Create Table",
+  "cancel": "Cancel",
+  "chat": {
+    "placeholder": "Type a message...",
+    "noMessages": "No messages yet. Start the conversation!"
+  },
+  "poker": {
+    "leaveTable": "Leave Table",
+    "blinds": "Blinds",
+    "buyIn": "Buy-in",
+    "hand": "Hand",
+    "chat": "Chat",
+    "players": "Players"
+  },
+  "admin": {
+    "dashboard": {
+      "title": "Dashboard",
+      "dau": "Active Users (24h)",
+      "rake24h": "Rake Last 24h",
+      "activeTournaments": "Active Tournaments",
+      "pendingWithdrawals": "Pending Withdrawals",
+      "rake7d": "Rake Last 7 Days"
+    },
+    "sidebar": {
+      "users": "Users",
+      "tables": "Tables",
+      "dashboard": "Dashboard",
+      "ledger": "Transaction Ledger"
+    },
+    "users": {
+      "alias": "Alias",
+      "email": "Email",
+      "country": "Country",
+      "balance": "Balance",
+      "status": "Status",
+      "search": "Search by alias or email...",
+      "documents": "KYC Documents",
+      "approve": "Approve KYC",
+      "ban": "Ban User",
+      "unban": "Unban User",
+      "allCountries": "All Countries",
+      "anyKyc": "Any KYC Level",
+      "allStatus": "All Status",
+      "statusActive": "Active",
+      "statusBanned": "Banned",
+      "noResults": "No users found",
+      "registerDate": "Registered on"
+    }
+  },
+  "errors": {
+    "minBuyInGreaterThanMax": "Minimum buy-in cannot be greater than maximum buy-in",
+    "minBuyInTooLow": "Minimum buy-in should be at least 20 big blinds"
+  }
+}

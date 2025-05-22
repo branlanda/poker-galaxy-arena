@@ -13,10 +13,12 @@ import { Button } from "@/components/ui/Button";
 import { Plus } from 'lucide-react';
 import { TableSettingsForm } from './TableSettingsForm';
 import { useTableForm } from '@/hooks/useTableForm';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export function CreateTableDialog() {
   const [open, setOpen] = useState(false);
   const { formState, loading, handleSubmit } = useTableForm();
+  const { t } = useTranslation();
   
   const onSubmit = async () => {
     const result = await handleSubmit();
@@ -29,23 +31,23 @@ export function CreateTableDialog() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button>
-          <Plus className="h-4 w-4 mr-2" /> Create Table
+          <Plus className="h-4 w-4 mr-2" aria-hidden="true" /> {t('createTable')}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Create New Poker Table</DialogTitle>
+          <DialogTitle>{t('createTable')}</DialogTitle>
           <DialogDescription>
-            Configure your table settings below.
+            {t('tableSettings')}
           </DialogDescription>
         </DialogHeader>
         <TableSettingsForm {...formState} />
         <DialogFooter>
           <Button variant="outline" onClick={() => setOpen(false)}>
-            Cancel
+            {t('cancel')}
           </Button>
           <Button onClick={onSubmit} disabled={loading || !formState.name}>
-            {loading ? 'Creating...' : 'Create Table'}
+            {loading ? t('creating', 'Creating...') : t('createTable')}
           </Button>
         </DialogFooter>
       </DialogContent>

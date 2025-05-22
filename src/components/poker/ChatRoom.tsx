@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Send } from 'lucide-react';
 import { RoomMessageType } from '@/types/supabase';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface ChatRoomProps {
   tableId: string;
@@ -14,6 +15,7 @@ interface ChatRoomProps {
 
 export function ChatRoom({ tableId }: ChatRoomProps) {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [messages, setMessages] = useState<RoomMessageType[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(false);
@@ -108,11 +110,11 @@ export function ChatRoom({ tableId }: ChatRoomProps) {
   };
   
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full" role="region" aria-label="Chat room">
       <ScrollArea className="flex-grow" ref={scrollAreaRef}>
         <div className="p-4 space-y-4">
           {messages.length === 0 ? (
-            <p className="text-center text-gray-400 py-4">No messages yet. Start the conversation!</p>
+            <p className="text-center text-gray-400 py-4">{t('chat.noMessages')}</p>
           ) : (
             messages.map((msg) => (
               <div key={msg.id} className={`max-w-[80%] ${msg.player_id === user?.id ? 'ml-auto' : ''}`}>
@@ -127,7 +129,9 @@ export function ChatRoom({ tableId }: ChatRoomProps) {
                   <p>{msg.message}</p>
                 </div>
                 <p className="text-xs text-gray-400 mt-1">
-                  {new Date(msg.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                  <time dateTime={msg.created_at}>
+                    {new Date(msg.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                  </time>
                 </p>
               </div>
             ))
@@ -139,12 +143,18 @@ export function ChatRoom({ tableId }: ChatRoomProps) {
         <Input
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
-          placeholder="Type a message..."
+          placeholder={t('chat.placeholder')}
           disabled={!user || loading}
           className="bg-gray-800"
+          aria-label={t('chat.placeholder')}
         />
-        <Button type="submit" size="icon" disabled={!user || loading || !newMessage.trim()}>
-          <Send className="h-4 w-4" />
+        <Button 
+          type="submit" 
+          size="icon" 
+          disabled={!user || loading || !newMessage.trim()} 
+          aria-label={t('send', 'Send message')}
+        >
+          <Send className="h-4 w-4" aria-hidden="true" />
         </Button>
       </form>
     </div>

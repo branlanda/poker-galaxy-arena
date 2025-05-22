@@ -1,154 +1,120 @@
 
-# Contributing Guidelines
+# Contribution Guidelines
 
-This document outlines the coding standards and workflow for contributing to the Poker P2P platform.
+Thank you for considering contributing to our project! This document outlines the standards and processes we follow to maintain a clean, professional codebase.
 
-## Tech Stack
+## Code Style
 
-- **Frontend**: React with TypeScript and Vite
-- **Styling**: TailwindCSS with Shadcn UI
-- **State Management**: Zustand
-- **Testing**: Vitest, React Testing Library
-- **Documentation**: Storybook
-- **Backend Integration**: Supabase
+We use ESLint and Prettier to enforce a consistent code style. Please ensure your code passes linting before submitting a PR.
 
-## Development Workflow
+```bash
+# Run lint check
+npm run lint
 
-### Git Workflow
+# Fix automatic linting issues
+npm run lint:fix
+```
 
-We use a feature branch workflow:
-
-1. Create a new branch from `main` with a descriptive name:
-   - `feature/add-wallet-integration`
-   - `fix/game-room-disconnection`
-   - `refactor/player-seat-component`
-
-2. Make your changes, following the commit message conventions below.
-
-3. Push your branch and create a Pull Request with a descriptive title and details.
-
-4. Ensure all tests pass and code meets quality standards before requesting review.
-
-### Commit Message Conventions
+## Commit Message Format
 
 We follow the [Conventional Commits](https://www.conventionalcommits.org/) specification:
 
 ```
-<type>(<scope>): <short description>
+<type>(<scope>): <description>
 
-<optional body>
+[optional body]
 
-<optional footer>
+[optional footer(s)]
 ```
 
-Where `type` is one of:
-- **feat**: A new feature
-- **fix**: A bug fix
-- **docs**: Documentation changes
-- **style**: Code style changes (formatting, etc.)
-- **refactor**: Code changes that neither fix bugs nor add features
-- **test**: Adding or modifying tests
-- **chore**: Changes to build process or auxiliary tools
+### Types
 
-Examples:
-- `feat(wallet): add MetaMask integration`
-- `fix(game): resolve disconnection during game phase changes`
-- `test(auth): add authentication flow tests`
+- `feat`: A new feature
+- `fix`: A bug fix
+- `docs`: Documentation changes
+- `style`: Changes that don't affect code functionality (formatting, etc)
+- `refactor`: Code changes that neither fix bugs nor add features
+- `perf`: Performance improvements
+- `test`: Adding or correcting tests
+- `chore`: Changes to build process, tools, etc
 
-### Pull Request Guidelines
-
-- PRs should be focused on a single concern (feature, bug fix, etc.)
-- Include relevant tests for your changes
-- Update documentation if necessary
-- Link to related issues using GitHub's keywords (Fixes #123, etc.)
-- Add screenshots or videos for UI changes
-
-## Coding Standards
-
-### TypeScript
-
-- Use TypeScript for all new code
-- Prefer explicit types over `any` or type inference when intent isn't clear
-- Define interfaces for component props, state, and API responses
-- Use enums for values with a fixed set of options
-
-### React Components
-
-- Use functional components with hooks
-- Keep components small and focused on a single responsibility
-- Extract reusable logic into custom hooks
-- Follow the container/presentational pattern for complex views
-
-### File Structure
+### Examples
 
 ```
-src/
-├── components/           # Reusable UI components
-│   ├── ui/               # Base UI components (Button, Input, etc.)
-│   ├── poker/            # Poker-specific components (Card, Chip, etc.)
-│   └── wallet/           # Wallet-related components
-├── hooks/                # Custom React hooks
-├── pages/                # Page components
-│   ├── Auth/             # Authentication pages
-│   ├── Game/             # Game pages
-│   ├── Funds/            # Wallet and funds pages
-│   └── Lobby/            # Lobby pages
-├── providers/            # Context providers (Auth, Web3, etc.)
-├── stores/               # Zustand stores
-├── test/                 # Test utilities
-├── types/                # TypeScript type definitions
-└── utils/                # Utility functions
+feat(auth): add password reset functionality
+fix(game): resolve bet amount calculation error
+docs(readme): update installation instructions
+refactor(chat): simplify message handling logic
 ```
 
-### Testing
+## Pull Request Process
 
-- Write unit tests for all new components and critical logic
-- Include integration tests for key user flows
-- Use `data-testid` attributes for test selectors
-- Mock external dependencies in tests
+1. Create a branch from `main` with a descriptive name:
+   - Feature: `feature/description`
+   - Bug fix: `fix/description`
+   - Docs: `docs/description`
 
-### Accessibility
+2. Make your changes, following our code style guidelines
 
-- All interactive elements must be keyboard accessible
-- Use appropriate ARIA roles and attributes
-- Ensure proper focus management
-- Maintain color contrast according to WCAG AA standards
-- Test with screen readers when implementing complex UI components
+3. Update documentation as necessary
 
-### Zustand Store Guidelines
+4. Write or update tests for your changes
 
-- Define TypeScript interfaces for all store state and actions
-- Split large stores into multiple files if they grow too complex
-- Use selectors to prevent unnecessary re-renders
-- Keep actions atomic and focused on a single responsibility
-- Document complex state transitions
+5. Ensure all tests pass:
+   ```bash
+   npm run test
+   ```
 
-## Documentation
+6. Submit a pull request with a clear title and description that explains:
+   - What the change does
+   - Why it's needed
+   - How it was tested
+   - Any relevant screenshots or output
 
-### Component Documentation
+7. Request a code review from at least one maintainer
 
-Document components in Storybook with the following:
+## Development Workflow
 
-- Basic usage example
-- Props documentation
-- Variants and states
-- Accessibility considerations
-- Code examples
+1. Create an issue for new features or bugs
+2. Assign the issue to yourself when you start working on it
+3. Reference the issue number in your commit messages and PR
+4. Keep PRs focused on a single task for easier review
 
-### API Documentation
+## Testing Requirements
 
-For API integrations, document:
+- All new features must include tests
+- Bug fixes should include a test that reproduces the fixed bug
+- Maintain or improve code coverage percentage
 
-- Endpoint URL and method
-- Request parameters
-- Response format
-- Error handling
-- Authentication requirements
+## Accessibility and Internationalization
 
-## Performance Considerations
+- All user-facing components must be accessible (a11y compliant)
+- All user-facing strings must be translatable (use the `t` function)
+- Test with keyboard navigation and screen readers
 
-- Memoize expensive calculations and component renders
-- Lazy load components and routes when appropriate
-- Optimize bundle size by watching imports
-- Use proper key props in lists
-- Virtualize long lists when necessary
+## Version Control Best Practices
+
+- Keep commits small and focused
+- Write descriptive commit messages
+- Rebase your branch before submitting a PR
+- Squash trivial commits before merging
+
+## Continuous Integration
+
+Our CI pipeline will automatically:
+
+- Run linting
+- Run tests
+- Check code coverage
+- Build the application
+
+All checks must pass before a PR can be merged.
+
+## Code Review Guidelines
+
+- Be respectful and constructive
+- Focus on the code, not the person
+- Explain the reasoning behind suggestions
+- Approve only when you're satisfied with the solution
+
+Thank you for helping make this project better!

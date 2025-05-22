@@ -1,0 +1,73 @@
+
+{
+  "welcome": "Bienvenue",
+  "playNow": "Jouer Maintenant",
+  "learnMore": "En Savoir Plus",
+  "login": "Connexion",
+  "signup": "S'inscrire",
+  "logout": "Déconnexion",
+  "funds": "Fonds",
+  "tableSettings": "Paramètres de la Table",
+  "tableName": "Nom de la Table",
+  "smallBlind": "Petite Blind",
+  "bigBlind": "Grosse Blind",
+  "minBuyIn": "Buy-in Minimum",
+  "maxBuyIn": "Buy-in Maximum",
+  "maxPlayers": "Joueurs Maximum",
+  "tableType": "Type de Table",
+  "isPrivate": "Table Privée",
+  "password": "Mot de Passe",
+  "createTable": "Créer Table",
+  "cancel": "Annuler",
+  "chat": {
+    "placeholder": "Écrivez un message...",
+    "noMessages": "Pas encore de messages. Démarrez la conversation!"
+  },
+  "poker": {
+    "leaveTable": "Quitter la Table",
+    "blinds": "Blinds",
+    "buyIn": "Buy-in",
+    "hand": "Main",
+    "chat": "Chat",
+    "players": "Joueurs"
+  },
+  "admin": {
+    "dashboard": {
+      "title": "Tableau de Bord",
+      "dau": "Utilisateurs Actifs (24h)",
+      "rake24h": "Rake Dernières 24h",
+      "activeTournaments": "Tournois Actifs",
+      "pendingWithdrawals": "Retraits en Attente",
+      "rake7d": "Rake Derniers 7 Jours"
+    },
+    "sidebar": {
+      "users": "Utilisateurs",
+      "tables": "Tables",
+      "dashboard": "Tableau de Bord",
+      "ledger": "Registre"
+    },
+    "users": {
+      "alias": "Alias",
+      "email": "Email",
+      "country": "Pays",
+      "balance": "Solde",
+      "status": "Statut",
+      "search": "Rechercher par alias ou email...",
+      "documents": "Documents KYC",
+      "approve": "Approuver KYC",
+      "ban": "Bannir Utilisateur",
+      "unban": "Débannir Utilisateur",
+      "allCountries": "Tous les Pays",
+      "anyKyc": "Tous les niveaux KYC",
+      "allStatus": "Tous les Statuts",
+      "statusActive": "Actif",
+      "statusBanned": "Banni",
+      "noResults": "Aucun utilisateur trouvé",
+      "registerDate": "Inscrit le"
+    }
+  },
+  "errors": {
+    "minBuyInGreaterThanMax": "Le buy-in minimum ne peut pas être supérieur au maximum",
+    "minBuyInTooLow": "Le buy-in minimum doit être au moins 20 fois la grosse blind"
+  }
+}

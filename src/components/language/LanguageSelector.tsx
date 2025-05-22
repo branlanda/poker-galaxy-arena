@@ -9,9 +9,11 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/Button';
+import { useTranslation } from 'react-i18next';
 
 export const LanguageSelector = () => {
   const { currentLanguage, setLanguage } = useLanguage();
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
 
   const handleLanguageSelect = (language: Language) => {
@@ -26,11 +28,11 @@ export const LanguageSelector = () => {
           variant="ghost" 
           size="sm" 
           className="flex items-center gap-2 px-2 md:px-3"
-          aria-label="Select language"
+          aria-label={t('selectLanguage', 'Select language')}
         >
-          <span className="text-lg">{currentLanguage.flag}</span>
+          <span className="text-lg" aria-hidden="true">{currentLanguage.flag}</span>
           <span className="hidden md:inline">{currentLanguage.name}</span>
-          <Globe className="h-4 w-4 text-emerald" />
+          <Globe className="h-4 w-4 text-emerald" aria-hidden="true" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent 
@@ -45,7 +47,7 @@ export const LanguageSelector = () => {
               currentLanguage.code === language.code ? 'bg-emerald/10 text-emerald' : ''
             }`}
           >
-            <span className="text-lg">{language.flag}</span>
+            <span className="text-lg" aria-hidden="true">{language.flag}</span>
             <span>{language.name}</span>
           </DropdownMenuItem>
         ))}
