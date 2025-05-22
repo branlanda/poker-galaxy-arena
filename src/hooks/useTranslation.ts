@@ -1,4 +1,3 @@
-
 import { useLanguage } from '@/stores/language';
 
 // Very basic translation implementation
@@ -22,7 +21,7 @@ const translations: Record<string, Record<string, string>> = {
     'admin.sidebar.users': 'Users',
     'admin.sidebar.tables': 'Tables',
     'admin.sidebar.dashboard': 'Dashboard',
-    'admin.sidebar.ledger': 'Ledger',
+    'admin.sidebar.ledger': 'Transaction Ledger',
     'admin.users.alias': 'Alias',
     'admin.users.email': 'Email',
     'admin.users.country': 'Country',
@@ -40,6 +39,20 @@ const translations: Record<string, Record<string, string>> = {
     'admin.users.statusBanned': 'Banned',
     'admin.users.noResults': 'No users found',
     'admin.users.registerDate': 'Registered on',
+    
+    // Ledger translations
+    'admin.ledger.title': 'Transaction Ledger',
+    'admin.ledger.allTypes': 'All Transaction Types',
+    'admin.ledger.from': 'From Date',
+    'admin.ledger.to': 'To Date',
+    'admin.ledger.date': 'Date',
+    'admin.ledger.user': 'User',
+    'admin.ledger.type': 'Type',
+    'admin.ledger.amount': 'Amount',
+    'admin.ledger.status': 'Status',
+    'admin.ledger.export': 'Export CSV',
+    'admin.ledger.loadMore': 'Load More',
+    'admin.ledger.noTransactions': 'No transactions found',
   },
   es: {
     welcome: 'Bienvenido',
@@ -59,7 +72,7 @@ const translations: Record<string, Record<string, string>> = {
     'admin.sidebar.users': 'Usuarios',
     'admin.sidebar.tables': 'Mesas',
     'admin.sidebar.dashboard': 'Panel',
-    'admin.sidebar.ledger': 'Ledger',
+    'admin.sidebar.ledger': 'Ledger de Transacciones',
     'admin.users.alias': 'Alias',
     'admin.users.email': 'Correo',
     'admin.users.country': 'País',
@@ -77,6 +90,20 @@ const translations: Record<string, Record<string, string>> = {
     'admin.users.statusBanned': 'Baneado',
     'admin.users.noResults': 'No se encontraron usuarios',
     'admin.users.registerDate': 'Registrado el',
+    
+    // Ledger translations
+    'admin.ledger.title': 'Ledger de Transacciones',
+    'admin.ledger.allTypes': 'Todos los tipos',
+    'admin.ledger.from': 'Desde',
+    'admin.ledger.to': 'Hasta',
+    'admin.ledger.date': 'Fecha',
+    'admin.ledger.user': 'Usuario',
+    'admin.ledger.type': 'Tipo',
+    'admin.ledger.amount': 'Monto',
+    'admin.ledger.status': 'Estado',
+    'admin.ledger.export': 'Exportar CSV',
+    'admin.ledger.loadMore': 'Cargar Más',
+    'admin.ledger.noTransactions': 'No se encontraron transacciones',
   },
   fr: {
     welcome: 'Bienvenue',
@@ -114,6 +141,20 @@ const translations: Record<string, Record<string, string>> = {
     'admin.users.statusBanned': 'Banni',
     'admin.users.noResults': 'Aucun utilisateur trouvé',
     'admin.users.registerDate': 'Inscrit le',
+    
+    // Ledger translations
+    'admin.ledger.title': 'Registre des Transactions',
+    'admin.ledger.allTypes': 'Tous les types',
+    'admin.ledger.from': 'De',
+    'admin.ledger.to': 'À',
+    'admin.ledger.date': 'Date',
+    'admin.ledger.user': 'Utilisateur',
+    'admin.ledger.type': 'Type',
+    'admin.ledger.amount': 'Montant',
+    'admin.ledger.status': 'Statut',
+    'admin.ledger.export': 'Exporter CSV',
+    'admin.ledger.loadMore': 'Charger Plus',
+    'admin.ledger.noTransactions': 'Aucune transaction trouvée',
   },
   de: {
     welcome: 'Willkommen',
@@ -151,6 +192,20 @@ const translations: Record<string, Record<string, string>> = {
     'admin.users.statusBanned': 'Gesperrt',
     'admin.users.noResults': 'Keine Benutzer gefunden',
     'admin.users.registerDate': 'Registriert am',
+    
+    // Ledger translations
+    'admin.ledger.title': 'Transaktionsregister',
+    'admin.ledger.allTypes': 'Alle Typen',
+    'admin.ledger.from': 'Von',
+    'admin.ledger.to': 'Bis',
+    'admin.ledger.date': 'Datum',
+    'admin.ledger.user': 'Benutzer',
+    'admin.ledger.type': 'Typ',
+    'admin.ledger.amount': 'Betrag',
+    'admin.ledger.status': 'Status',
+    'admin.ledger.export': 'CSV exportieren',
+    'admin.ledger.loadMore': 'Mehr laden',
+    'admin.ledger.noTransactions': 'Keine Transaktionen gefunden',
   },
   // ... Add more languages here
 };
