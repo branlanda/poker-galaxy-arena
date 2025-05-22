@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -357,8 +356,8 @@ const TournamentDetail = () => {
           </Button>
           {isRegistered() && (
             <Button
-              variant="destructive"
-              className="w-full mt-2"
+              variant="outline"
+              className="w-full mt-2 text-red-500 border-red-500 hover:bg-red-50"
               onClick={handleUnregistration}
               disabled={isJoining}
             >

@@ -61,7 +61,7 @@ export const TournamentLobby = () => {
 
       <TournamentFiltersPanel 
         filters={filters} 
-        onFilterChange={handleFilterChange} 
+        onChange={handleFilterChange} 
       />
 
       {loading ? (

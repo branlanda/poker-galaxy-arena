@@ -15,7 +15,7 @@ import { Label } from '@/components/ui/label';
 import { TournamentFilters, DEFAULT_TOURNAMENT_FILTERS, TournamentType, TournamentStatus } from '@/types/tournaments';
 import { useTranslation } from '@/hooks/useTranslation';
 
-interface TournamentFiltersPanelProps {
+export interface TournamentFiltersPanelProps {
   filters: TournamentFilters;
   onChange: (filters: TournamentFilters) => void;
 }
