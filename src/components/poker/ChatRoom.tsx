@@ -82,13 +82,16 @@ export function ChatRoom({ tableId }: ChatRoomProps) {
     
     setLoading(true);
     try {
+      // Get the username from the user object using the alias property instead of user_metadata
+      const playerName = user.alias || user.email || 'Anonymous';
+      
       // Use the type assertion to workaround type issues until Supabase types are regenerated
       const { error } = await supabase
         .from('room_messages' as any)
         .insert({
           table_id: tableId,
           player_id: user.id,
-          player_name: user.user_metadata?.username || 'Anonymous',
+          player_name: playerName,
           message: newMessage.trim(),
         });
         
