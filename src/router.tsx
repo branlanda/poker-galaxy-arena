@@ -13,6 +13,11 @@ import FundsPage from '@/pages/Funds/FundsPage';
 import Settings from '@/pages/settings/Settings';
 import { TournamentsRoutes } from './router/TournamentsRoutes';
 import AdminRoutes from './router/AdminRoutes';
+import AdminLayout from '@/pages/Admin/AdminLayout';
+import Dashboard from '@/pages/Admin/Dashboard';
+import Users from '@/pages/Admin/Users';
+import Tables from '@/pages/Admin/Tables';
+import Ledger from '@/pages/Admin/Ledger';
 
 const routes: RouteObject[] = [
   {
@@ -56,7 +61,29 @@ const routes: RouteObject[] = [
     element: <Settings />,
   },
   ...TournamentsRoutes,
-  ...AdminRoutes,
+  // Admin routes defined directly rather than spreading AdminRoutes component
+  {
+    path: '/admin',
+    element: <AdminLayout />,
+    children: [
+      {
+        index: true,
+        element: <Dashboard />
+      },
+      {
+        path: 'users',
+        element: <Users />
+      },
+      {
+        path: 'tables',
+        element: <Tables />
+      },
+      {
+        path: 'ledger',
+        element: <Ledger />
+      }
+    ]
+  },
   {
     path: '*',
     element: <NotFound />,
