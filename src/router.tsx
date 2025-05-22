@@ -1,11 +1,11 @@
 
 import { createBrowserRouter, RouteObject } from 'react-router-dom';
-import { Index } from '@/pages/Index';
+import Index from '@/pages/Index';
 import { NotFound } from '@/pages/NotFound';
-import { Login } from '@/pages/auth/Login';
-import { SignUp } from '@/pages/auth/SignUp';
-import { ForgotPassword } from '@/pages/auth/ForgotPassword';
-import { ResetPassword } from '@/pages/auth/ResetPassword';
+import Login from '@/pages/auth/Login';
+import SignUp from '@/pages/auth/SignUp';
+import ForgotPassword from '@/pages/auth/ForgotPassword';
+import ResetPassword from '@/pages/auth/ResetPassword';
 import { GameRoom } from '@/pages/Game/GameRoom';
 import { LobbyPage } from '@/pages/Lobby/LobbyPage';
 import { ProfilePage } from '@/pages/profile/ProfilePage';

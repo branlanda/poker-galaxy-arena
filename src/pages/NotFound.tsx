@@ -1,11 +1,11 @@
 
 import { useLocation, Link } from "react-router-dom";
 import { useEffect } from "react";
-import Navbar from "@/components/layout/Navbar";
+import { Navbar } from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/Button";
 
-const NotFound = () => {
+export const NotFound = () => {
   const location = useLocation();
 
   useEffect(() => {
