@@ -21,6 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import { useState } from 'react';
 import { useJoinTable } from '@/hooks/useJoinTable';
 import { formatDistanceToNow } from 'date-fns';
+import { Activity, Clock, Users } from 'lucide-react';
 
 interface TableCardProps {
   table: LobbyTable;
@@ -42,6 +43,27 @@ export function TableCard({ table }: TableCardProps) {
   // Format creation time
   const createdTime = formatDistanceToNow(new Date(table.created_at), { addSuffix: true });
 
+  // Format activity time
+  const lastActivityTime = table.last_activity ? 
+    formatDistanceToNow(new Date(table.last_activity), { addSuffix: true }) :
+    createdTime;
+
+  // Determine table activity status
+  const getActivityStatus = () => {
+    if (!table.last_activity) return 'idle';
+    
+    const lastActivity = new Date(table.last_activity).getTime();
+    const now = new Date().getTime();
+    const minutes = (now - lastActivity) / (1000 * 60);
+    
+    if (minutes < 5) return 'active';
+    if (minutes < 30) return 'idle';
+    return 'inactive';
+  };
+  
+  const activityStatus = getActivityStatus();
+  const activePlayerCount = table.active_players || 0;
+
   return (
     <Card className="bg-navy/50 border border-emerald/10 h-full">
       <CardHeader className="pb-2">
@@ -53,6 +75,13 @@ export function TableCard({ table }: TableCardProps) {
           <div className="flex gap-1">
             <Badge variant={table.table_type === 'CASH' ? "outline" : "secondary"}>{table.table_type}</Badge>
             {table.is_private && <Badge variant="destructive">Private</Badge>}
+            <Badge variant={
+              table.status === 'WAITING' ? 'outline' : 
+              table.status === 'ACTIVE' ? 'default' :
+              table.status === 'PAUSED' ? 'secondary' : 'destructive'
+            }>
+              {table.status}
+            </Badge>
           </div>
         </div>
       </CardHeader>
@@ -66,14 +95,38 @@ export function TableCard({ table }: TableCardProps) {
             <p className="text-gray-400">Buy-in</p>
             <p>{table.min_buy_in} - {table.max_buy_in}</p>
           </div>
-          <div>
-            <p className="text-gray-400">Players</p>
-            <p>{table.current_players} / {table.max_players}</p>
+          <div className="flex items-center gap-1">
+            <Users className="h-4 w-4 text-gray-400" />
+            <div>
+              <p className="text-gray-400">Players</p>
+              <p>
+                <span>{table.current_players} / {table.max_players}</span>
+                {activePlayerCount > 0 && (
+                  <span className="text-emerald ml-1">({activePlayerCount} active)</span>
+                )}
+              </p>
+            </div>
           </div>
-          <div>
-            <p className="text-gray-400">Status</p>
-            <p>{table.status}</p>
+          <div className="flex items-center gap-1">
+            <Activity className={`h-4 w-4 ${
+              activityStatus === 'active' ? 'text-emerald' :
+              activityStatus === 'idle' ? 'text-amber-400' : 
+              'text-gray-500'
+            }`} />
+            <div>
+              <p className="text-gray-400">Activity</p>
+              <p className="text-xs">{lastActivityTime}</p>
+            </div>
           </div>
+          {table.hand_number > 0 && (
+            <div className="flex items-center gap-1 col-span-2">
+              <Clock className="h-4 w-4 text-gray-400" />
+              <div>
+                <p className="text-gray-400">Current Hand</p>
+                <p>#{table.hand_number}</p>
+              </div>
+            </div>
+          )}
         </div>
       </CardContent>
       <CardFooter>

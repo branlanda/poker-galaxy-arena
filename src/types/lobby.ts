@@ -19,6 +19,9 @@ export interface LobbyTable {
   max_buy_in: number;
   max_players: number;
   current_players: number;
+  active_players: number; // New field
+  hand_number: number; // New field
+  last_activity: string; // New field
   table_type: TableType;
   status: TableStatus;
   is_private: boolean;
@@ -79,6 +82,15 @@ export interface TableFilters {
   showFull: boolean;
   showEmpty: boolean;
   showPrivate: boolean;
+}
+
+export interface RoomMessage {
+  id: string;
+  table_id: string;
+  player_id: string;
+  player_name: string;
+  message: string;
+  created_at: string;
 }
 
 export const DEFAULT_FILTERS: TableFilters = {

@@ -49,6 +49,32 @@ export function useLobbyTables(filters: TableFilters) {
     });
   };
 
+  // Sort tables function - by activity and status
+  const sortTables = (tables: LobbyTable[]): LobbyTable[] => {
+    return [...tables].sort((a, b) => {
+      // First sort by active status
+      if (a.status === 'ACTIVE' && b.status !== 'ACTIVE') return -1;
+      if (a.status !== 'ACTIVE' && b.status === 'ACTIVE') return 1;
+      
+      // Then by active player count
+      const aActive = a.active_players || 0;
+      const bActive = b.active_players || 0;
+      if (aActive > bActive) return -1;
+      if (aActive < bActive) return 1;
+      
+      // Then by last activity
+      const aActivity = a.last_activity ? new Date(a.last_activity).getTime() : 0;
+      const bActivity = b.last_activity ? new Date(b.last_activity).getTime() : 0;
+      if (aActivity > bActivity) return -1;
+      if (aActivity < bActivity) return 1;
+      
+      // Finally by creation date (newest first)
+      const aCreated = new Date(a.created_at).getTime();
+      const bCreated = new Date(b.created_at).getTime();
+      return bCreated - aCreated;
+    });
+  };
+
   useEffect(() => {
     // Initial fetch of tables
     const fetchTables = async () => {
@@ -57,7 +83,7 @@ export function useLobbyTables(filters: TableFilters) {
         const { data, error } = await supabase
           .from('lobby_tables')
           .select('*')
-          .order('created_at', { ascending: false });
+          .order('last_activity', { ascending: false, nullsLast: true });
         
         if (error) throw new Error(error.message);
         
@@ -100,7 +126,7 @@ export function useLobbyTables(filters: TableFilters) {
               table_type: payload.new.table_type as TableType,
               status: payload.new.status as TableStatus
             } as LobbyTable;
-            setTables(current => [newTable, ...current]);
+            setTables(current => sortTables([newTable, ...current]));
           } 
           else if (payload.eventType === 'UPDATE') {
             const updatedTable = {
@@ -109,9 +135,9 @@ export function useLobbyTables(filters: TableFilters) {
               status: payload.new.status as TableStatus
             } as LobbyTable;
             setTables(current => 
-              current.map(table => 
+              sortTables(current.map(table => 
                 table.id === payload.new.id ? updatedTable : table
-              )
+              ))
             );
           }
           else if (payload.eventType === 'DELETE') {
@@ -129,8 +155,8 @@ export function useLobbyTables(filters: TableFilters) {
     };
   }, [toast]);
 
-  // Filtered tables
-  const filteredTables = applyFilters(tables);
+  // Filtered and sorted tables
+  const filteredTables = sortTables(applyFilters(tables));
 
   return {
     tables: filteredTables,

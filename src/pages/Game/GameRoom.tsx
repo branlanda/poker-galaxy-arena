@@ -13,7 +13,10 @@ import { PokerCard } from '@/components/poker/PokerCard';
 import { CommunityCards } from '@/components/poker/CommunityCards';
 import { BetActions } from '@/components/poker/BetActions';
 import { GameMessages } from '@/components/poker/GameMessages';
+import { ChatRoom } from '@/components/poker/ChatRoom';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Loader2, Users, MessageCircle, Clock, Award } from 'lucide-react';
 
 export default function GameRoom() {
   const { tableId } = useParams<{ tableId: string }>();
@@ -170,7 +173,7 @@ export default function GameRoom() {
       if (error) throw error;
       
       // Update the game state
-      await takeSeat(seatNumber, user.id, user.email || 'Player', buyIn);
+      await takeSeat(seatNumber, user.id, user.alias || user.email || 'Player', buyIn);
       
       toast({
         title: 'Success',
@@ -245,9 +248,16 @@ export default function GameRoom() {
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-bold text-emerald">{table.name}</h1>
-          <p className="text-sm text-gray-400">
-            Blinds: {table.small_blind}/{table.big_blind} • Buy-in: {table.min_buy_in}-{table.max_buy_in}
-          </p>
+          <div className="flex items-center gap-4 text-sm text-gray-400 mt-1">
+            <span>Blinds: {table.small_blind}/{table.big_blind}</span>
+            <span>•</span>
+            <span>Buy-in: {table.min_buy_in}-{table.max_buy_in}</span>
+            <span>•</span>
+            <div className="flex items-center">
+              <Clock className="h-4 w-4 mr-1" /> 
+              <span>Hand #{table.hand_number || 0}</span>
+            </div>
+          </div>
         </div>
         <Button variant="outline" onClick={leaveTable}>
           Leave Table
@@ -331,53 +341,83 @@ export default function GameRoom() {
             </div>
           )}
           
-          {/* Game messages and chat */}
-          <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="md:col-span-2">
-              <GameMessages
-                action={
-                  gameState?.lastAction ? {
-                    playerName: gameState.seats.find(
-                      s => s !== null && s.playerId === gameState.lastAction?.playerId
-                    )?.playerName || 'Player',
-                    action: gameState.lastAction.action,
-                    amount: gameState.lastAction.amount
-                  } : undefined
-                }
-                gamePhase={gameState?.phase}
-              />
-            </div>
-            <div className="bg-navy/30 border border-emerald/10 rounded-md p-3">
-              <h3 className="text-sm font-medium mb-2 text-gray-300">Players at Table</h3>
-              <div className="space-y-2">
-                {players.map(player => (
-                  <div 
-                    key={player.id} 
-                    className="flex items-center justify-between text-xs p-1.5 rounded-sm bg-navy/30"
-                  >
-                    <div className="flex items-center gap-2">
-                      <Avatar className="w-6 h-6">
-                        <AvatarFallback className="text-[10px]">
-                          {player.player_id === user?.id ? 'You' : 'P'}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span>
-                        {player.player_id === user?.id ? 'You' : `Player ${player.seat_number !== null ? player.seat_number : '(unseated)' }`}
-                      </span>
+          {/* Game messages, chat, and player list */}
+          <div className="mt-6">
+            <Tabs defaultValue="actions" className="w-full">
+              <TabsList className="mb-4">
+                <TabsTrigger value="actions">
+                  <Award className="h-4 w-4 mr-2" /> Game Actions
+                </TabsTrigger>
+                <TabsTrigger value="chat">
+                  <MessageCircle className="h-4 w-4 mr-2" /> Chat
+                </TabsTrigger>
+                <TabsTrigger value="players">
+                  <Users className="h-4 w-4 mr-2" /> Players
+                </TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="actions" className="border border-emerald/10 rounded-md p-4 bg-navy/30">
+                <GameMessages
+                  action={
+                    gameState?.lastAction ? {
+                      playerName: gameState.seats.find(
+                        s => s !== null && s.playerId === gameState.lastAction?.playerId
+                      )?.playerName || 'Player',
+                      action: gameState.lastAction.action,
+                      amount: gameState.lastAction.amount
+                    } : undefined
+                  }
+                  gamePhase={gameState?.phase}
+                />
+              </TabsContent>
+              
+              <TabsContent value="chat" className="border border-emerald/10 rounded-md p-4 bg-navy/30 h-[350px]">
+                {tableId && <ChatRoom tableId={tableId} />}
+              </TabsContent>
+              
+              <TabsContent value="players" className="border border-emerald/10 rounded-md p-4 bg-navy/30">
+                <h3 className="text-sm font-medium mb-4 text-gray-300">Players at Table ({players.length}/{table.max_players})</h3>
+                <div className="space-y-2">
+                  {players.map(player => (
+                    <div 
+                      key={player.id} 
+                      className="flex items-center justify-between p-2 rounded-sm bg-navy/30"
+                    >
+                      <div className="flex items-center gap-3">
+                        <Avatar className="w-8 h-8">
+                          <AvatarFallback className="text-xs bg-emerald/20 text-emerald">
+                            {player.player_id === user?.id ? 'You' : 'P'}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <div className="font-medium">
+                            {player.player_id === user?.id ? 'You' : `Player ${player.seat_number !== null ? player.seat_number : '(unseated)' }`}
+                          </div>
+                          <div className="text-xs text-gray-400">
+                            Stack: {player.stack}
+                          </div>
+                        </div>
+                      </div>
+                      <div>
+                        <span className={`px-2 py-1 text-xs rounded-full ${
+                          player.status === 'ACTIVE' ? 'bg-green-900/50 text-green-300' : 
+                          player.status === 'AWAY' ? 'bg-amber-900/50 text-amber-300' :
+                          'bg-gray-800 text-gray-300'
+                        }`}>
+                          {player.status}
+                        </span>
+                      </div>
                     </div>
-                    <div>
-                      <span className={`px-2 py-0.5 text-[10px] rounded ${
-                        player.status === 'ACTIVE' ? 'bg-green-900/50 text-green-300' : 
-                        player.status === 'AWAY' ? 'bg-amber-900/50 text-amber-300' :
-                        'bg-gray-800 text-gray-300'
-                      }`}>
-                        {player.status}
-                      </span>
+                  ))}
+                  
+                  {players.length === 0 && (
+                    <div className="text-center py-8 text-gray-400">
+                      No players have joined this table yet.
                     </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+                  )}
+                </div>
+              </TabsContent>
+            </Tabs>
           </div>
         </div>
       </div>
