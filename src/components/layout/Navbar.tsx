@@ -27,13 +27,13 @@ import { useTranslation } from '@/hooks/useTranslation';
 
 export function Navbar() {
   const { t } = useTranslation();
-  const { user, signOut } = useAuth();
-  const { balance } = useBalance();
+  const { user, signOut: authSignOut } = useAuth();
+  const { balance: userBalance } = useBalance();
   const [isOpen, setIsOpen] = useState(false);
   const isMobile = useIsMobile();
 
   const handleSignOut = () => {
-    signOut();
+    authSignOut();
   };
 
   const getInitials = (email: string) => {
@@ -61,7 +61,7 @@ export function Navbar() {
                   }`
                 }
               >
-                {t('lobby', 'Lobby')}
+                {t('lobby')}
               </NavLink>
               <NavLink
                 to="/tournaments"
@@ -71,7 +71,7 @@ export function Navbar() {
                   }`
                 }
               >
-                {t('tournaments.lobby', 'Tournaments')}
+                {t('tournaments.lobby')}
               </NavLink>
               <NavLink
                 to="/leaderboards"
@@ -81,7 +81,7 @@ export function Navbar() {
                   }`
                 }
               >
-                {t('leaderboards.title', 'Leaderboards')}
+                {t('leaderboards.title')}
               </NavLink>
               <NavLink
                 to="/achievements"
@@ -91,7 +91,7 @@ export function Navbar() {
                   }`
                 }
               >
-                {t('achievements.title', 'Achievements')}
+                {t('achievements.title')}
               </NavLink>
             </nav>
           )}
@@ -107,7 +107,7 @@ export function Navbar() {
                   to="/funds"
                   className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-emerald transition-colors"
                 >
-                  <span className="font-bold text-emerald">{balance}</span>
+                  <span className="font-bold text-emerald">{userBalance}</span>
                 </NavLink>
               )}
               
@@ -132,31 +132,31 @@ export function Navbar() {
                   <DropdownMenuItem asChild>
                     <NavLink to="/profile" className="flex cursor-pointer items-center">
                       <User className="mr-2 h-4 w-4" />
-                      <span>{t('profile', 'Profile')}</span>
+                      <span>{t('profile')}</span>
                     </NavLink>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <NavLink to="/funds" className="flex cursor-pointer items-center">
-                      <span className="mr-2 font-bold text-emerald">{balance}</span>
-                      <span>{t('funds', 'Funds')}</span>
+                      <span className="mr-2 font-bold text-emerald">{userBalance}</span>
+                      <span>{t('funds')}</span>
                     </NavLink>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <NavLink to="/achievements" className="flex cursor-pointer items-center">
                       <Medal className="mr-2 h-4 w-4" />
-                      <span>{t('achievements.title', 'Achievements')}</span>
+                      <span>{t('achievements.title')}</span>
                     </NavLink>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <NavLink to="/leaderboards" className="flex cursor-pointer items-center">
                       <Trophy className="mr-2 h-4 w-4" />
-                      <span>{t('leaderboards.title', 'Leaderboards')}</span>
+                      <span>{t('leaderboards.title')}</span>
                     </NavLink>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <NavLink to="/settings" className="flex cursor-pointer items-center">
                       <Settings className="mr-2 h-4 w-4" />
-                      <span>{t('settings', 'Settings')}</span>
+                      <span>{t('settings')}</span>
                     </NavLink>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
@@ -165,7 +165,7 @@ export function Navbar() {
                     onClick={handleSignOut}
                   >
                     <LogOut className="mr-2 h-4 w-4" />
-                    <span>{t('signOut', 'Sign out')}</span>
+                    <span>{t('signOut')}</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -174,11 +174,11 @@ export function Navbar() {
             <div className="flex items-center gap-2">
               {!isMobile && (
                 <NavLink to="/login">
-                  <Button variant="ghost">{t('signIn', 'Sign in')}</Button>
+                  <Button variant="ghost">{t('signIn')}</Button>
                 </NavLink>
               )}
               <NavLink to="/signup">
-                <Button>{t('signUp', 'Sign up')}</Button>
+                <Button>{t('signUp')}</Button>
               </NavLink>
             </div>
           )}
@@ -204,7 +204,7 @@ export function Navbar() {
                       }`
                     }
                   >
-                    {t('lobby', 'Lobby')}
+                    {t('lobby')}
                   </NavLink>
                   <NavLink
                     to="/tournaments"
@@ -215,7 +215,7 @@ export function Navbar() {
                       }`
                     }
                   >
-                    {t('tournaments.lobby', 'Tournaments')}
+                    {t('tournaments.lobby')}
                   </NavLink>
                   <NavLink
                     to="/leaderboards"
@@ -226,7 +226,7 @@ export function Navbar() {
                       }`
                     }
                   >
-                    {t('leaderboards.title', 'Leaderboards')}
+                    {t('leaderboards.title')}
                   </NavLink>
                   <NavLink
                     to="/achievements"
@@ -237,7 +237,7 @@ export function Navbar() {
                       }`
                     }
                   >
-                    {t('achievements.title', 'Achievements')}
+                    {t('achievements.title')}
                   </NavLink>
                   
                   <div className="h-px bg-border my-2" />
@@ -249,35 +249,35 @@ export function Navbar() {
                         onClick={() => setIsOpen(false)}
                         className="text-sm font-medium text-muted-foreground hover:text-emerald transition-colors"
                       >
-                        {t('profile', 'Profile')}
+                        {t('profile')}
                       </NavLink>
                       <NavLink
                         to="/funds"
                         onClick={() => setIsOpen(false)}
                         className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-emerald transition-colors"
                       >
-                        <span>{t('funds', 'Funds')}: </span>
-                        <span className="font-bold text-emerald">{balance}</span>
+                        <span>{t('funds')}: </span>
+                        <span className="font-bold text-emerald">{userBalance}</span>
                       </NavLink>
                       <NavLink
                         to="/settings"
                         onClick={() => setIsOpen(false)}
                         className="text-sm font-medium text-muted-foreground hover:text-emerald transition-colors"
                       >
-                        {t('settings', 'Settings')}
+                        {t('settings')}
                       </NavLink>
                       <Button variant="ghost" onClick={handleSignOut}>
                         <LogOut className="mr-2 h-4 w-4" />
-                        {t('signOut', 'Sign out')}
+                        {t('signOut')}
                       </Button>
                     </>
                   ) : (
                     <>
                       <NavLink to="/login" onClick={() => setIsOpen(false)}>
-                        <Button variant="ghost">{t('signIn', 'Sign in')}</Button>
+                        <Button variant="ghost">{t('signIn')}</Button>
                       </NavLink>
                       <NavLink to="/signup" onClick={() => setIsOpen(false)}>
-                        <Button>{t('signUp', 'Sign up')}</Button>
+                        <Button>{t('signUp')}</Button>
                       </NavLink>
                     </>
                   )}

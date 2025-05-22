@@ -16,8 +16,8 @@ export function useJoinTable() {
   const joinTable = async (tableId: string, buyIn: number, password?: string) => {
     if (!user) {
       toast({
-        title: t('error', 'Error'),
-        description: t('mustBeLoggedIn', 'You must be logged in to join a table'),
+        title: t('error'),
+        description: t('mustBeLoggedIn'),
         variant: 'destructive',
       });
       return false;
@@ -54,8 +54,8 @@ export function useJoinTable() {
         if (updateError) throw updateError;
         
         toast({
-          title: t('success', 'Success'),
-          description: t('rejoinedTable', 'You\'ve rejoined the table'),
+          title: t('success'),
+          description: t('rejoinedTable'),
         });
         
         navigate(`/game/${tableId}`);
@@ -73,17 +73,17 @@ export function useJoinTable() {
       
       // Check if table is full
       if (tableData.current_players >= tableData.max_players) {
-        throw new Error(t('tableIsFull', 'This table is full'));
+        throw new Error(t('tableIsFull'));
       }
       
       // Check password for private tables
       if (tableData.is_private && tableData.password !== password) {
-        throw new Error(t('invalidPassword', 'Invalid password'));
+        throw new Error(t('invalidPassword'));
       }
       
       // Check buy-in range
       if (buyIn < tableData.min_buy_in || buyIn > tableData.max_buy_in) {
-        throw new Error(t('buyInRange', 'Buy-in must be between {min} and {max}', { 
+        throw new Error(t('buyInRange', { 
           min: tableData.min_buy_in, 
           max: tableData.max_buy_in 
         }));
@@ -110,8 +110,8 @@ export function useJoinTable() {
         .eq('id', tableId);
       
       toast({
-        title: t('success', 'Success'),
-        description: t('joinedTableSuccess', 'You\'ve joined the table successfully'),
+        title: t('success'),
+        description: t('joinedTableSuccess'),
       });
       
       // Navigate to game room
@@ -119,8 +119,8 @@ export function useJoinTable() {
       return true;
     } catch (error: any) {
       toast({
-        title: t('error', 'Error'),
-        description: t('failedToJoinTable', 'Failed to join table: {message}', { message: error.message }),
+        title: t('error'),
+        description: t('failedToJoinTable', { message: error.message }),
         variant: 'destructive',
       });
       return false;

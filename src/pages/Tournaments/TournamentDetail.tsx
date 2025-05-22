@@ -4,7 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useAuth } from '@/stores/auth';
 import { supabase } from '@/integrations/supabase/client';
-import { Tournament, TournamentRegistration } from '@/types/tournaments';
+import { Tournament, TournamentRegistration, BlindLevel, PayoutLevel } from '@/types/tournaments';
 import { Button } from '@/components/ui/Button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -50,11 +50,28 @@ export function TournamentDetail() {
           { event: '*', schema: 'public', table: 'tournaments_new', filter: `id=eq.${id}` },
           (payload) => {
             if (payload.eventType === 'UPDATE') {
-              setTournament(payload.new as Tournament);
+              const updatedTournamentData = payload.new as any;
+              
+              // Parse JSON fields
+              const blindStructure: BlindLevel[] = typeof updatedTournamentData.blind_structure === 'string' 
+                ? JSON.parse(updatedTournamentData.blind_structure) 
+                : updatedTournamentData.blind_structure || [];
+                
+              const payoutStructure: PayoutLevel[] = typeof updatedTournamentData.payout_structure === 'string'
+                ? JSON.parse(updatedTournamentData.payout_structure)
+                : updatedTournamentData.payout_structure || [];
+              
+              const updatedTournament = {
+                ...updatedTournamentData,
+                blind_structure: blindStructure,
+                payout_structure: payoutStructure
+              } as Tournament;
+              
+              setTournament(updatedTournament);
             } else if (payload.eventType === 'DELETE') {
               toast({
-                title: t('tournaments.deleted', 'Tournament Deleted'),
-                description: t('tournaments.noLongerAvailable', 'This tournament is no longer available'),
+                title: t('tournaments.deleted'),
+                description: t('tournaments.noLongerAvailable'),
                 variant: 'destructive',
               });
               navigate('/tournaments');
@@ -99,11 +116,26 @@ export function TournamentDetail() {
         
       if (error) throw error;
       
-      setTournament(data);
+      // Parse JSON fields
+      const blindStructure: BlindLevel[] = typeof data.blind_structure === 'string' 
+        ? JSON.parse(data.blind_structure) 
+        : data.blind_structure || [];
+        
+      const payoutStructure: PayoutLevel[] = typeof data.payout_structure === 'string'
+        ? JSON.parse(data.payout_structure)
+        : data.payout_structure || [];
+      
+      const parsedTournament = {
+        ...data,
+        blind_structure: blindStructure,
+        payout_structure: payoutStructure
+      } as Tournament;
+      
+      setTournament(parsedTournament);
     } catch (err: any) {
       console.error('Error fetching tournament:', err);
       toast({
-        title: t('errors.fetchFailed', 'Failed to fetch tournament'),
+        title: t('errors.fetchFailed'),
         description: err.message,
         variant: 'destructive',
       });
@@ -178,7 +210,7 @@ export function TournamentDetail() {
   
   const handleRegisterSubmit = () => {
     if (tournament?.is_private && tournament.access_code !== accessCode) {
-      setAccessCodeError(t('tournaments.invalidAccessCode', 'Invalid access code'));
+      setAccessCodeError(t('tournaments.invalidAccessCode'));
       return;
     }
     
@@ -195,8 +227,8 @@ export function TournamentDetail() {
       
       if (now >= startTime) {
         toast({
-          title: t('errors.tournamentStarted', 'Tournament started'),
-          description: t('errors.cannotRegisterAfterStart', 'Cannot register for a tournament that has already started'),
+          title: t('errors.tournamentStarted'),
+          description: t('errors.cannotRegisterAfterStart'),
           variant: 'destructive',
         });
         return;
@@ -217,8 +249,8 @@ export function TournamentDetail() {
       setUserRegistration(data);
       
       toast({
-        title: t('tournaments.registrationSuccess', 'Registration successful'),
-        description: t('tournaments.registeredForTournament', 'You are now registered for {name}', { 
+        title: t('tournaments.registrationSuccess'),
+        description: t('tournaments.registeredForTournament', { 
           name: tournament.name 
         }),
       });
@@ -227,7 +259,7 @@ export function TournamentDetail() {
     } catch (err: any) {
       console.error('Error registering for tournament:', err);
       toast({
-        title: t('errors.registrationFailed', 'Registration failed'),
+        title: t('errors.registrationFailed'),
         description: err.message,
         variant: 'destructive',
       });
@@ -243,8 +275,8 @@ export function TournamentDetail() {
       
       if (now >= startTime) {
         toast({
-          title: t('errors.tournamentStarted', 'Tournament started'),
-          description: t('errors.cannotUnregisterAfterStart', 'Cannot unregister from a tournament that has already started'),
+          title: t('errors.tournamentStarted'),
+          description: t('errors.cannotUnregisterAfterStart'),
           variant: 'destructive',
         });
         setUnregisterDialogOpen(false);
@@ -262,8 +294,8 @@ export function TournamentDetail() {
       setUserRegistration(null);
       
       toast({
-        title: t('tournaments.unregisteredSuccess', 'Unregistered successfully'),
-        description: t('tournaments.unregisteredFromTournament', 'You have been unregistered from {name}', { 
+        title: t('tournaments.unregisteredSuccess'),
+        description: t('tournaments.unregisteredFromTournament', { 
           name: tournament.name 
         }),
       });
@@ -273,7 +305,7 @@ export function TournamentDetail() {
     } catch (err: any) {
       console.error('Error unregistering from tournament:', err);
       toast({
-        title: t('errors.unregistrationFailed', 'Unregistration failed'),
+        title: t('errors.unregistrationFailed'),
         description: err.message,
         variant: 'destructive',
       });
@@ -291,7 +323,7 @@ export function TournamentDetail() {
   if (loading) {
     return (
       <div className="container py-8 flex justify-center items-center min-h-[50vh]">
-        <p>{t('loading', 'Loading...')}</p>
+        <p>{t('loading')}</p>
       </div>
     );
   }
@@ -301,10 +333,10 @@ export function TournamentDetail() {
       <div className="container py-8">
         <Button variant="outline" onClick={() => navigate('/tournaments')}>
           <ArrowLeft className="h-4 w-4 mr-2" />
-          {t('back', 'Back')}
+          {t('back')}
         </Button>
         <div className="mt-8 text-center">
-          <p>{t('tournaments.notFound', 'Tournament not found')}</p>
+          <p>{t('tournaments.notFound')}</p>
         </div>
       </div>
     );
@@ -315,7 +347,7 @@ export function TournamentDetail() {
       <div className="flex items-center gap-2 mb-6">
         <Button variant="outline" onClick={() => navigate('/tournaments')}>
           <ArrowLeft className="h-4 w-4 mr-2" />
-          {t('back', 'Back')}
+          {t('back')}
         </Button>
         <TournamentStatusBadge status={tournament.status} />
       </div>
@@ -328,7 +360,7 @@ export function TournamentDetail() {
               {tournament.is_private && (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
                   <Lock className="h-3 w-3" />
-                  {t('private', 'Private')}
+                  {t('private')}
                 </div>
               )}
             </div>
@@ -338,7 +370,7 @@ export function TournamentDetail() {
                 onClick={handleRegisterClick}
                 disabled={tournament.status !== 'SCHEDULED' && tournament.status !== 'REGISTERING'}
               >
-                {t('tournaments.register', 'Register')}
+                {t('tournaments.register')}
               </Button>
             ) : (
               <Button 
@@ -346,7 +378,7 @@ export function TournamentDetail() {
                 onClick={() => setUnregisterDialogOpen(true)}
                 disabled={tournament.status !== 'SCHEDULED' && tournament.status !== 'REGISTERING'}
               >
-                {t('tournaments.unregister', 'Unregister')}
+                {t('tournaments.unregister')}
               </Button>
             )}
           </div>
@@ -361,7 +393,7 @@ export function TournamentDetail() {
                 <div className="flex flex-col items-center">
                   <Calendar className="h-5 w-5 text-emerald mb-1" />
                   <div className="text-xs text-muted-foreground">
-                    {t('tournaments.startDate', 'Start Date')}
+                    {t('tournaments.startDate')}
                   </div>
                   <div className="font-medium text-center mt-1">
                     {formatDate(tournament.start_time)}
@@ -375,7 +407,7 @@ export function TournamentDetail() {
                 <div className="flex flex-col items-center">
                   <Clock className="h-5 w-5 text-emerald mb-1" />
                   <div className="text-xs text-muted-foreground">
-                    {t('tournaments.registration', 'Registration')}
+                    {t('tournaments.registration')}
                   </div>
                   <div className="font-medium text-center mt-1">
                     {formatDate(tournament.registration_open_time)}
@@ -389,7 +421,7 @@ export function TournamentDetail() {
                 <div className="flex flex-col items-center">
                   <Users className="h-5 w-5 text-emerald mb-1" />
                   <div className="text-xs text-muted-foreground">
-                    {t('tournaments.players', 'Players')}
+                    {t('tournaments.players')}
                   </div>
                   <div className="font-medium text-center mt-1">
                     {registrations.length} / {tournament.max_players}
@@ -403,12 +435,12 @@ export function TournamentDetail() {
                 <div className="flex flex-col items-center">
                   <Trophy className="h-5 w-5 text-emerald mb-1" />
                   <div className="text-xs text-muted-foreground">
-                    {t('tournaments.buyIn', 'Buy-in')}
+                    {t('tournaments.buyIn')}
                   </div>
                   <div className="font-medium text-center mt-1">
                     {tournament.buy_in > 0 
                       ? tournament.buy_in.toLocaleString()
-                      : t('tournaments.free', 'Free')}
+                      : t('tournaments.free')}
                   </div>
                 </div>
               </CardContent>
@@ -418,61 +450,61 @@ export function TournamentDetail() {
           <Tabs defaultValue="info">
             <TabsList className="mb-4">
               <TabsTrigger value="info">
-                {t('tournaments.information', 'Information')}
+                {t('tournaments.information')}
               </TabsTrigger>
               <TabsTrigger value="structure">
-                {t('tournaments.structure', 'Structure')}
+                {t('tournaments.structure')}
               </TabsTrigger>
               <TabsTrigger value="players">
-                {t('tournaments.players', 'Players')}
+                {t('tournaments.players')}
               </TabsTrigger>
             </TabsList>
             
             <TabsContent value="info" className="space-y-4">
               <Card>
                 <CardHeader>
-                  <CardTitle>{t('tournaments.description', 'Description')}</CardTitle>
+                  <CardTitle>{t('tournaments.description')}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p>{tournament.description || t('tournaments.noDescription', 'No description provided')}</p>
+                  <p>{tournament.description || t('tournaments.noDescription')}</p>
                 </CardContent>
               </Card>
               
               <Card>
                 <CardHeader>
-                  <CardTitle>{t('tournaments.details', 'Tournament Details')}</CardTitle>
+                  <CardTitle>{t('tournaments.details')}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
                   <div className="grid grid-cols-2">
-                    <div className="text-muted-foreground">{t('tournaments.type', 'Type')}:</div>
+                    <div className="text-muted-foreground">{t('tournaments.type')}:</div>
                     <div>{tournament.tournament_type}</div>
                   </div>
                   <div className="grid grid-cols-2">
-                    <div className="text-muted-foreground">{t('tournaments.startingChips', 'Starting Chips')}:</div>
+                    <div className="text-muted-foreground">{t('tournaments.startingChips')}:</div>
                     <div>{tournament.starting_chips.toLocaleString()}</div>
                   </div>
                   <div className="grid grid-cols-2">
-                    <div className="text-muted-foreground">{t('tournaments.lateRegistration', 'Late Registration')}:</div>
+                    <div className="text-muted-foreground">{t('tournaments.lateRegistration')}:</div>
                     <div>
                       {tournament.late_registration_minutes 
-                        ? t('tournaments.minutes', '{minutes} minutes', { minutes: tournament.late_registration_minutes })
-                        : t('tournaments.none', 'None')}
+                        ? t('tournaments.minutes', { minutes: tournament.late_registration_minutes })
+                        : t('tournaments.none')}
                     </div>
                   </div>
                   <div className="grid grid-cols-2">
-                    <div className="text-muted-foreground">{t('tournaments.rebuys', 'Rebuys')}:</div>
-                    <div>{tournament.rebuy_allowed ? t('yes', 'Yes') : t('no', 'No')}</div>
+                    <div className="text-muted-foreground">{t('tournaments.rebuys')}:</div>
+                    <div>{tournament.rebuy_allowed ? t('yes') : t('no')}</div>
                   </div>
                   <div className="grid grid-cols-2">
-                    <div className="text-muted-foreground">{t('tournaments.addons', 'Add-ons')}:</div>
-                    <div>{tournament.addon_allowed ? t('yes', 'Yes') : t('no', 'No')}</div>
+                    <div className="text-muted-foreground">{t('tournaments.addons')}:</div>
+                    <div>{tournament.addon_allowed ? t('yes') : t('no')}</div>
                   </div>
                   <div className="grid grid-cols-2">
-                    <div className="text-muted-foreground">{t('tournaments.prizePool', 'Prize Pool')}:</div>
+                    <div className="text-muted-foreground">{t('tournaments.prizePool')}:</div>
                     <div>
                       {tournament.prize_pool > 0 
                         ? tournament.prize_pool.toLocaleString()
-                        : t('tournaments.tbd', 'TBD')}
+                        : t('tournaments.tbd')}
                     </div>
                   </div>
                 </CardContent>
@@ -481,7 +513,7 @@ export function TournamentDetail() {
               {tournament.rules && (
                 <Card>
                   <CardHeader>
-                    <CardTitle>{t('tournaments.rules', 'Rules')}</CardTitle>
+                    <CardTitle>{t('tournaments.rules')}</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <p>{tournament.rules}</p>
@@ -493,7 +525,7 @@ export function TournamentDetail() {
             <TabsContent value="structure" className="space-y-4">
               <Card>
                 <CardHeader>
-                  <CardTitle>{t('tournaments.blindStructure', 'Blind Structure')}</CardTitle>
+                  <CardTitle>{t('tournaments.blindStructure')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {tournament.blind_structure && tournament.blind_structure.length > 0 ? (
@@ -501,10 +533,10 @@ export function TournamentDetail() {
                       <table className="w-full">
                         <thead>
                           <tr className="border-b">
-                            <th className="text-left py-2">{t('tournaments.level', 'Level')}</th>
-                            <th className="text-left py-2">{t('tournaments.blinds', 'Blinds')}</th>
-                            <th className="text-left py-2">{t('tournaments.ante', 'Ante')}</th>
-                            <th className="text-left py-2">{t('tournaments.duration', 'Duration')}</th>
+                            <th className="text-left py-2">{t('tournaments.level')}</th>
+                            <th className="text-left py-2">{t('tournaments.blinds')}</th>
+                            <th className="text-left py-2">{t('tournaments.ante')}</th>
+                            <th className="text-left py-2">{t('tournaments.duration')}</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -514,7 +546,7 @@ export function TournamentDetail() {
                               <td className="py-2">{level.small_blind}/{level.big_blind}</td>
                               <td className="py-2">{level.ante || 0}</td>
                               <td className="py-2">
-                                {t('tournaments.minutes', '{minutes} minutes', { minutes: level.duration_minutes })}
+                                {t('tournaments.minutes', { minutes: level.duration_minutes })}
                               </td>
                             </tr>
                           ))}
@@ -522,14 +554,14 @@ export function TournamentDetail() {
                       </table>
                     </div>
                   ) : (
-                    <p>{t('tournaments.noBlindStructure', 'No blind structure provided')}</p>
+                    <p>{t('tournaments.noBlindStructure')}</p>
                   )}
                 </CardContent>
               </Card>
               
               <Card>
                 <CardHeader>
-                  <CardTitle>{t('tournaments.payoutStructure', 'Payout Structure')}</CardTitle>
+                  <CardTitle>{t('tournaments.payoutStructure')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {tournament.payout_structure && tournament.payout_structure.length > 0 ? (
@@ -537,8 +569,8 @@ export function TournamentDetail() {
                       <table className="w-full">
                         <thead>
                           <tr className="border-b">
-                            <th className="text-left py-2">{t('tournaments.position', 'Position')}</th>
-                            <th className="text-left py-2">{t('tournaments.percentage', 'Percentage')}</th>
+                            <th className="text-left py-2">{t('tournaments.position')}</th>
+                            <th className="text-left py-2">{t('tournaments.percentage')}</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -552,7 +584,7 @@ export function TournamentDetail() {
                       </table>
                     </div>
                   ) : (
-                    <p>{t('tournaments.noPayoutStructure', 'No payout structure provided')}</p>
+                    <p>{t('tournaments.noPayoutStructure')}</p>
                   )}
                 </CardContent>
               </Card>
@@ -562,7 +594,7 @@ export function TournamentDetail() {
               <Card>
                 <CardHeader>
                   <CardTitle>
-                    {t('tournaments.registeredPlayers', 'Registered Players')}{' '}
+                    {t('tournaments.registeredPlayers')}{' '}
                     <span className="text-muted-foreground">
                       ({registrations.length}/{tournament.max_players})
                     </span>
@@ -583,21 +615,21 @@ export function TournamentDetail() {
           {userRegistration && (
             <Card className="bg-gradient-to-r from-emerald-500/10 to-blue-500/10">
               <CardHeader>
-                <CardTitle>{t('tournaments.registered', 'You are registered!')}</CardTitle>
+                <CardTitle>{t('tournaments.registered')}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <p>{t('tournaments.registrationConfirmed', 'Your registration for this tournament is confirmed.')}</p>
+                <p>{t('tournaments.registrationConfirmed')}</p>
                 
                 <div className="p-4 bg-background/40 rounded-md">
                   <div className="text-center">
-                    <div className="text-sm text-muted-foreground">{t('tournaments.startingStack', 'Your Starting Stack')}</div>
+                    <div className="text-sm text-muted-foreground">{t('tournaments.startingStack')}</div>
                     <div className="text-2xl font-bold mt-1">{userRegistration.chips.toLocaleString()}</div>
                   </div>
                 </div>
                 
                 {tournament.status !== 'SCHEDULED' && tournament.status !== 'REGISTERING' ? (
                   <Button className="w-full">
-                    {t('tournaments.goToTournament', 'Go to Tournament')}
+                    {t('tournaments.goToTournament')}
                   </Button>
                 ) : (
                   <Button 
@@ -605,7 +637,7 @@ export function TournamentDetail() {
                     className="w-full"
                     onClick={() => setUnregisterDialogOpen(true)}
                   >
-                    {t('tournaments.unregister', 'Unregister')}
+                    {t('tournaments.unregister')}
                   </Button>
                 )}
               </CardContent>
@@ -614,15 +646,15 @@ export function TournamentDetail() {
           
           <Card>
             <CardHeader>
-              <CardTitle>{t('tournaments.howToPlay', 'How to Play')}</CardTitle>
+              <CardTitle>{t('tournaments.howToPlay')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex gap-2">
                 <HelpCircle className="h-5 w-5 text-emerald shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-medium">{t('tournaments.register', 'Register')}</p>
+                  <p className="font-medium">{t('tournaments.register')}</p>
                   <p className="text-sm text-muted-foreground">
-                    {t('tournaments.howToRegister', 'Sign up for this tournament to secure your seat.')}
+                    {t('tournaments.howToRegister')}
                   </p>
                 </div>
               </div>
@@ -630,9 +662,9 @@ export function TournamentDetail() {
               <div className="flex gap-2">
                 <HelpCircle className="h-5 w-5 text-emerald shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-medium">{t('tournaments.join', 'Join when it starts')}</p>
+                  <p className="font-medium">{t('tournaments.join')}</p>
                   <p className="text-sm text-muted-foreground">
-                    {t('tournaments.howToJoin', 'Return to this page when the tournament starts to join your table.')}
+                    {t('tournaments.howToJoin')}
                   </p>
                 </div>
               </div>
@@ -640,9 +672,9 @@ export function TournamentDetail() {
               <div className="flex gap-2">
                 <HelpCircle className="h-5 w-5 text-emerald shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-medium">{t('tournaments.play', 'Play to win')}</p>
+                  <p className="font-medium">{t('tournaments.play')}</p>
                   <p className="text-sm text-muted-foreground">
-                    {t('tournaments.howToWin', 'The tournament continues until one player has all the chips!')}
+                    {t('tournaments.howToWin')}
                   </p>
                 </div>
               </div>
@@ -652,7 +684,7 @@ export function TournamentDetail() {
           {tournament.prize_pool > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle>{t('tournaments.prizePool', 'Prize Pool')}</CardTitle>
+                <CardTitle>{t('tournaments.prizePool')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-center text-emerald">
@@ -661,11 +693,11 @@ export function TournamentDetail() {
                 
                 {tournament.payout_structure && tournament.payout_structure.length > 0 && (
                   <div className="mt-4">
-                    <h4 className="text-sm font-medium mb-2">{t('tournaments.topPrizes', 'Top Prizes')}</h4>
+                    <h4 className="text-sm font-medium mb-2">{t('tournaments.topPrizes')}</h4>
                     <div className="space-y-2">
                       {tournament.payout_structure.slice(0, 3).map((payout: any, index: number) => (
                         <div key={index} className="flex items-center justify-between">
-                          <div>{t('tournaments.position', 'Position')} {payout.position}</div>
+                          <div>{t('tournaments.position')} {payout.position}</div>
                           <div className="font-medium">
                             {(tournament.prize_pool * (payout.percentage / 100)).toLocaleString()}
                           </div>
@@ -684,9 +716,9 @@ export function TournamentDetail() {
       <Dialog open={registerDialogOpen} onOpenChange={setRegisterDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t('tournaments.privateRegistration', 'Private Tournament')}</DialogTitle>
+            <DialogTitle>{t('tournaments.privateRegistration')}</DialogTitle>
             <DialogDescription>
-              {t('tournaments.privateCodeRequired', 'This is a private tournament. Please enter the access code to register.')}
+              {t('tournaments.privateCodeRequired')}
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={(e) => { e.preventDefault(); handleRegisterSubmit(); }}>
@@ -696,7 +728,7 @@ export function TournamentDetail() {
                 setAccessCode(e.target.value);
                 setAccessCodeError('');
               }}
-              placeholder={t('tournaments.accessCode', 'Access code')}
+              placeholder={t('tournaments.accessCode')}
               className="mb-4"
             />
             {accessCodeError && (
@@ -706,10 +738,10 @@ export function TournamentDetail() {
             )}
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setRegisterDialogOpen(false)}>
-                {t('cancel', 'Cancel')}
+                {t('cancel')}
               </Button>
               <Button type="submit">
-                {t('tournaments.register', 'Register')}
+                {t('tournaments.register')}
               </Button>
             </DialogFooter>
           </form>
@@ -720,17 +752,17 @@ export function TournamentDetail() {
       <Dialog open={unregisterDialogOpen} onOpenChange={setUnregisterDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t('tournaments.confirmUnregister', 'Confirm Unregistration')}</DialogTitle>
+            <DialogTitle>{t('tournaments.confirmUnregister')}</DialogTitle>
             <DialogDescription>
-              {t('tournaments.unregisterConfirm', 'Are you sure you want to unregister from this tournament?')}
+              {t('tournaments.unregisterConfirm')}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setUnregisterDialogOpen(false)}>
-              {t('cancel', 'Cancel')}
+              {t('cancel')}
             </Button>
-            <Button type="button" variant="destructive" onClick={handleUnregister}>
-              {t('tournaments.unregister', 'Unregister')}
+            <Button type="button" onClick={handleUnregister}>
+              {t('tournaments.unregister')}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -1,10 +1,30 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Achievement, PlayerAchievement } from '@/types/gamification';
 import { useAuth } from '@/stores/auth';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from '@/hooks/useTranslation';
+
+export interface Achievement {
+  id: string;
+  name: string;
+  description: string;
+  icon_url?: string;
+  category: string;
+  points: number;
+  requirements: Record<string, any>;
+  created_at: string;
+}
+
+export interface PlayerAchievement {
+  id: string;
+  player_id: string;
+  achievement_id: string;
+  unlocked_at: string;
+  progress: number;
+  completed: boolean;
+  achievement?: Achievement;
+}
 
 export const useAchievements = () => {
   const [achievements, setAchievements] = useState<Achievement[]>([]);
@@ -28,7 +48,15 @@ export const useAchievements = () => {
       
       if (achievementsError) throw achievementsError;
       
-      setAchievements(achievementsData || []);
+      // Parse JSON fields
+      const parsedAchievements = achievementsData?.map(achievement => ({
+        ...achievement,
+        requirements: typeof achievement.requirements === 'string'
+          ? JSON.parse(achievement.requirements)
+          : achievement.requirements
+      })) as Achievement[];
+      
+      setAchievements(parsedAchievements || []);
       
       // If user is logged in, fetch their achievements
       if (user) {
@@ -39,13 +67,24 @@ export const useAchievements = () => {
         
         if (playerAchievementsError) throw playerAchievementsError;
         
-        setPlayerAchievements(playerAchievementsData || []);
+        // Parse JSON fields
+        const parsedPlayerAchievements = playerAchievementsData?.map(pa => ({
+          ...pa,
+          achievement: pa.achievement ? {
+            ...pa.achievement,
+            requirements: typeof pa.achievement.requirements === 'string'
+              ? JSON.parse(pa.achievement.requirements)
+              : pa.achievement.requirements
+          } : undefined
+        })) as PlayerAchievement[];
+        
+        setPlayerAchievements(parsedPlayerAchievements || []);
       }
     } catch (err: any) {
       console.error('Error fetching achievements:', err);
       setError(err.message);
       toast({
-        title: t('errors.fetchFailed', 'Failed to fetch achievements'),
+        title: t('errors.fetchFailed'),
         description: err.message,
         variant: 'destructive',
       });
@@ -78,13 +117,24 @@ export const useAchievements = () => {
                   .single();
                 
                 if (data) {
+                  // Parse JSON fields for the achievement
+                  const parsedData = {
+                    ...data,
+                    achievement: data.achievement ? {
+                      ...data.achievement,
+                      requirements: typeof data.achievement.requirements === 'string'
+                        ? JSON.parse(data.achievement.requirements)
+                        : data.achievement.requirements
+                    } : undefined
+                  } as PlayerAchievement;
+                  
                   // Update achievement in state
                   setPlayerAchievements(prev => {
-                    const exists = prev.some(pa => pa.id === data.id);
+                    const exists = prev.some(pa => pa.id === parsedData.id);
                     if (exists) {
-                      return prev.map(pa => pa.id === data.id ? data : pa);
+                      return prev.map(pa => pa.id === parsedData.id ? parsedData : pa);
                     } else {
-                      return [...prev, data];
+                      return [...prev, parsedData];
                     }
                   });
                   
@@ -92,9 +142,9 @@ export const useAchievements = () => {
                   if (payload.eventType === 'UPDATE' && 
                       payload.new.completed && 
                       !payload.old.completed) {
-                    const achievementName = data.achievement?.name || 'Achievement';
+                    const achievementName = parsedData.achievement?.name || 'Achievement';
                     toast({
-                      title: t('achievements.unlocked', 'Achievement Unlocked!'),
+                      title: t('achievements.unlocked'),
                       description: achievementName,
                     });
                   }

@@ -1,10 +1,33 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Leaderboard, LeaderboardEntry } from '@/types/gamification';
 import { useAuth } from '@/stores/auth';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from '@/hooks/useTranslation';
+
+export interface Leaderboard {
+  id: string;
+  name: string;
+  description?: string;
+  category: string;
+  period: string;
+  start_date?: string;
+  end_date?: string;
+  is_active: boolean;
+  prize_pool?: number;
+  created_at: string;
+}
+
+export interface LeaderboardEntry {
+  id: string;
+  leaderboard_id: string;
+  player_id: string;
+  score: number;
+  rank?: number;
+  updated_at: string;
+  player_name?: string;
+  player_avatar?: string;
+}
 
 export const useLeaderboards = () => {
   const [leaderboards, setLeaderboards] = useState<Leaderboard[]>([]);
@@ -41,7 +64,7 @@ export const useLeaderboards = () => {
       console.error('Error fetching leaderboards:', err);
       setError(err.message);
       toast({
-        title: t('errors.fetchFailed', 'Failed to fetch leaderboards'),
+        title: t('errors.fetchFailed'),
         description: err.message,
         variant: 'destructive',
       });
@@ -58,7 +81,7 @@ export const useLeaderboards = () => {
       
       const { data, error: fetchError } = await supabase
         .from('leaderboard_entries')
-        .select('*, profiles(alias, avatar_url)')
+        .select('*, profiles:player_id(alias, avatar_url)')
         .eq('leaderboard_id', leaderboardId)
         .order('rank', { ascending: true });
       
@@ -76,7 +99,7 @@ export const useLeaderboards = () => {
       console.error('Error fetching leaderboard entries:', err);
       setError(err.message);
       toast({
-        title: t('errors.fetchFailed', 'Failed to fetch leaderboard entries'),
+        title: t('errors.fetchFailed'),
         description: err.message,
         variant: 'destructive',
       });
@@ -118,11 +141,11 @@ export const useLeaderboards = () => {
                   const improved = newRank < oldRank;
                   toast({
                     title: improved ? 
-                      t('leaderboards.rankImproved', 'Rank Improved!') : 
-                      t('leaderboards.rankChanged', 'Rank Changed'),
+                      t('leaderboards.rankImproved') : 
+                      t('leaderboards.rankChanged'),
                     description: improved ?
-                      t('leaderboards.movedUpTo', 'You moved up to rank {rank}!', { rank: newRank }) :
-                      t('leaderboards.movedDownTo', 'You moved down to rank {rank}', { rank: newRank }),
+                      t('leaderboards.movedUpTo', { rank: newRank }) :
+                      t('leaderboards.movedDownTo', { rank: newRank }),
                     variant: improved ? 'default' : 'destructive',
                   });
                 }

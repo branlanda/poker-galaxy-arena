@@ -43,13 +43,13 @@ export function TournamentCard({ tournament, onClick }: TournamentCardProps) {
           <TournamentStatusBadge status={tournament.status} />
           {tournament.is_private && (
             <Badge variant="outline" className="ml-2">
-              <Lock className="h-3 w-3 mr-1" /> {t('private', 'Private')}
+              <Lock className="h-3 w-3 mr-1" /> {t('private')}
             </Badge>
           )}
         </div>
         <CardTitle className="text-lg">{tournament.name}</CardTitle>
         <CardDescription className="line-clamp-2">
-          {tournament.description || t('tournaments.noDescription', 'No description')}
+          {tournament.description || t('tournaments.noDescription')}
         </CardDescription>
       </CardHeader>
       
@@ -66,20 +66,20 @@ export function TournamentCard({ tournament, onClick }: TournamentCardProps) {
           <div className="flex items-center">
             <Users className="h-4 w-4 mr-2 text-emerald" />
             <span>
-              {tournament.registered_players_count || 0} / {tournament.max_players} {t('players', 'Players')}
+              {tournament.registered_players_count || 0} / {tournament.max_players} {t('players')}
             </span>
           </div>
           <div className="flex items-center">
             <Trophy className="h-4 w-4 mr-2 text-emerald" />
             <span>
               {tournament.buy_in > 0 
-                ? t('tournaments.buyIn', 'Buy-in: {amount}', { amount: tournament.buy_in })
-                : t('tournaments.freeroll', 'Freeroll')}
+                ? t('tournaments.buyIn', { amount: tournament.buy_in })
+                : t('tournaments.freeroll')}
             </span>
           </div>
           {tournament.prize_pool > 0 && (
             <div className="mt-2 font-medium">
-              {t('tournaments.prizePool', 'Prize Pool: {amount}', { amount: tournament.prize_pool })}
+              {t('tournaments.prizePool', { amount: tournament.prize_pool })}
             </div>
           )}
         </div>
@@ -93,8 +93,8 @@ export function TournamentCard({ tournament, onClick }: TournamentCardProps) {
           disabled={loading}
         >
           {registered 
-            ? t('tournaments.viewRegistered', 'View Tournament (Registered)')
-            : t('tournaments.viewDetails', 'View Details')}
+            ? t('tournaments.viewRegistered')
+            : t('tournaments.viewDetails')}
         </Button>
       </CardFooter>
     </Card>

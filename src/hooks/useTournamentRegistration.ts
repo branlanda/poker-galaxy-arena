@@ -47,8 +47,8 @@ export const useTournamentRegistration = (tournament?: Tournament) => {
   const registerForTournament = async (accessCode?: string) => {
     if (!user || !tournament) {
       toast({
-        title: t('errors.notLoggedIn', 'Not logged in'),
-        description: t('errors.loginRequired', 'You must be logged in to register for tournaments'),
+        title: t('errors.notLoggedIn'),
+        description: t('errors.loginRequired'),
         variant: 'destructive',
       });
       return null;
@@ -60,8 +60,8 @@ export const useTournamentRegistration = (tournament?: Tournament) => {
       // Check if tournament requires access code
       if (tournament.is_private && tournament.access_code && tournament.access_code !== accessCode) {
         toast({
-          title: t('errors.invalidAccessCode', 'Invalid access code'),
-          description: t('errors.cannotJoinPrivateTournament', 'Cannot join private tournament with invalid access code'),
+          title: t('errors.invalidAccessCode'),
+          description: t('errors.cannotJoinPrivateTournament'),
           variant: 'destructive',
         });
         return null;
@@ -76,8 +76,8 @@ export const useTournamentRegistration = (tournament?: Tournament) => {
         
       if (now < registrationOpenTime) {
         toast({
-          title: t('errors.registrationNotOpen', 'Registration not open'),
-          description: t('errors.registrationOpensAt', 'Registration opens at {time}', { 
+          title: t('errors.registrationNotOpen'),
+          description: t('errors.registrationOpensAt', { 
             time: registrationOpenTime.toLocaleString() 
           }),
           variant: 'destructive',
@@ -87,8 +87,8 @@ export const useTournamentRegistration = (tournament?: Tournament) => {
       
       if (now > registrationCloseTime) {
         toast({
-          title: t('errors.registrationClosed', 'Registration closed'),
-          description: t('errors.registrationClosedAt', 'Registration closed at {time}', { 
+          title: t('errors.registrationClosed'),
+          description: t('errors.registrationClosedAt', { 
             time: registrationCloseTime.toLocaleString() 
           }),
           variant: 'destructive',
@@ -115,8 +115,8 @@ export const useTournamentRegistration = (tournament?: Tournament) => {
       setRegistration(data);
       
       toast({
-        title: t('tournaments.registrationSuccess', 'Registration successful'),
-        description: t('tournaments.registeredForTournament', 'You are now registered for {name}', { 
+        title: t('tournaments.registrationSuccess'),
+        description: t('tournaments.registeredForTournament', { 
           name: tournament.name 
         }),
       });
@@ -125,7 +125,7 @@ export const useTournamentRegistration = (tournament?: Tournament) => {
     } catch (err: any) {
       console.error('Error registering for tournament:', err);
       toast({
-        title: t('errors.registrationFailed', 'Registration failed'),
+        title: t('errors.registrationFailed'),
         description: err.message,
         variant: 'destructive',
       });
@@ -150,8 +150,8 @@ export const useTournamentRegistration = (tournament?: Tournament) => {
       
       if (now >= tournamentStartTime) {
         toast({
-          title: t('errors.cannotUnregister', 'Cannot unregister'),
-          description: t('errors.tournamentAlreadyStarted', 'Cannot unregister from a tournament that has already started'),
+          title: t('errors.cannotUnregister'),
+          description: t('errors.tournamentAlreadyStarted'),
           variant: 'destructive',
         });
         return false;
@@ -171,8 +171,8 @@ export const useTournamentRegistration = (tournament?: Tournament) => {
       setRegistration(null);
       
       toast({
-        title: t('tournaments.unregistrationSuccess', 'Unregistered successfully'),
-        description: t('tournaments.unregisteredFromTournament', 'You have been unregistered from {name}', { 
+        title: t('tournaments.unregistrationSuccess'),
+        description: t('tournaments.unregisteredFromTournament', { 
           name: tournament.name 
         }),
       });
@@ -181,7 +181,7 @@ export const useTournamentRegistration = (tournament?: Tournament) => {
     } catch (err: any) {
       console.error('Error unregistering from tournament:', err);
       toast({
-        title: t('errors.unregistrationFailed', 'Unregistration failed'),
+        title: t('errors.unregistrationFailed'),
         description: err.message,
         variant: 'destructive',
       });

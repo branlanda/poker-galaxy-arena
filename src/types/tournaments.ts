@@ -2,6 +2,19 @@
 export type TournamentType = 'SIT_N_GO' | 'FREEROLL' | 'MULTI_TABLE' | 'SPECIAL_EVENT' | 'SATELLITE';
 export type TournamentStatus = 'SCHEDULED' | 'REGISTERING' | 'RUNNING' | 'BREAK' | 'FINAL_TABLE' | 'COMPLETED' | 'CANCELLED';
 
+export interface BlindLevel {
+  level: number;
+  small_blind: number;
+  big_blind: number;
+  ante: number;
+  duration_minutes: number;
+}
+
+export interface PayoutLevel {
+  position: number;
+  percentage: number;
+}
+
 export interface Tournament {
   id: string;
   name: string;
@@ -32,19 +45,6 @@ export interface Tournament {
   created_at: string;
   updated_at: string;
   registered_players_count?: number;
-}
-
-export interface BlindLevel {
-  level: number;
-  small_blind: number;
-  big_blind: number;
-  ante: number;
-  duration_minutes: number;
-}
-
-export interface PayoutLevel {
-  position: number;
-  percentage: number;
 }
 
 export interface TournamentRegistration {
