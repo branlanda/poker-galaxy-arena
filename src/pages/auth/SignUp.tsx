@@ -49,7 +49,7 @@ const SignUp = () => {
           .insert([{ 
             user_id: data.user.id, 
             alias,
-            show_public_stats: true  // Updated from show_in_leaderboard to show_public_stats
+            show_public_stats: true
           }]);
           
         if (profileError) throw profileError;
@@ -63,7 +63,7 @@ const SignUp = () => {
         });
         
         toast.success("Account created successfully!");
-        navigate('/');  // Updated from '/lobby' to '/' to match our route structure
+        navigate('/');
       }
     } catch (error: any) {
       toast.error(error.message || "Failed to create account");

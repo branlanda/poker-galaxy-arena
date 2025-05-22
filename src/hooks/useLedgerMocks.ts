@@ -22,4 +22,9 @@ export function useLedgerMocks() {
       setLoading(false);
     }, 800);
   }, []);
+  
+  return useLedgerStore(state => ({
+    loading: state.loading,
+    entries: state.entries
+  }));
 }

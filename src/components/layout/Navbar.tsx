@@ -29,7 +29,7 @@ const Navbar = () => {
             <>
               <Link to="/funds">
                 <Button variant="outline" size="sm">
-                  Fondos
+                  Funds
                 </Button>
               </Link>
               
@@ -42,7 +42,7 @@ const Navbar = () => {
               )}
               
               <Button variant="secondary" size="sm" onClick={handleLogout}>
-                Cerrar sesión
+                Sign Out
               </Button>
               
               <div className="text-emerald text-sm font-medium ml-2">
@@ -53,12 +53,12 @@ const Navbar = () => {
             <>
               <Link to="/login">
                 <Button variant="outline" size="sm">
-                  Iniciar sesión
+                  Sign In
                 </Button>
               </Link>
               <Link to="/signup">
                 <Button variant="primary" size="sm">
-                  Crear cuenta
+                  Sign Up
                 </Button>
               </Link>
             </>

@@ -21,7 +21,7 @@ export function useAuthSync() {
           .select('alias, show_public_stats')
           .eq('user_id', data.session.user.id)
           .single()
-          .then(({ data: playerData }) => {
+          .then(({ data: playerData, error }) => {
             if (playerData) {
               setUser({
                 id: data.session.user.id,
@@ -30,8 +30,8 @@ export function useAuthSync() {
                 showInLeaderboard: playerData.show_public_stats
               });
               
-              // TODO: remove this when backend is implemented
-              setAdmin(true);
+              // Check if user is an admin
+              checkIfAdmin(data.session.user.id);
             }
           });
       } else {
@@ -62,8 +62,8 @@ export function useAuthSync() {
               showInLeaderboard: playerData.show_public_stats
             });
             
-            // TODO: remove this when backend is implemented
-            setAdmin(true);
+            // Check if user is an admin
+            checkIfAdmin(session.user.id);
           }
         } else {
           setUser(null);
@@ -71,6 +71,29 @@ export function useAuthSync() {
         }
       }
     );
+
+    // Function to check if user is admin
+    async function checkIfAdmin(userId: string) {
+      try {
+        // For now, we'll set admin status manually
+        // TODO: Replace with actual admin check from database
+        // For development/demo purposes we'll set all users as admins
+        // In production, you would check a user_roles table or similar
+        setAdmin(true);
+        
+        // Example of how to properly check admin status with a user_roles table:
+        // const { data } = await supabase
+        //   .from('user_roles')
+        //   .select('role')
+        //   .eq('user_id', userId)
+        //   .single();
+        // 
+        // setAdmin(data?.role === 'admin');
+      } catch (error) {
+        console.error('Error checking admin status:', error);
+        setAdmin(false);
+      }
+    }
 
     return () => {
       subscription.unsubscribe();
