@@ -1,201 +1,334 @@
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
-import { Button } from '@/components/ui/Button';
-import KycBadge from '@/components/admin/KycBadge';
-import { Badge } from '@/components/ui/badge';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/Button";
+import { 
+  Table, 
+  TableHeader, 
+  TableRow, 
+  TableHead, 
+  TableBody, 
+  TableCell 
+} from "@/components/ui/table";
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { 
+  Search, 
+  Filter, 
+  MoreHorizontal, 
+  PlayCircle, 
+  PauseCircle,
+  XCircle,
+  Settings,
+  MessageSquare,
+  Download
+} from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuSeparator, 
+  DropdownMenuTrigger 
+} from "@/components/ui/dropdown-menu";
 
-// Define table interface
-interface GameTable {
-  id: string;
-  code: string;
-  smallBlind: number;
-  bigBlind: number;
-  players: number;
-  maxPlayers: number;
-  state: 'WAITING' | 'ACTIVE' | 'PAUSED' | 'CLOSED';
-}
+// Mock table data
+const mockTables = [
+  { 
+    id: '1',
+    name: 'Texas Hold\'em - $1/$2',
+    variant: 'HOLD_EM',
+    players: '6/9',
+    status: 'ACTIVE',
+    handsPlayed: 42,
+    blinds: '$1/$2',
+    rake: '$35.50',
+    createdAt: '2025-05-21 09:30',
+  },
+  { 
+    id: '2',
+    name: 'Omaha Hi - $2/$5',
+    variant: 'OMAHA',
+    players: '4/6',
+    status: 'ACTIVE',
+    handsPlayed: 21,
+    blinds: '$2/$5',
+    rake: '$102.75',
+    createdAt: '2025-05-21 10:15',
+  },
+  { 
+    id: '3',
+    name: 'Texas Hold\'em - $5/$10',
+    variant: 'HOLD_EM',
+    players: '0/6',
+    status: 'PAUSED',
+    handsPlayed: 0,
+    blinds: '$5/$10',
+    rake: '$0.00',
+    createdAt: '2025-05-21 11:00',
+  },
+  { 
+    id: '4',
+    name: 'Omaha Hi/Lo - $1/$3',
+    variant: 'OMAHA_HILO',
+    players: '2/8',
+    status: 'ACTIVE',
+    handsPlayed: 15,
+    blinds: '$1/$3',
+    rake: '$28.25',
+    createdAt: '2025-05-21 08:45',
+  },
+  { 
+    id: '5',
+    name: 'Seven Card Stud - $1/$2',
+    variant: 'STUD',
+    players: '0/8',
+    status: 'INACTIVE',
+    handsPlayed: 0,
+    blinds: '$1/$2',
+    rake: '$0.00',
+    createdAt: '2025-05-20 22:30',
+  },
+];
 
-const Tables = () => {
+const Tables: React.FC = () => {
   const { t } = useTranslation();
-  const [filter, setFilter] = useState<string>('');
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const { toast } = useToast();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterActive, setFilterActive] = useState<boolean | null>(null);
+  const [showCloseDialog, setShowCloseDialog] = useState(false);
+  const [selectedTable, setSelectedTable] = useState<string | null>(null);
   
-  // Mock data for tables
-  const mockTables: GameTable[] = [
-    { id: 'T1', code: 'NL5-001', smallBlind: 0.05, bigBlind: 0.10, players: 4, maxPlayers: 6, state: 'ACTIVE' },
-    { id: 'T2', code: 'NL10-002', smallBlind: 0.10, bigBlind: 0.20, players: 6, maxPlayers: 9, state: 'ACTIVE' },
-    { id: 'T3', code: 'NL25-003', smallBlind: 0.25, bigBlind: 0.50, players: 2, maxPlayers: 6, state: 'WAITING' },
-    { id: 'T4', code: 'NL50-004', smallBlind: 0.50, bigBlind: 1.00, players: 0, maxPlayers: 6, state: 'CLOSED' },
-    { id: 'T5', code: 'NL100-005', smallBlind: 1, bigBlind: 2, players: 5, maxPlayers: 9, state: 'PAUSED' },
-  ];
+  const filteredTables = mockTables.filter(table => {
+    const matchesSearch = table.name.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    if (filterActive === null) return matchesSearch;
+    if (filterActive) return matchesSearch && table.status === 'ACTIVE';
+    return matchesSearch && table.status !== 'ACTIVE';
+  });
 
-  const filteredTables = filter 
-    ? mockTables.filter(table => table.state === filter)
-    : mockTables;
-
-  const getStateColor = (state: GameTable['state']) => {
-    switch(state) {
-      case 'ACTIVE': return 'bg-emerald-700/20 text-emerald-400';
-      case 'WAITING': return 'bg-amber-700/20 text-amber-400';
-      case 'PAUSED': return 'bg-blue-700/20 text-blue-400';
-      case 'CLOSED': return 'bg-gray-700/20 text-gray-400';
+  const getStatusBadgeClass = (status: string) => {
+    switch (status) {
+      case 'ACTIVE':
+        return 'bg-emerald/20 text-emerald';
+      case 'PAUSED':
+        return 'bg-amber-500/20 text-amber-500';
+      case 'INACTIVE':
+        return 'bg-gray-500/20 text-gray-400';
+      default:
+        return 'bg-gray-500/20 text-gray-400';
     }
   };
-
-  const handleAction = (tableId: string, action: 'close' | 'pause' | 'resume') => {
-    console.log(`Table ${tableId}: ${action}`);
-    // In a real app, this would call an API endpoint
+  
+  const handleTableAction = (action: string, tableId: string) => {
+    const table = mockTables.find(t => t.id === tableId);
+    
+    if (!table) return;
+    
+    switch (action) {
+      case 'pause':
+        toast({
+          title: 'Table paused',
+          description: `${table.name} has been paused`,
+        });
+        break;
+      case 'resume':
+        toast({
+          title: 'Table resumed',
+          description: `${table.name} has been resumed`,
+        });
+        break;
+      case 'close':
+        setSelectedTable(tableId);
+        setShowCloseDialog(true);
+        break;
+      case 'edit':
+        toast({
+          title: 'Edit table',
+          description: `Editing ${table.name}`,
+        });
+        break;
+      case 'chat':
+        toast({
+          title: 'Chat logs',
+          description: `Viewing chat logs for ${table.name}`,
+        });
+        break;
+      case 'export':
+        toast({
+          title: 'Exporting hands',
+          description: `Exporting hand history for ${table.name}`,
+        });
+        break;
+    }
   };
   
+  const confirmCloseTable = () => {
+    if (!selectedTable) return;
+    
+    const table = mockTables.find(t => t.id === selectedTable);
+    
+    toast({
+      title: 'Table closed',
+      description: `${table?.name} has been closed`,
+    });
+    
+    setShowCloseDialog(false);
+    setSelectedTable(null);
+  };
+
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">{t('admin.sidebar.tables')}</h2>
-        <Button 
-          variant="primary"
-          onClick={() => setIsCreateModalOpen(true)}
-        >
-          {t('admin.users.create')}
-        </Button>
-      </div>
-
-      <div className="flex items-center gap-4 mb-4">
-        <select 
-          className="bg-[#0e2337] border border-emerald/10 rounded px-4 py-2 text-sm"
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-        >
-          <option value="">{t('admin.users.allStatus')}</option>
-          <option value="WAITING">Waiting</option>
-          <option value="ACTIVE">Active</option>
-          <option value="PAUSED">Paused</option>
-          <option value="CLOSED">Closed</option>
-        </select>
-      </div>
-
-      <div className="rounded-md border border-emerald/10 overflow-auto">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>ID</TableHead>
-              <TableHead>Code</TableHead>
-              <TableHead>SB/BB</TableHead>
-              <TableHead>Players</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredTables.map(table => (
-              <TableRow key={table.id} className="hover:bg-[#0e2337]">
-                <TableCell>{table.id}</TableCell>
-                <TableCell>{table.code}</TableCell>
-                <TableCell>${table.smallBlind}/${table.bigBlind}</TableCell>
-                <TableCell>{table.players}/{table.maxPlayers}</TableCell>
-                <TableCell>
-                  <Badge className={getStateColor(table.state)}>
-                    {table.state}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-right space-x-2">
-                  {table.state !== 'CLOSED' && (
-                    <Button 
-                      variant="accent" 
-                      size="sm"
-                      onClick={() => handleAction(table.id, 'close')}
-                    >
-                      Close
-                    </Button>
-                  )}
-                  {table.state === 'ACTIVE' && (
-                    <Button 
-                      variant="secondary" 
-                      size="sm"
-                      onClick={() => handleAction(table.id, 'pause')}
-                    >
-                      Pause
-                    </Button>
-                  )}
-                  {table.state === 'PAUSED' && (
-                    <Button 
-                      variant="primary" 
-                      size="sm"
-                      onClick={() => handleAction(table.id, 'resume')}
-                    >
-                      Resume
-                    </Button>
-                  )}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-
-      {/* Create Table Modal */}
-      <Sheet open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-        <SheetContent className="bg-[#081624] border-l border-emerald/10">
-          <SheetHeader>
-            <SheetTitle className="text-xl text-white">Create New Table</SheetTitle>
-          </SheetHeader>
+      <h2 className="text-2xl font-bold">{t('admin.tables.title')}</h2>
+      
+      <Card className="p-4">
+        <div className="flex flex-col md:flex-row justify-between gap-4 mb-6">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder={t('admin.tables.searchPlaceholder')}
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
           
-          <div className="grid gap-4 py-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Small Blind</label>
-              <input 
-                type="number"
-                min="0.01"
-                step="0.01"
-                defaultValue="0.05"
-                className="w-full bg-[#0e2337] border border-emerald/10 rounded px-3 py-2"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Big Blind</label>
-              <input 
-                type="number"
-                min="0.02"
-                step="0.01"
-                defaultValue="0.10"
-                className="w-full bg-[#0e2337] border border-emerald/10 rounded px-3 py-2"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Max Players</label>
-              <select 
-                defaultValue="6"
-                className="w-full bg-[#0e2337] border border-emerald/10 rounded px-3 py-2"
-              >
-                <option value="6">6</option>
-                <option value="9">9</option>
-                <option value="10">10</option>
-              </select>
-            </div>
-            
-            <Button 
-              variant="primary" 
-              className="mt-4"
-              onClick={() => {
-                console.log('Table created');
-                setIsCreateModalOpen(false);
-              }}
+          <div className="flex gap-2">
+            <Button
+              variant={filterActive === true ? "default" : "outline"}
+              size="sm"
+              onClick={() => setFilterActive(filterActive === true ? null : true)}
             >
-              Create Table
+              <Filter className="h-4 w-4 mr-2" />
+              {t('admin.tables.activeOnly')}
+            </Button>
+            <Button
+              variant={filterActive === false ? "default" : "outline"}
+              size="sm"
+              onClick={() => setFilterActive(filterActive === false ? null : false)}
+            >
+              <Filter className="h-4 w-4 mr-2" />
+              {t('admin.tables.inactiveOnly')}
             </Button>
           </div>
-        </SheetContent>
-      </Sheet>
+        </div>
+        
+        <div className="rounded-md border border-emerald/10 overflow-auto">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-[#081624]">
+                <TableHead>{t('admin.tables.name')}</TableHead>
+                <TableHead>{t('admin.tables.variant')}</TableHead>
+                <TableHead>{t('admin.tables.players')}</TableHead>
+                <TableHead>{t('admin.tables.status')}</TableHead>
+                <TableHead>{t('admin.tables.handsPlayed')}</TableHead>
+                <TableHead>{t('admin.tables.blinds')}</TableHead>
+                <TableHead>{t('admin.tables.rake')}</TableHead>
+                <TableHead>{t('admin.tables.createdAt')}</TableHead>
+                <TableHead className="text-right">{t('admin.tables.actions')}</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredTables.map(table => (
+                <TableRow key={table.id} className="hover:bg-[#0e2337]">
+                  <TableCell className="font-medium">{table.name}</TableCell>
+                  <TableCell>{table.variant}</TableCell>
+                  <TableCell>{table.players}</TableCell>
+                  <TableCell>
+                    <span className={`px-2 py-1 rounded-full text-xs ${getStatusBadgeClass(table.status)}`}>
+                      {table.status}
+                    </span>
+                  </TableCell>
+                  <TableCell>{table.handsPlayed}</TableCell>
+                  <TableCell>{table.blinds}</TableCell>
+                  <TableCell className="font-mono">{table.rake}</TableCell>
+                  <TableCell>{table.createdAt}</TableCell>
+                  <TableCell className="text-right">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                          <MoreHorizontal className="h-4 w-4" />
+                          <span className="sr-only">Actions</span>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        {table.status === 'ACTIVE' ? (
+                          <DropdownMenuItem onClick={() => handleTableAction('pause', table.id)}>
+                            <PauseCircle className="h-4 w-4 mr-2" />
+                            {t('admin.tables.pauseTable')}
+                          </DropdownMenuItem>
+                        ) : table.status !== 'INACTIVE' ? (
+                          <DropdownMenuItem onClick={() => handleTableAction('resume', table.id)}>
+                            <PlayCircle className="h-4 w-4 mr-2" />
+                            {t('admin.tables.resumeTable')}
+                          </DropdownMenuItem>
+                        ) : null}
+                        
+                        <DropdownMenuItem onClick={() => handleTableAction('close', table.id)}>
+                          <XCircle className="h-4 w-4 mr-2" />
+                          {t('admin.tables.closeTable')}
+                        </DropdownMenuItem>
+                        
+                        <DropdownMenuSeparator />
+                        
+                        <DropdownMenuItem onClick={() => handleTableAction('edit', table.id)}>
+                          <Settings className="h-4 w-4 mr-2" />
+                          {t('admin.tables.editSettings')}
+                        </DropdownMenuItem>
+                        
+                        <DropdownMenuItem onClick={() => handleTableAction('chat', table.id)}>
+                          <MessageSquare className="h-4 w-4 mr-2" />
+                          {t('admin.tables.viewChat')}
+                        </DropdownMenuItem>
+                        
+                        <DropdownMenuItem onClick={() => handleTableAction('export', table.id)}>
+                          <Download className="h-4 w-4 mr-2" />
+                          {t('admin.tables.exportHands')}
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))}
+              
+              {filteredTables.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={9} className="h-24 text-center">
+                    {t('admin.tables.noResults')}
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      </Card>
+      
+      <AlertDialog open={showCloseDialog} onOpenChange={setShowCloseDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('admin.tables.confirmClose')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('admin.tables.confirmCloseDescription')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('admin.tables.cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmCloseTable} className="bg-red-500 hover:bg-red-600">
+              {t('admin.tables.confirm')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

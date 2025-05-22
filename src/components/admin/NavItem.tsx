@@ -1,23 +1,29 @@
 
-import { ReactNode } from 'react';
+import React from 'react';
 import { NavLink } from 'react-router-dom';
 
 interface NavItemProps {
   to: string;
-  icon: ReactNode;
   label: string;
+  icon: React.ReactNode;
+  collapsed?: boolean;
 }
 
-const NavItem = ({ to, icon, label }: NavItemProps) => {
+const NavItem = ({ to, label, icon, collapsed = false }: NavItemProps) => {
   return (
     <NavLink
       to={to}
-      className={({ isActive }) =>
-        `flex items-center px-4 py-2 text-sm hover:bg-[#0e2337] ${isActive ? 'bg-[#0e2337] text-emerald' : 'text-gray-300'}`
-      }
+      className={({ isActive }) => `
+        flex items-center gap-3 px-3 py-2 rounded-md transition
+        ${isActive ? 'bg-emerald/10 text-emerald' : 'text-gray-400 hover:text-white hover:bg-navy'}
+        ${collapsed ? 'justify-center' : ''}
+      `}
+      end={to === '/admin'}
     >
-      <span className="mr-3">{icon}</span>
-      <span>{label}</span>
+      <span className={`${collapsed ? 'mx-auto' : ''}`}>
+        {icon}
+      </span>
+      {!collapsed && <span>{label}</span>}
     </NavLink>
   );
 };
