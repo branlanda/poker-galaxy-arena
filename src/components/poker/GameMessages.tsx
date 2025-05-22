@@ -62,7 +62,7 @@ export const GameMessages: React.FC<GameMessagesProps> = ({
           break;
       }
       
-      const newMessage = {
+      const newMessage: GameMessage = {
         id: Math.random().toString(),
         type: 'action',
         message: actionText,
@@ -84,7 +84,7 @@ export const GameMessages: React.FC<GameMessagesProps> = ({
   
   useEffect(() => {
     if (winner) {
-      const winMessage = {
+      const winMessage: GameMessage = {
         id: Math.random().toString(),
         type: 'winner',
         message: `${winner.playerName} won ${winner.amount}!`,
@@ -103,7 +103,7 @@ export const GameMessages: React.FC<GameMessagesProps> = ({
   
   useEffect(() => {
     if (newPlayer) {
-      const joinMessage = {
+      const joinMessage: GameMessage = {
         id: Math.random().toString(),
         type: 'join',
         message: `${newPlayer.playerName} joined the table`,
@@ -116,7 +116,7 @@ export const GameMessages: React.FC<GameMessagesProps> = ({
   
   useEffect(() => {
     if (gamePhase && gamePhase !== 'WAITING') {
-      const phaseMessage = {
+      const phaseMessage: GameMessage = {
         id: Math.random().toString(),
         type: 'notification',
         message: `--- ${gamePhase} ---`,

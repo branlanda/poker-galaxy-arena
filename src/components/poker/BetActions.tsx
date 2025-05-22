@@ -44,7 +44,7 @@ export const BetActions: React.FC<BetActionsProps> = ({
     <div className="flex flex-col gap-3 w-full max-w-md bg-navy/30 p-4 rounded-lg border border-emerald/10">
       <div className="flex flex-wrap gap-2">
         <Button
-          variant="destructive"
+          variant="outline"
           size="sm"
           onClick={() => handleAction('FOLD')}
         >

@@ -92,17 +92,18 @@ export const useGameStore = create<GameStore>((set, get) => ({
         })
         .subscribe();
       
-      // Clean up subscription when disconnecting
-      return () => {
-        supabase.removeChannel(gameChannel);
-      };
-      
+      // No need to return the cleanup function, we handle it in disconnectGame
     } catch (error: any) {
       set({ error: error.message, isLoading: false });
     }
   },
   
   disconnectGame: () => {
+    // Clean up any subscriptions here
+    const { gameState } = get();
+    if (gameState) {
+      supabase.removeChannel(supabase.channel(`game:${gameState.tableId}`));
+    }
     set({ gameState: null });
   },
   

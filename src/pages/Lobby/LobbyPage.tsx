@@ -22,8 +22,8 @@ export default function LobbyPage() {
           {user ? (
             <CreateTableDialog />
           ) : (
-            <Button asChild>
-              <Link to="/login">Log In to Create Tables</Link>
+            <Button onClick={() => window.location.href = '/login'}>
+              Log In to Create Tables
             </Button>
           )}
         </div>
