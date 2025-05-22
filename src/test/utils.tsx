@@ -1,6 +1,6 @@
 
 import React, { ReactElement } from 'react';
-import { render, RenderOptions } from '@testing-library/react';
+import { render, RenderOptions, screen, waitFor, fireEvent } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 
 // Mock Web3Provider since we can't import from @/providers/Web3Provider
@@ -44,3 +44,4 @@ export function renderWithProviders(
 // Re-export everything from RTL
 export * from '@testing-library/react';
 export { renderWithProviders as render };
+
