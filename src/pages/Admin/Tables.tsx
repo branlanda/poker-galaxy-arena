@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { Button } from '@/components/ui/Button';
-import KycBadge from '../components/admin/KycBadge';
+import KycBadge from '@/components/admin/KycBadge';
 import { Badge } from '@/components/ui/badge';
 import {
   Sheet,
