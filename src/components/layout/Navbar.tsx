@@ -28,7 +28,8 @@ import { useTranslation } from '@/hooks/useTranslation';
 export function Navbar() {
   const { t } = useTranslation();
   const { user, logout } = useAuth();
-  const { balance: userBalance } = useBalance();
+  const balanceQuery = useBalance();
+  const userBalance = balanceQuery.data;
   const [isOpen, setIsOpen] = useState(false);
   const isMobile = useIsMobile();
 

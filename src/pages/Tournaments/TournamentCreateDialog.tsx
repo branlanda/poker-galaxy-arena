@@ -1,3 +1,4 @@
+
 import React from 'react';
 import {
   AlertDialog,
@@ -10,7 +11,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/Button';
 import { useTranslation } from '@/hooks/useTranslation';
 import {
   Form,
@@ -51,6 +52,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/stores/auth';
 import { useNavigate } from 'react-router-dom';
 import { MultiSelect } from './MultiSelect';
+import { Tournament } from '@/types/tournaments';
 
 const tournamentFormSchema = z.object({
   name: z.string().min(3, {
@@ -126,7 +128,7 @@ export function TournamentCreateDialog() {
         toast({
           title: t('tournaments.createError'),
           description: t('auth.notLoggedIn'),
-          variant: 'destructive'
+          variant: 'default'
         });
         return;
       }
@@ -136,7 +138,7 @@ export function TournamentCreateDialog() {
         toast({
           title: t('tournaments.createError'),
           description: t('tournaments.startTimeInFuture'),
-          variant: 'destructive'
+          variant: 'default'
         });
         return;
       }
@@ -146,22 +148,26 @@ export function TournamentCreateDialog() {
         toast({
           title: t('tournaments.createError'),
           description: validationError?.message || t('tournaments.invalidData'),
-          variant: 'destructive'
+          variant: 'default'
         });
         return;
       }
 
+      // Prepare data for insertion
+      const tournamentData = {
+        ...data,
+        created_by: user.id,
+        status: 'SCHEDULED' as const,
+        blind_structure: JSON.stringify(data.blind_structure),
+        payout_structure: JSON.stringify(data.payout_structure),
+        registration_open_time: new Date().toISOString(),
+        start_time: data.start_time.toISOString(),
+        name: data.name, // Ensure name is present
+      };
+
       const { data: tournament, error: createError } = await supabase
         .from('tournaments_new')
-        .insert({
-          ...data,
-          created_by: user.id,
-          status: 'SCHEDULED',
-          blind_structure: JSON.stringify(data.blind_structure),
-          payout_structure: JSON.stringify(data.payout_structure),
-          registration_open_time: new Date().toISOString(),
-          start_time: data.start_time.toISOString(),
-        })
+        .insert(tournamentData)
         .select()
         .single();
 
@@ -171,7 +177,7 @@ export function TournamentCreateDialog() {
 
       toast({
         title: t('tournaments.createSuccess'),
-        description: t('tournaments.tournamentCreated', { name: data.name }),
+        description: t('tournaments.tournamentCreated', { name: data.name })
       });
 
       navigate('/tournaments');
@@ -180,7 +186,7 @@ export function TournamentCreateDialog() {
       toast({
         title: t('tournaments.createError'),
         description: error.message,
-        variant: 'destructive'
+        variant: 'default'
       });
     } finally {
       setLoading(false);

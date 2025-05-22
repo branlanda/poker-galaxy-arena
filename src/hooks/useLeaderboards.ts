@@ -88,11 +88,16 @@ export const useLeaderboards = () => {
       if (fetchError) throw fetchError;
       
       // Process data to include player names and avatars
-      const processedEntries = data?.map(entry => ({
-        ...entry,
-        player_name: entry.profiles?.alias || 'Unknown Player',
-        player_avatar: entry.profiles?.avatar_url || null
-      })) as LeaderboardEntry[];
+      const processedEntries = data?.map(entry => {
+        // Type assertion to handle the profiles data properly
+        const profiles = entry.profiles as { alias?: string, avatar_url?: string } | null;
+        
+        return {
+          ...entry,
+          player_name: profiles?.alias || 'Unknown Player',
+          player_avatar: profiles?.avatar_url || null
+        };
+      }) as LeaderboardEntry[];
       
       setEntries(processedEntries || []);
     } catch (err: any) {

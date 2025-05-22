@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -21,7 +22,7 @@ import {
 } from "@/components/ui/table"
 import { Clock, Calendar, Users, Trophy, Badge as LucideBadge, Copy, User } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
-import { Tournament, TournamentRegistration } from '@/types/tournaments';
+import { Tournament, TournamentRegistration, BlindLevel, PayoutLevel } from '@/types/tournaments';
 import { Badge } from '@/components/ui/badge';
 import { DEFAULT_TOURNAMENT_FILTERS } from '@/types/tournaments';
 import { useAuth } from '@/stores/auth';
@@ -58,7 +59,19 @@ const TournamentDetail = () => {
         .single();
 
       if (error) throw error;
-      setTournament(data as Tournament);
+      
+      // Parse JSON fields before setting state
+      const parsedData = {
+        ...data,
+        blind_structure: typeof data.blind_structure === 'string' 
+          ? JSON.parse(data.blind_structure) 
+          : data.blind_structure || [],
+        payout_structure: typeof data.payout_structure === 'string'
+          ? JSON.parse(data.payout_structure)
+          : data.payout_structure || []
+      } as Tournament;
+      
+      setTournament(parsedData);
     } catch (error: any) {
       toast({
         title: t('errors.fetchFailed'),
@@ -78,11 +91,16 @@ const TournamentDetail = () => {
     
       if (error) throw error;
     
-      const processedData = data.map(reg => ({
-        ...reg,
-        player_name: reg.player_details?.alias || 'Unknown Player',
-        player_avatar: reg.player_details?.avatar_url || null
-      }));
+      const processedData = data.map(reg => {
+        // Type assertion to handle the player_details data properly
+        const playerDetails = reg.player_details as { alias?: string, avatar_url?: string } | null;
+        
+        return {
+          ...reg,
+          player_name: playerDetails?.alias || 'Unknown Player',
+          player_avatar: playerDetails?.avatar_url || null
+        };
+      });
     
       setRegistrations(processedData);
     } catch (error: any) {
@@ -98,7 +116,7 @@ const TournamentDetail = () => {
       toast({
         title: t('error'),
         description: t('mustBeLoggedIn'),
-        variant: 'destructive',
+        variant: 'default',
       });
       return;
     }
@@ -109,7 +127,7 @@ const TournamentDetail = () => {
       toast({
         title: t('error'),
         description: t('tournaments.incorrectAccessCode'),
-        variant: 'destructive',
+        variant: 'default',
       });
       return;
     }
@@ -142,7 +160,7 @@ const TournamentDetail = () => {
       toast({
         title: t('tournaments.registrationError'),
         description: error.message,
-        variant: 'destructive',
+        variant: 'default',
       });
     } finally {
       setIsJoining(false);
@@ -171,7 +189,7 @@ const TournamentDetail = () => {
       toast({
         title: t('tournaments.unregistrationError'),
         description: error.message,
-        variant: 'destructive',
+        variant: 'default',
       });
     } finally {
       setIsJoining(false);
@@ -204,7 +222,7 @@ const TournamentDetail = () => {
   };
 
   const renderPayoutStructure = () => {
-    if (!tournament?.payout_structure) {
+    if (!tournament?.payout_structure || tournament.payout_structure.length === 0) {
       return <div>{t('tournaments.noPayoutStructure')}</div>;
     }
 
@@ -230,7 +248,7 @@ const TournamentDetail = () => {
   };
 
   const renderBlindStructure = () => {
-    if (!tournament?.blind_structure) {
+    if (!tournament?.blind_structure || tournament.blind_structure.length === 0) {
       return <div>{t('tournaments.noBlindStructure')}</div>;
     }
 
