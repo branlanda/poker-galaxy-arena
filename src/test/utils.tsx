@@ -2,6 +2,7 @@
 import React, { ReactElement } from 'react';
 import { render, RenderOptions, screen, waitFor, fireEvent } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
+import '@testing-library/jest-dom';
 
 // Mock Web3Provider since we can't import from @/providers/Web3Provider
 const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -44,4 +45,3 @@ export function renderWithProviders(
 // Re-export everything from RTL
 export * from '@testing-library/react';
 export { renderWithProviders as render };
-
