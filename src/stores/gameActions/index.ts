@@ -3,3 +3,4 @@
 export { takeSeatAction } from './takeSeatAction';
 export { leaveSeatAction } from './leaveSeatAction';
 export { placeBetAction } from './placeBetAction';
+export { rebuyAction } from './rebuyAction';

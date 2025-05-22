@@ -3,6 +3,7 @@ import React, { ReactNode, useEffect } from 'react';
 import { useWalletStore } from '@/stores/wallet';
 import { ethers } from 'ethers';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Web3ProviderProps {
   children: ReactNode;
@@ -42,6 +43,10 @@ export function Web3Provider({ children }: Web3ProviderProps) {
       window.ethereum.on('disconnect', () => {
         setAddress(null);
         setEthBalance(null);
+        toast({
+          title: "Wallet disconnected",
+          description: "Your crypto wallet has been disconnected",
+        });
       });
     }
 
@@ -66,6 +71,20 @@ export function Web3Provider({ children }: Web3ProviderProps) {
       // User switched account
       setAddress(accounts[0]);
       updateBalance(accounts[0]);
+      
+      // Record wallet connection in the database
+      if (accounts[0]) {
+        try {
+          await supabase.from('wallet_connections').upsert({
+            wallet_address: accounts[0],
+            last_connected: new Date().toISOString(),
+            wallet_type: 'metamask'
+          }, { onConflict: 'wallet_address' });
+        } catch (error) {
+          console.error("Failed to record wallet connection:", error);
+        }
+      }
+      
       toast({
         title: "Wallet account changed",
         description: `Connected to ${accounts[0].substring(0, 6)}...${accounts[0].substring(38)}`,
