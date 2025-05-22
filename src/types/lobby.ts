@@ -1,4 +1,3 @@
-
 export type TableStatus = 'WAITING' | 'ACTIVE' | 'PAUSED' | 'FINISHED';
 export type TableType = 'CASH' | 'TOURNAMENT' | 'ALL';
 export type PlayerStatus = 'SITTING' | 'ACTIVE' | 'AWAY' | 'LEFT';
@@ -19,9 +18,9 @@ export interface LobbyTable {
   max_buy_in: number;
   max_players: number;
   current_players: number;
-  active_players: number; // New field
-  hand_number: number; // New field
-  last_activity: string; // New field
+  active_players: number;
+  hand_number: number;
+  last_activity: string;
   table_type: TableType;
   status: TableStatus;
   is_private: boolean;
@@ -84,8 +83,8 @@ export interface TableFilters {
   showFull: boolean;
   showEmpty: boolean;
   showPrivate: boolean;
-  showActive: boolean; // New field
-  sortBy: SortOption; // New field
+  showActive: boolean;
+  sortBy: SortOption;
 }
 
 export const DEFAULT_FILTERS: TableFilters = {

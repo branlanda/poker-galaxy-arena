@@ -100,11 +100,12 @@ export function useJoinTable() {
 
       if (joinError) throw new Error(joinError.message);
       
-      // Update the table's last_activity field
+      // Update the table's last activity timestamp
+      const timestamp = new Date().toISOString();
       await supabase
         .from('lobby_tables')
         .update({
-          last_activity: new Date().toISOString()
+          updated_at: timestamp
         })
         .eq('id', tableId);
       

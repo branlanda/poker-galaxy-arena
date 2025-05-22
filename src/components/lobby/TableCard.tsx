@@ -1,4 +1,3 @@
-
 import { LobbyTable } from '@/types/lobby';
 import { Button } from "@/components/ui/Button";
 import {
@@ -21,7 +20,7 @@ import { Badge } from "@/components/ui/badge";
 import { useState } from 'react';
 import { useJoinTable } from '@/hooks/useJoinTable';
 import { formatDistanceToNow } from 'date-fns';
-import { Activity, Clock, Fire, Lock, Users } from 'lucide-react';
+import { Activity, Clock, Flame, Lock, Users } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTranslation } from '@/hooks/useTranslation';
 
@@ -84,7 +83,7 @@ export function TableCard({ table, isNew = false }: TableCardProps) {
         {isHot && (
           <div className="absolute top-0 right-0 mt-2 mr-2 z-10">
             <Badge variant="secondary" className="bg-amber-500/20 text-amber-400 flex items-center gap-1">
-              <Fire size={14} className="animate-pulse" />
+              <Flame size={14} className="animate-pulse" />
               {t('hot', 'Hot')}
             </Badge>
           </div>

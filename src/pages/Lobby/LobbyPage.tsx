@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { TableFilters, DEFAULT_FILTERS, LobbyTable } from '@/types/lobby';
 import { useLobbyTables } from '@/hooks/useLobbyTables';
@@ -7,7 +6,7 @@ import { TableCard } from '@/components/lobby/TableCard';
 import { CreateTableDialog } from '@/components/lobby/CreateTableDialog';
 import { useAuth } from '@/stores/auth';
 import { Button } from '@/components/ui/Button';
-import { Fire, Loader2, Plus, RefreshCcw, Search, TableProperties } from 'lucide-react';
+import { Flame, Loader2, Plus, RefreshCcw, Search, TableProperties } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -163,7 +162,7 @@ export default function LobbyPage() {
           <>
             {renderTableSection(
               t('hotTables', 'Hot Tables'), 
-              <Fire className="mr-2 h-5 w-5 text-amber-400" />, 
+              <Flame className="mr-2 h-5 w-5 text-amber-400" />, 
               hotTables
             )}
             
