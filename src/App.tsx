@@ -6,6 +6,8 @@ import LoginPage from './pages/auth/Login';
 import SignUpPage from './pages/auth/SignUp';
 import DashboardPage from './pages/Index';
 import FundsPage from './pages/Funds/FundsPage';
+import ProfilePage from './pages/profile/ProfilePage';
+import SettingsPage from './pages/settings/Settings';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import { useAuthSync } from './hooks/useAuthSync';
 import NotFound from './pages/NotFound';
@@ -46,6 +48,18 @@ function App() {
         <Route path="/" element={<DashboardPage />} />
         
         {/* Protected routes */}
+        <Route path="/profile" element={
+          <ProtectedRoute>
+            <ProfilePage />
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/settings" element={
+          <ProtectedRoute>
+            <SettingsPage />
+          </ProtectedRoute>
+        } />
+        
         <Route path="/funds" element={
           <ProtectedRoute>
             <FundsPage />

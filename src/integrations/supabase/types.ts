@@ -774,6 +774,33 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          alias: string | null
+          avatar_url: string | null
+          created_at: string | null
+          id: string
+          show_public_stats: boolean | null
+          updated_at: string | null
+        }
+        Insert: {
+          alias?: string | null
+          avatar_url?: string | null
+          created_at?: string | null
+          id: string
+          show_public_stats?: boolean | null
+          updated_at?: string | null
+        }
+        Update: {
+          alias?: string | null
+          avatar_url?: string | null
+          created_at?: string | null
+          id?: string
+          show_public_stats?: boolean | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       seats: {
         Row: {
           id: number
