@@ -10,7 +10,7 @@ const mockPlaceBet = async (playerId: string, amount: number, action: any) => {
 };
 
 // Override the useGameStore implementation for Storybook
-jest.mock('@/stores/game', () => ({
+vi.mock('@/stores/game', () => ({
   useGameStore: () => ({
     placeBet: mockPlaceBet,
   }),

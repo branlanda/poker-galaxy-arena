@@ -1,13 +1,16 @@
 
 import React, { ReactElement } from 'react';
-import { render, RenderOptions, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, RenderOptions } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
+import { Web3Provider } from '@/providers/Web3Provider';
 
 // Create a custom wrapper component that includes all providers
 const AllProviders: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
     <BrowserRouter>
-      {children}
+      <Web3Provider>
+        {children}
+      </Web3Provider>
     </BrowserRouter>
   );
 };

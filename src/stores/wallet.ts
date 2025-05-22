@@ -1,7 +1,7 @@
 
 import { create } from 'zustand';
 import { supabase } from '@/integrations/supabase/client';
-import { StoreAction, Store, StoreDefinition } from './storeTypes';
+import { StoreAction } from './storeTypes';
 
 export type TransactionStatus = 'pending' | 'confirmed' | 'failed';
 export type TransactionType = 'deposit' | 'withdraw';
@@ -37,179 +37,6 @@ export interface WalletActions {
   withdrawFunds: StoreAction<WalletState, [string, number], Promise<string | null>>;
 }
 
-// Define store
-const walletStore: StoreDefinition<WalletState, WalletActions> = {
-  state: {
-    address: null,
-    balance: 0,
-    ethBalance: null,
-    connecting: false,
-    transactions: [],
-  },
-  
-  actions: {
-    setAddress: function(this, state, address) { 
-      return { ...state, address }; 
-    },
-    
-    setBalance: function(this, state, balance) { 
-      return { ...state, balance }; 
-    },
-    
-    setEthBalance: function(this, state, ethBalance) { 
-      return { ...state, ethBalance }; 
-    },
-    
-    setConnecting: function(this, state, connecting) { 
-      return { ...state, connecting }; 
-    },
-    
-    addTransaction: function(this, state, transaction) {
-      return {
-        ...state,
-        transactions: [transaction, ...state.transactions]
-      };
-    },
-    
-    updateTransaction: function(this, state, id, status) {
-      return {
-        ...state,
-        transactions: state.transactions.map(tx => 
-          tx.id === id ? { ...tx, status } : tx
-        )
-      };
-    },
-    
-    loadTransactions: async function(this, state, set, get) {
-      try {
-        const { data: ledgerData } = await supabase
-          .from('ledger_entries')
-          .select('*')
-          .order('created_at', { ascending: false });
-          
-        if (!ledgerData) return;
-        
-        const transactions: Transaction[] = ledgerData.map(entry => ({
-          id: entry.id.toString(), // Convert to string
-          hash: entry.tx_hash || '',
-          amount: entry.amount,
-          type: entry.tx_type === 'DEPOSIT' ? 'deposit' : 'withdraw',
-          status: (entry.meta?.status as TransactionStatus) || 'confirmed',
-          timestamp: new Date(entry.created_at),
-        }));
-        
-        set({ transactions });
-      } catch (error) {
-        console.error('Failed to load transactions:', error);
-      }
-    },
-    
-    depositFunds: async function(this, state, set, get, depositAmount) {
-      try {
-        // Here would be the ethereum deposit functionality
-        // For now we're simulating it with a direct API call
-        
-        const txId = `${Math.random().toString(36).substring(2, 15)}`;
-        const timestamp = new Date();
-        
-        // Add pending transaction to state
-        const transaction: Transaction = {
-          id: txId,
-          hash: `0x${Math.random().toString(36).substring(2, 15)}`,
-          amount: depositAmount,
-          type: 'deposit',
-          status: 'pending',
-          timestamp
-        };
-        
-        set({
-          transactions: [transaction, ...get().transactions]
-        });
-        
-        // Call the deposit API
-        const response = await fetch(`${import.meta.env.VITE_WALLET_API}/deposit`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ amount: depositAmount }),
-          credentials: 'include'
-        });
-        
-        const result = await response.json();
-        
-        if (!result.success) {
-          throw new Error(result.message || 'Deposit failed');
-        }
-        
-        // Update transaction status
-        set({
-          transactions: get().transactions.map(tx =>
-            tx.id === txId ? { ...tx, status: 'confirmed' as TransactionStatus } : tx
-          ),
-          balance: get().balance + depositAmount,
-        });
-        
-        return txId;
-      } catch (error) {
-        console.error('Deposit error:', error);
-        return null;
-      }
-    },
-    
-    withdrawFunds: async function(this, state, set, get, address, withdrawAmount) {
-      try {
-        // Here would be the ethereum withdraw functionality
-        // For now we're simulating it with a direct API call
-        
-        const txId = `${Math.random().toString(36).substring(2, 15)}`;
-        const timestamp = new Date();
-        
-        // Add pending transaction to state
-        const transaction: Transaction = {
-          id: txId,
-          hash: `0x${Math.random().toString(36).substring(2, 15)}`,
-          amount: withdrawAmount,
-          type: 'withdraw',
-          status: 'pending',
-          timestamp
-        };
-        
-        set({
-          transactions: [transaction, ...get().transactions]
-        });
-        
-        // Call the withdraw API
-        const response = await fetch(`${import.meta.env.VITE_WALLET_API}/withdraw`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ address, amount: withdrawAmount }),
-          credentials: 'include'
-        });
-        
-        if (!response.ok) {
-          throw new Error('Withdraw request failed');
-        }
-        
-        // Update transaction status
-        set({
-          transactions: get().transactions.map(tx =>
-            tx.id === txId ? { ...tx, status: 'confirmed' as TransactionStatus } : tx
-          ),
-          balance: get().balance - withdrawAmount,
-        });
-        
-        return txId;
-      } catch (error) {
-        console.error('Withdraw error:', error);
-        return null;
-      }
-    },
-  },
-};
-
 // Create the store
 export const useWalletStore = create<WalletState & {
   setAddress: (address: string | null) => void;
@@ -222,8 +49,13 @@ export const useWalletStore = create<WalletState & {
   depositFunds: (amount: number) => Promise<string | null>;
   withdrawFunds: (address: string, amount: number) => Promise<string | null>;
 }>((set, get) => ({
-  ...walletStore.state,
+  address: null,
+  balance: 0,
+  ethBalance: null,
+  connecting: false,
+  transactions: [],
   
+  // Sync actions
   setAddress: (address) => set({ address }),
   setBalance: (balance) => set({ balance }),
   setEthBalance: (ethBalance) => set({ ethBalance }),
@@ -239,15 +71,132 @@ export const useWalletStore = create<WalletState & {
     )
   })),
   
+  // Async actions
   loadTransactions: async () => {
-    await walletStore.actions.loadTransactions.call(null, get(), set, get);
+    try {
+      const { data: ledgerData } = await supabase
+        .from('ledger_entries')
+        .select('*')
+        .order('created_at', { ascending: false });
+        
+      if (!ledgerData) return;
+      
+      const transactions: Transaction[] = ledgerData.map(entry => ({
+        id: entry.id.toString(), // Convert to string
+        hash: entry.tx_hash || '',
+        amount: entry.amount,
+        type: entry.tx_type === 'DEPOSIT' ? 'deposit' : 'withdraw',
+        status: (entry.meta?.status as TransactionStatus) || 'confirmed',
+        timestamp: new Date(entry.created_at),
+      }));
+      
+      set({ transactions });
+    } catch (error) {
+      console.error('Failed to load transactions:', error);
+    }
   },
   
-  depositFunds: async (amount) => {
-    return walletStore.actions.depositFunds.call(null, get(), set, get, amount);
+  depositFunds: async (depositAmount) => {
+    try {
+      // Here would be the ethereum deposit functionality
+      // For now we're simulating it with a direct API call
+      
+      const txId = `${Math.random().toString(36).substring(2, 15)}`;
+      const timestamp = new Date();
+      
+      // Add pending transaction to state
+      const transaction: Transaction = {
+        id: txId,
+        hash: `0x${Math.random().toString(36).substring(2, 15)}`,
+        amount: depositAmount,
+        type: 'deposit',
+        status: 'pending',
+        timestamp
+      };
+      
+      set({
+        transactions: [transaction, ...get().transactions]
+      });
+      
+      // Call the deposit API
+      const response = await fetch(`${import.meta.env.VITE_WALLET_API}/deposit`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ amount: depositAmount }),
+        credentials: 'include'
+      });
+      
+      const result = await response.json();
+      
+      if (!result.success) {
+        throw new Error(result.message || 'Deposit failed');
+      }
+      
+      // Update transaction status
+      set({
+        transactions: get().transactions.map(tx =>
+          tx.id === txId ? { ...tx, status: 'confirmed' as TransactionStatus } : tx
+        ),
+        balance: get().balance + depositAmount,
+      });
+      
+      return txId;
+    } catch (error) {
+      console.error('Deposit error:', error);
+      return null;
+    }
   },
   
-  withdrawFunds: async (address, amount) => {
-    return walletStore.actions.withdrawFunds.call(null, get(), set, get, address, amount);
-  }
+  withdrawFunds: async (address, withdrawAmount) => {
+    try {
+      // Here would be the ethereum withdraw functionality
+      // For now we're simulating it with a direct API call
+      
+      const txId = `${Math.random().toString(36).substring(2, 15)}`;
+      const timestamp = new Date();
+      
+      // Add pending transaction to state
+      const transaction: Transaction = {
+        id: txId,
+        hash: `0x${Math.random().toString(36).substring(2, 15)}`,
+        amount: withdrawAmount,
+        type: 'withdraw',
+        status: 'pending',
+        timestamp
+      };
+      
+      set({
+        transactions: [transaction, ...get().transactions]
+      });
+      
+      // Call the withdraw API
+      const response = await fetch(`${import.meta.env.VITE_WALLET_API}/withdraw`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ address, amount: withdrawAmount }),
+        credentials: 'include'
+      });
+      
+      if (!response.ok) {
+        throw new Error('Withdraw request failed');
+      }
+      
+      // Update transaction status
+      set({
+        transactions: get().transactions.map(tx =>
+          tx.id === txId ? { ...tx, status: 'confirmed' as TransactionStatus } : tx
+        ),
+        balance: get().balance - withdrawAmount,
+      });
+      
+      return txId;
+    } catch (error) {
+      console.error('Withdraw error:', error);
+      return null;
+    }
+  },
 }));

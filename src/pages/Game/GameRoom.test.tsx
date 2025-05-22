@@ -1,10 +1,9 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@/test/utils';
 import GameRoom from './GameRoom';
 import { useGameStore } from '@/stores/game';
 import { useAuth } from '@/stores/auth';
-import { supabase } from '@/integrations/supabase/client';
 
 // Mock stores and hooks
 vi.mock('@/stores/game', () => ({
@@ -69,7 +68,7 @@ describe('GameRoom Component', () => {
     });
     
     // Mock Supabase responses for table data
-    (supabase.from as any).mockImplementation(() => ({
+    (vi.mocked(supabase.from) as any).mockImplementation(() => ({
       select: () => ({
         eq: () => ({
           single: () => Promise.resolve({ 

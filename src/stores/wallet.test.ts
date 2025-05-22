@@ -2,7 +2,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { act } from '@testing-library/react';
 import { useWalletStore } from './wallet';
-import { supabase } from '@/integrations/supabase/client';
 
 // Setup fetch mock
 global.fetch = vi.fn();

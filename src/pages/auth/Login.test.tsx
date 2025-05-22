@@ -1,6 +1,6 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@/test/utils';
 import { toast } from 'sonner';
 import Login from './Login';
 import { supabase } from '@/integrations/supabase/client';
@@ -61,11 +61,11 @@ describe('Login Component', () => {
       expect(toast.error).toHaveBeenCalledWith('Email and password are required');
     });
     
-    expect(supabase.auth.signInWithPassword).not.toHaveBeenCalled();
+    expect(vi.mocked(supabase.auth.signInWithPassword)).not.toHaveBeenCalled();
   });
 
   it('calls supabase signIn when form is submitted with valid data', async () => {
-    (supabase.auth.signInWithPassword as any).mockResolvedValue({
+    (vi.mocked(supabase.auth.signInWithPassword) as any).mockResolvedValue({
       data: { user: { id: '123', email: 'test@example.com' } },
       error: null,
     });
@@ -81,7 +81,7 @@ describe('Login Component', () => {
     fireEvent.click(signInButton);
     
     await waitFor(() => {
-      expect(supabase.auth.signInWithPassword).toHaveBeenCalledWith({
+      expect(vi.mocked(supabase.auth.signInWithPassword)).toHaveBeenCalledWith({
         email: 'test@example.com',
         password: 'password123',
       });
@@ -92,7 +92,7 @@ describe('Login Component', () => {
   });
 
   it('shows error message when login fails', async () => {
-    (supabase.auth.signInWithPassword as any).mockResolvedValue({
+    (vi.mocked(supabase.auth.signInWithPassword) as any).mockResolvedValue({
       data: null,
       error: { message: 'Invalid credentials' },
     });
