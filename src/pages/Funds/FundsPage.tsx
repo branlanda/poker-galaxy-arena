@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useToast } from "@/hooks/use-toast";
 import { getLedger } from '@/lib/api/wallet';
@@ -11,6 +11,8 @@ import WithdrawTab from './WithdrawTab';
 import LedgerTable from './LedgerTable';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Info } from "lucide-react";
+import { WalletConnect } from '@/components/wallet/WalletConnect';
+import { useWalletStore } from '@/stores/wallet';
 
 const FundsPage = () => {
   const { data: balance, isLoading: isBalanceLoading, error: balanceError } = useBalance();
@@ -18,6 +20,7 @@ const FundsPage = () => {
     queryKey: ['ledger'],
     queryFn: getLedger
   });
+  const { ethBalance } = useWalletStore();
 
   const { toast } = useToast();
 
@@ -42,7 +45,12 @@ const FundsPage = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">Mi Billetera</h1>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+        <h1 className="text-3xl font-bold">Mi Billetera</h1>
+        <div className="mt-4 sm:mt-0">
+          <WalletConnect />
+        </div>
+      </div>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <Card className="p-6 col-span-2">
@@ -54,6 +62,12 @@ const FundsPage = () => {
               <span>{balance?.amount.toFixed(2)} USDT</span>
             )}
           </div>
+          
+          {ethBalance && (
+            <div className="mt-2 text-sm text-muted-foreground">
+              <span>ETH en wallet: {parseFloat(ethBalance).toFixed(4)} ETH</span>
+            </div>
+          )}
         </Card>
         
         <Card className="p-6">

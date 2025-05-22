@@ -21,6 +21,19 @@ import Users from './pages/Admin/Users';
 import Tables from './pages/Admin/Tables';
 import Ledger from './pages/Admin/Ledger';
 import { AdminGuard } from './hooks/useAdminGuard';
+import { Web3Provider } from './providers/Web3Provider';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Toaster } from "@/components/ui/toaster";
+
+// Create a client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 60 * 1000,
+      retry: 1,
+    },
+  },
+});
 
 function App() {
   const [loading, setLoading] = useState(true);
@@ -49,59 +62,64 @@ function App() {
   }
 
   return (
-    <Router>
-      <Routes>
-        {/* Auth routes */}
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/signup" element={<SignUpPage />} />
-        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-        <Route path="/reset-password" element={<ResetPasswordPage />} />
-        
-        {/* Public routes */}
-        <Route path="/" element={<DashboardPage />} />
-        <Route path="/lobby" element={<LobbyPage />} />
-        
-        {/* Protected routes */}
-        <Route path="/game/:tableId" element={
-          <ProtectedRoute>
-            <GameRoom />
-          </ProtectedRoute>
-        } />
-        
-        <Route path="/profile" element={
-          <ProtectedRoute>
-            <ProfilePage />
-          </ProtectedRoute>
-        } />
-        
-        <Route path="/settings" element={
-          <ProtectedRoute>
-            <SettingsPage />
-          </ProtectedRoute>
-        } />
-        
-        <Route path="/funds" element={
-          <ProtectedRoute>
-            <FundsPage />
-          </ProtectedRoute>
-        } />
-        
-        {/* Admin routes */}
-        <Route path="/admin" element={
-          <AdminGuard>
-            <AdminLayout />
-          </AdminGuard>
-        }>
-          <Route index element={<Dashboard />} />
-          <Route path="users" element={<Users />} />
-          <Route path="tables" element={<Tables />} />
-          <Route path="ledger" element={<Ledger />} />
-        </Route>
-        
-        {/* 404 route */}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </Router>
+    <QueryClientProvider client={queryClient}>
+      <Web3Provider>
+        <Router>
+          <Routes>
+            {/* Auth routes */}
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup" element={<SignUpPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
+            
+            {/* Public routes */}
+            <Route path="/" element={<DashboardPage />} />
+            <Route path="/lobby" element={<LobbyPage />} />
+            
+            {/* Protected routes */}
+            <Route path="/game/:tableId" element={
+              <ProtectedRoute>
+                <GameRoom />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/profile" element={
+              <ProtectedRoute>
+                <ProfilePage />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/settings" element={
+              <ProtectedRoute>
+                <SettingsPage />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/funds" element={
+              <ProtectedRoute>
+                <FundsPage />
+              </ProtectedRoute>
+            } />
+            
+            {/* Admin routes */}
+            <Route path="/admin" element={
+              <AdminGuard>
+                <AdminLayout />
+              </AdminGuard>
+            }>
+              <Route index element={<Dashboard />} />
+              <Route path="users" element={<Users />} />
+              <Route path="tables" element={<Tables />} />
+              <Route path="ledger" element={<Ledger />} />
+            </Route>
+            
+            {/* 404 route */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Router>
+        <Toaster />
+      </Web3Provider>
+    </QueryClientProvider>
   );
 }
 
