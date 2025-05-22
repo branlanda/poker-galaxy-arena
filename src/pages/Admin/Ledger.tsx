@@ -52,8 +52,8 @@ const Ledger = () => {
         
         <TabsContent value="transactions">
           <Card className="p-4">
-            <LedgerFilters
-              onFilterChange={filters => setFilters(filters)}
+            <LedgerFilters 
+              onFilterChange={setFilters}
               currentFilters={filters}
             />
             <LedgerTable />
