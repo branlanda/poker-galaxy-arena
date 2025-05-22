@@ -10,7 +10,7 @@ import { useMemo } from 'react';
  * @returns Enhanced translation utilities
  */
 export const useTranslation = (ns?: string | string[], options?: UseTranslationOptions<string>) => {
-  const { t, i18n } = useReactI18next(ns, options);
+  const { t: originalT, i18n } = useReactI18next(ns, options);
   const { currentLanguage, setLanguage, getLanguageByCode } = useLanguage();
 
   // Make sure the i18next instance is in sync with our language store
@@ -20,8 +20,15 @@ export const useTranslation = (ns?: string | string[], options?: UseTranslationO
 
   // Enhanced translation functionality
   const enhancedT = useMemo(() => {
-    const tFunction = (key: string, options?: any) => {
-      const translation = t(key, options);
+    const tFunction = (key: string, options?: any): string => {
+      const translation = originalT(key, options);
+      
+      // Handle case when translation is missing
+      if (typeof translation === 'object') {
+        // If the result is an object, return the key as a fallback
+        console.warn(`Translation for key "${key}" returned an object instead of a string`);
+        return key.split('.').pop() || key;
+      }
       
       // Return key as fallback if translation is missing (helpful for development)
       if (translation === key && key.includes('.')) {
@@ -32,7 +39,7 @@ export const useTranslation = (ns?: string | string[], options?: UseTranslationO
     };
     
     return tFunction;
-  }, [t]);
+  }, [originalT]);
 
   return {
     t: enhancedT,

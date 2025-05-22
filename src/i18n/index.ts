@@ -21,8 +21,6 @@ i18n
       fr: { translation: frTranslation },
       de: { translation: deTranslation },
       // Additional languages will be added as they become available
-      // Example:
-      // 'pt-br': { translation: ptBrTranslation },
     },
     fallbackLng: 'en',
     debug: process.env.NODE_ENV === 'development',
@@ -37,6 +35,10 @@ i18n
       caches: ['localStorage'],
       lookupLocalStorage: 'language',
     },
+    
+    returnNull: false,    // Don't return null for missing translations
+    returnEmptyString: false, // Don't return empty string for missing translations
+    returnObjects: false,     // Don't return objects for namespace fallbacks
     
     // Handle plurals and nested keys
     keySeparator: '.',
