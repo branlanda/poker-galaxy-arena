@@ -20,6 +20,9 @@ i18n
       es: { translation: esTranslation },
       fr: { translation: frTranslation },
       de: { translation: deTranslation },
+      // Additional languages will be added as they become available
+      // Example:
+      // 'pt-br': { translation: ptBrTranslation },
     },
     fallbackLng: 'en',
     debug: process.env.NODE_ENV === 'development',
@@ -30,14 +33,34 @@ i18n
     
     // Set detection options
     detection: {
-      order: ['localStorage', 'navigator'],
+      order: ['localStorage', 'navigator', 'htmlTag'],
       caches: ['localStorage'],
+      lookupLocalStorage: 'language',
     },
+    
+    // Handle plurals and nested keys
+    keySeparator: '.',
+    nsSeparator: ':',
+    pluralSeparator: '_',
+    contextSeparator: '_',
   });
 
 // Function to change language that updates both i18next and our language store
 export const changeLanguage = (languageCode: string) => {
   return i18n.changeLanguage(languageCode);
 };
+
+// Handle RTL languages
+i18n.on('languageChanged', (lng) => {
+  const language = languages.find(l => l.code === lng);
+  
+  if (language?.isRTL) {
+    document.documentElement.setAttribute('dir', 'rtl');
+    document.documentElement.classList.add('rtl');
+  } else {
+    document.documentElement.setAttribute('dir', 'ltr');
+    document.documentElement.classList.remove('rtl');
+  }
+});
 
 export default i18n;
