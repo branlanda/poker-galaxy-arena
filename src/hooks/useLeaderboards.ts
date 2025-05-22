@@ -101,7 +101,6 @@ export const useLeaderboards = () => {
       toast({
         title: t('errors.fetchFailed'),
         description: err.message,
-        variant: 'destructive',
       });
     } finally {
       setLoading(false);

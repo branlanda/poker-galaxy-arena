@@ -11,8 +11,8 @@ import LobbyPage from '@/pages/Lobby/LobbyPage';
 import ProfilePage from '@/pages/profile/ProfilePage';
 import FundsPage from '@/pages/Funds/FundsPage';
 import Settings from '@/pages/settings/Settings';
-import { TournamentsRoutes } from './router/TournamentsRoutes';
-import { AdminRoutes } from './router/AdminRoutes';
+import { TournamentRoutes } from './router/TournamentsRoutes';
+import AdminRoutes from './router/AdminRoutes';
 
 const routes: RouteObject[] = [
   {
@@ -55,7 +55,7 @@ const routes: RouteObject[] = [
     path: '/settings',
     element: <Settings />,
   },
-  ...TournamentsRoutes,
+  ...TournamentRoutes,
   ...AdminRoutes,
   {
     path: '*',

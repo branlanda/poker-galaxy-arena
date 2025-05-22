@@ -27,13 +27,13 @@ import { useTranslation } from '@/hooks/useTranslation';
 
 export function Navbar() {
   const { t } = useTranslation();
-  const { user, signOut: authSignOut } = useAuth();
+  const { user, logout } = useAuth();
   const { balance: userBalance } = useBalance();
   const [isOpen, setIsOpen] = useState(false);
   const isMobile = useIsMobile();
 
   const handleSignOut = () => {
-    authSignOut();
+    logout();
   };
 
   const getInitials = (email: string) => {
@@ -119,7 +119,7 @@ export function Navbar() {
                   >
                     <Avatar className="h-8 w-8">
                       <AvatarImage
-                        src={user.user_metadata?.avatar_url}
+                        src={user.avatarUrl || ''}
                         alt={user.email || ""}
                       />
                       <AvatarFallback>
