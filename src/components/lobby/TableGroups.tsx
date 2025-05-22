@@ -27,6 +27,7 @@ export function TableGroups({ tables, groupAndSortTables, newTableIds }: TableGr
         icon={<Flame className="mr-2 h-5 w-5 text-amber-400" />}
         tables={hotTables}
         newTableIds={newTableIds}
+        className="animate-fade-in"
       />
       
       <TableSection

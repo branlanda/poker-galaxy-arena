@@ -8,13 +8,20 @@ interface TableSectionProps {
   icon: JSX.Element;
   tables: LobbyTable[];
   newTableIds: Set<string>;
+  className?: string;
 }
 
-export function TableSection({ title, icon, tables, newTableIds }: TableSectionProps) {
+export function TableSection({ 
+  title, 
+  icon, 
+  tables, 
+  newTableIds,
+  className = "" 
+}: TableSectionProps) {
   if (tables.length === 0) return null;
   
   return (
-    <div>
+    <div className={className}>
       <h2 className="flex items-center text-xl font-semibold mb-3 text-emerald">
         {icon} {title} ({tables.length})
       </h2>

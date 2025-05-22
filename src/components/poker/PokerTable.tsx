@@ -1,15 +1,15 @@
 
-import { GameState, SeatState } from '@/types/game';
+import { GameState } from '@/types/game';
 import { CommunityCards } from '@/components/poker/CommunityCards';
 import { PlayerSeat } from '@/components/poker/PlayerSeat';
 import { PokerChip } from '@/components/poker/PokerChip';
-import { BetActions } from '@/components/poker/BetActions';
+import { PlayerActions } from '@/components/poker/PlayerActions';
 
 interface PokerTableProps {
   gameState: GameState | null;
   isPlayerSeated: boolean;
   isPlayerTurn: boolean;
-  playerSeat: number;
+  playerSeatIndex: number;
   userId: string | undefined;
   onSitDown: (seatNumber: number) => void;
 }
@@ -18,18 +18,23 @@ export function PokerTable({
   gameState, 
   isPlayerSeated, 
   isPlayerTurn, 
-  playerSeat, 
+  playerSeatIndex,
   userId,
   onSitDown 
 }: PokerTableProps) {
+  // Get current player's seat data if seated
+  const playerSeat = isPlayerSeated && gameState?.seats[playerSeatIndex] 
+    ? gameState.seats[playerSeatIndex] 
+    : null;
+
   return (
     <div className="relative">
       {/* Elliptical table background */}
       <div className="aspect-[4/3] w-full bg-green-900/80 rounded-[50%] border-8 border-amber-950 shadow-xl overflow-hidden relative mb-8">
-        {/* Table felt pattern overlay */}
-        <div className="absolute inset-0 opacity-10 bg-grid-pattern"></div>
+        {/* Table felt pattern */}
+        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle,_#4444_1px,_transparent_1px)_repeat] bg-[size:20px_20px]"></div>
         
-        {/* Center info area */}
+        {/* Center pot area */}
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           {gameState?.pot > 0 && (
             <div className="flex flex-col items-center mb-4">
@@ -56,43 +61,98 @@ export function PokerTable({
           </div>
         </div>
         
-        {/* Player positions - 9-player layout */}
+        {/* Player seats - using a 9-seat layout */}
         <div className="absolute inset-0">
-          {/* Top row (seats 0-2) */}
+          {/* Top row - seats 0, 1, 2 */}
           <div className="absolute top-[5%] left-0 right-0 flex justify-between px-[15%]">
-            <div><PlayerSeat position={0} state={gameState?.seats[0] || null} isCurrentPlayer={playerSeat === 0} onSitDown={!isPlayerSeated ? onSitDown : undefined} /></div>
-            <div><PlayerSeat position={1} state={gameState?.seats[1] || null} isCurrentPlayer={playerSeat === 1} onSitDown={!isPlayerSeated ? onSitDown : undefined} /></div>
-            <div><PlayerSeat position={2} state={gameState?.seats[2] || null} isCurrentPlayer={playerSeat === 2} onSitDown={!isPlayerSeated ? onSitDown : undefined} /></div>
+            <PlayerSeat 
+              position={0}
+              state={gameState?.seats[0] || null}
+              isCurrentPlayer={playerSeatIndex === 0}
+              isActive={gameState?.activePlayerId === gameState?.seats[0]?.playerId}
+              onSitDown={!isPlayerSeated ? onSitDown : undefined}
+            />
+            <PlayerSeat 
+              position={1}
+              state={gameState?.seats[1] || null}
+              isCurrentPlayer={playerSeatIndex === 1}
+              isActive={gameState?.activePlayerId === gameState?.seats[1]?.playerId}
+              onSitDown={!isPlayerSeated ? onSitDown : undefined}
+            />
+            <PlayerSeat 
+              position={2}
+              state={gameState?.seats[2] || null}
+              isCurrentPlayer={playerSeatIndex === 2}
+              isActive={gameState?.activePlayerId === gameState?.seats[2]?.playerId}
+              onSitDown={!isPlayerSeated ? onSitDown : undefined}
+            />
           </div>
           
-          {/* Left middle (seat 3) */}
-          <div className="absolute top-[40%] left-[2%]">
-            <PlayerSeat position={3} state={gameState?.seats[3] || null} isCurrentPlayer={playerSeat === 3} onSitDown={!isPlayerSeated ? onSitDown : undefined} />
+          {/* Left side - seats 3, 4 */}
+          <div className="absolute left-[2%] top-[40%]">
+            <PlayerSeat 
+              position={3}
+              state={gameState?.seats[3] || null}
+              isCurrentPlayer={playerSeatIndex === 3}
+              isActive={gameState?.activePlayerId === gameState?.seats[3]?.playerId}
+              onSitDown={!isPlayerSeated ? onSitDown : undefined}
+            />
           </div>
           
-          {/* Right middle (seat 4) */}
-          <div className="absolute top-[40%] right-[2%]">
-            <PlayerSeat position={4} state={gameState?.seats[4] || null} isCurrentPlayer={playerSeat === 4} onSitDown={!isPlayerSeated ? onSitDown : undefined} />
+          {/* Right side - seats 4, 5 */}
+          <div className="absolute right-[2%] top-[40%]">
+            <PlayerSeat 
+              position={4}
+              state={gameState?.seats[4] || null}
+              isCurrentPlayer={playerSeatIndex === 4}
+              isActive={gameState?.activePlayerId === gameState?.seats[4]?.playerId}
+              onSitDown={!isPlayerSeated ? onSitDown : undefined}
+            />
           </div>
           
-          {/* Bottom row (seats 5-8) */}
+          {/* Bottom row - seats 5, 6, 7, 8 */}
           <div className="absolute bottom-[5%] left-0 right-0 flex justify-between px-[10%]">
-            <div><PlayerSeat position={5} state={gameState?.seats[5] || null} isCurrentPlayer={playerSeat === 5} onSitDown={!isPlayerSeated ? onSitDown : undefined} /></div>
-            <div><PlayerSeat position={6} state={gameState?.seats[6] || null} isCurrentPlayer={playerSeat === 6} onSitDown={!isPlayerSeated ? onSitDown : undefined} /></div>
-            <div><PlayerSeat position={7} state={gameState?.seats[7] || null} isCurrentPlayer={playerSeat === 7} onSitDown={!isPlayerSeated ? onSitDown : undefined} /></div>
-            <div><PlayerSeat position={8} state={gameState?.seats[8] || null} isCurrentPlayer={playerSeat === 8} onSitDown={!isPlayerSeated ? onSitDown : undefined} /></div>
+            <PlayerSeat 
+              position={5}
+              state={gameState?.seats[5] || null}
+              isCurrentPlayer={playerSeatIndex === 5}
+              isActive={gameState?.activePlayerId === gameState?.seats[5]?.playerId}
+              onSitDown={!isPlayerSeated ? onSitDown : undefined}
+            />
+            <PlayerSeat 
+              position={6}
+              state={gameState?.seats[6] || null}
+              isCurrentPlayer={playerSeatIndex === 6}
+              isActive={gameState?.activePlayerId === gameState?.seats[6]?.playerId}
+              onSitDown={!isPlayerSeated ? onSitDown : undefined}
+            />
+            <PlayerSeat 
+              position={7}
+              state={gameState?.seats[7] || null}
+              isCurrentPlayer={playerSeatIndex === 7}
+              isActive={gameState?.activePlayerId === gameState?.seats[7]?.playerId}
+              onSitDown={!isPlayerSeated ? onSitDown : undefined}
+            />
+            <PlayerSeat 
+              position={8}
+              state={gameState?.seats[8] || null}
+              isCurrentPlayer={playerSeatIndex === 8}
+              isActive={gameState?.activePlayerId === gameState?.seats[8]?.playerId}
+              onSitDown={!isPlayerSeated ? onSitDown : undefined}
+            />
           </div>
         </div>
       </div>
       
-      {/* Action area (only shown when it's the player's turn) */}
-      {isPlayerTurn && isPlayerSeated && gameState?.seats[playerSeat] && userId && (
+      {/* Player actions area - only shown when it's the player's turn */}
+      {isPlayerTurn && isPlayerSeated && playerSeat && userId && (
         <div className="mt-4 flex justify-center">
-          <BetActions
+          <PlayerActions
             playerId={userId}
-            playerStack={gameState.seats[playerSeat]!.stack}
-            currentBet={gameState.currentBet}
-            playerBet={gameState.seats[playerSeat]!.bet}
+            currentBet={gameState?.currentBet || 0}
+            playerBet={playerSeat.bet}
+            stack={playerSeat.stack}
+            isActive={true}
           />
         </div>
       )}
