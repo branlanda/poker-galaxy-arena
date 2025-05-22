@@ -43,7 +43,6 @@ const RakeChart = () => {
           config={{
             rake: {
               label: "Rake",
-              color: "#10b981", // emerald-500
               theme: { light: "#10b981", dark: "#10b981" },
             },
           }}
