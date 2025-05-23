@@ -1,174 +1,264 @@
 
-import React from 'react';
-import { useAchievements } from '@/hooks/useAchievements';
+import { useEffect, useState } from 'react';
 import { useAuth } from '@/stores/auth';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from '@/hooks/useTranslation';
+import { 
+  Achievement, 
+  PlayerAchievement, 
+  PlayerLevel
+} from '@/types/gamification';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Unlock, Lock, Medal, Trophy } from 'lucide-react';
+import { Award, Trophy, Star, Users } from 'lucide-react';
+import { AchievementsSection } from '@/components/profile/AchievementsSection';
 
 export function AchievementsPage() {
-  const { achievements, playerAchievements, loading } = useAchievements();
   const { user } = useAuth();
   const { t } = useTranslation();
+  const { toast } = useToast();
   
-  // Group achievements by category
-  const groupedAchievements = achievements.reduce((acc, achievement) => {
-    if (!acc[achievement.category]) {
-      acc[achievement.category] = [];
-    }
-    acc[achievement.category].push(achievement);
-    return acc;
-  }, {} as Record<string, typeof achievements>);
+  const [achievements, setAchievements] = useState<PlayerAchievement[]>([]);
+  const [playerLevel, setPlayerLevel] = useState<PlayerLevel | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('all');
   
-  const categories = Object.keys(groupedAchievements).sort();
+  useEffect(() => {
+    if (!user) return;
+    
+    const fetchAchievements = async () => {
+      setLoading(true);
+      try {
+        // Fetch player achievements with achievement details
+        const { data: achievementsData, error: achievementsError } = await supabase
+          .from('player_achievements')
+          .select(`
+            *,
+            achievement:achievement_id (
+              id, name, description, icon_url, category, points
+            )
+          `)
+          .eq('player_id', user.id);
+          
+        if (achievementsError) throw achievementsError;
+        
+        // Fetch player level information
+        const { data: levelData, error: levelError } = await supabase
+          .from('player_levels')
+          .select(`
+            *,
+            level_definition:current_level (
+              level, xp_required, title, rewards
+            )
+          `)
+          .eq('player_id', user.id)
+          .single();
+          
+        if (levelError && levelError.code !== 'PGRST116') {
+          throw levelError;
+        }
+        
+        setAchievements(achievementsData || []);
+        setPlayerLevel(levelData || null);
+      } catch (err) {
+        console.error('Error fetching achievements:', err);
+        toast({
+          title: t('errors.fetchFailed'),
+          description: t('profile.achievementsFetchError'),
+          variant: 'destructive',
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchAchievements();
+  }, [user]);
   
-  if (loading) {
+  const getProgressToNextLevel = () => {
+    if (!playerLevel || !playerLevel.level_definition) return 0;
+    
+    const currentLevelXP = playerLevel.current_xp;
+    const nextLevelXP = playerLevel.level_definition.xp_required;
+    
+    if (nextLevelXP <= 0) return 100;
+    return (currentLevelXP / nextLevelXP) * 100;
+  };
+  
+  // Filter achievements by category based on active tab
+  const filteredAchievements = achievements.filter(achievement => {
+    if (activeTab === 'all') return true;
+    return achievement.achievement?.category === activeTab;
+  });
+  
+  // Get unique categories from achievements
+  const categories = [...new Set(achievements.map(a => a.achievement?.category).filter(Boolean))];
+  
+  const completedCount = achievements.filter(a => a.completed).length;
+  const totalCount = achievements.length;
+  const completionPercentage = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
+  
+  if (!user) {
     return (
-      <div className="container py-8 flex justify-center items-center min-h-[50vh]">
-        <p>{t('loading', 'Loading...')}</p>
+      <div className="container py-8">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold mb-6">{t('achievements.title')}</h1>
+          <p className="mb-4">{t('achievements.loginRequired')}</p>
+          <a href="/login" className="text-emerald hover:underline">
+            {t('login')}
+          </a>
+        </div>
       </div>
     );
   }
   
   return (
     <div className="container py-8">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold">{t('achievements.title', 'Achievements')}</h1>
-        <p className="text-muted-foreground mt-1">
-          {t('achievements.description', 'Complete challenges and earn rewards as you play')}
-        </p>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+        <div>
+          <h1 className="text-3xl font-bold">{t('achievements.title')}</h1>
+          <p className="text-muted-foreground">{t('achievements.description')}</p>
+        </div>
       </div>
       
-      {!user ? (
-        <Card>
-          <CardContent className="py-6 text-center">
-            <Lock className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-            <h2 className="text-lg font-medium mb-2">
-              {t('achievements.loginToTrack', 'Log in to track your achievements')}
-            </h2>
-            <p className="text-muted-foreground">
-              {t('achievements.loginToTrackDescription', 'Create an account or log in to start collecting achievements and track your progress.')}
-            </p>
-          </CardContent>
-        </Card>
+      {loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="h-24 bg-navy/70 rounded-md animate-pulse"></div>
+          ))}
+        </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-            <Card>
-              <CardContent className="pt-6 flex items-center gap-4">
-                <Trophy className="h-12 w-12 text-emerald" />
-                <div>
-                  <h3 className="text-lg font-medium">
-                    {playerAchievements.filter(a => a.completed).length} / {achievements.length}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            {/* Player Level Card */}
+            <Card className="bg-gradient-to-br from-emerald-500/10 to-blue-500/10">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">{t('profile.level')}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-2xl font-bold">
+                    {t('profile.levelNumber', { level: playerLevel?.current_level || 1 })}
                   </h3>
-                  <p className="text-muted-foreground">{t('achievements.completed', 'Achievements completed')}</p>
+                  <Award className="h-6 w-6 text-emerald" />
+                </div>
+                
+                {playerLevel?.level_definition?.title && (
+                  <p className="text-sm text-muted-foreground mb-2">
+                    {playerLevel.level_definition.title}
+                  </p>
+                )}
+                
+                <div className="mt-4">
+                  <div className="flex items-center justify-between text-xs mb-1">
+                    <span>{t('profile.xpToNextLevel')}</span>
+                    <span>
+                      {playerLevel?.current_xp || 0} / 
+                      {playerLevel?.level_definition?.xp_required || 1000} XP
+                    </span>
+                  </div>
+                  <Progress value={getProgressToNextLevel()} className="h-1.5" />
                 </div>
               </CardContent>
             </Card>
             
+            {/* Achievements Progress Card */}
             <Card>
-              <CardContent className="pt-6 flex items-center gap-4">
-                <Medal className="h-12 w-12 text-amber-500" />
-                <div>
-                  <h3 className="text-lg font-medium">
-                    {playerAchievements.reduce((sum, a) => sum + (a.completed ? 1 : 0), 0) * 100}
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">{t('achievements.progress')}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-2xl font-bold">
+                    {completedCount} / {totalCount}
                   </h3>
-                  <p className="text-muted-foreground">{t('achievements.totalPoints', 'Total points earned')}</p>
+                  <Trophy className="h-6 w-6 text-emerald" />
+                </div>
+                
+                <p className="text-sm text-muted-foreground mb-2">
+                  {t('achievements.completed', { percentage: completionPercentage.toFixed(0) })}
+                </p>
+                
+                <div className="mt-4">
+                  <Progress value={completionPercentage} className="h-1.5" />
                 </div>
               </CardContent>
             </Card>
             
+            {/* Total Points Card */}
             <Card>
-              <CardContent className="pt-6 flex items-center gap-4">
-                <div className="h-12 w-12 rounded-full bg-blue-500/10 flex items-center justify-center">
-                  <span className="text-xl font-bold text-blue-500">
-                    {Math.round((playerAchievements.filter(a => a.completed).length / achievements.length) * 100)}%
-                  </span>
-                </div>
-                <div>
-                  <h3 className="text-lg font-medium">
-                    {t('achievements.completion', 'Completion')}
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">{t('achievements.points')}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between">
+                  <h3 className="text-2xl font-bold">
+                    {achievements.reduce((sum, a) => sum + (a.completed ? (a.achievement?.points || 0) : 0), 0)}
                   </h3>
-                  <Progress 
-                    value={(playerAchievements.filter(a => a.completed).length / achievements.length) * 100} 
-                    className="h-2 mt-1 w-32"
-                  />
+                  <Star className="h-6 w-6 text-emerald" />
                 </div>
+                
+                <p className="text-sm text-muted-foreground mt-2">
+                  {t('achievements.earnedPoints')}
+                </p>
+              </CardContent>
+            </Card>
+            
+            {/* Next Achievement Card */}
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">{t('achievements.nextMilestone')}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {achievements.some(a => !a.completed) ? (
+                  achievements
+                    .filter(a => !a.completed)
+                    .sort((a, b) => b.progress - a.progress)
+                    .slice(0, 1)
+                    .map(achievement => (
+                      <div key={achievement.id}>
+                        <p className="font-medium mb-1">{achievement.achievement?.name}</p>
+                        <div className="flex items-center justify-between text-xs mb-1">
+                          <span>{t('progress')}</span>
+                          <span>
+                            {Math.round(achievement.progress * 100)}%
+                          </span>
+                        </div>
+                        <Progress
+                          value={achievement.progress * 100}
+                          className="h-1.5"
+                        />
+                      </div>
+                    ))
+                ) : (
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm">{t('achievements.allCompleted')}</p>
+                    <Users className="h-6 w-6 text-emerald" />
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
           
-          {categories.length > 0 ? (
-            <Tabs defaultValue={categories[0]}>
-              <TabsList className="mb-4">
+          <div className="mb-6">
+            <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab}>
+              <TabsList>
+                <TabsTrigger value="all">{t('all')}</TabsTrigger>
                 {categories.map(category => (
                   <TabsTrigger key={category} value={category}>
                     {category}
                   </TabsTrigger>
                 ))}
               </TabsList>
-              
-              {categories.map(category => (
-                <TabsContent key={category} value={category} className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {groupedAchievements[category].map(achievement => {
-                      const playerAchievement = playerAchievements.find(
-                        pa => pa.achievement_id === achievement.id
-                      );
-                      const isUnlocked = !!playerAchievement?.completed;
-                      
-                      return (
-                        <Card key={achievement.id} className={isUnlocked ? 'border-emerald/50' : 'opacity-75'}>
-                          <CardHeader className="flex flex-row items-start gap-4">
-                            <div className={`rounded-full p-2 ${isUnlocked ? 'bg-emerald/20' : 'bg-muted'}`}>
-                              {isUnlocked ? (
-                                <Unlock className="h-6 w-6 text-emerald" />
-                              ) : (
-                                <Lock className="h-6 w-6 text-muted-foreground" />
-                              )}
-                            </div>
-                            <div className="space-y-1">
-                              <CardTitle className="text-base">
-                                {achievement.name}
-                              </CardTitle>
-                              <div className="text-sm text-muted-foreground">
-                                {achievement.description}
-                              </div>
-                              
-                              {playerAchievement && !isUnlocked && (
-                                <div className="mt-2">
-                                  <div className="text-xs text-muted-foreground mb-1">
-                                    {t('achievements.progress', 'Progress')}: 
-                                    {' '}{Math.round(playerAchievement.progress)}%
-                                  </div>
-                                  <Progress 
-                                    value={playerAchievement.progress} 
-                                    className="h-2"
-                                  />
-                                </div>
-                              )}
-                            </div>
-                            
-                            <div className="ml-auto text-sm font-medium">
-                              {achievement.points} {t('achievements.points', 'pts')}
-                            </div>
-                          </CardHeader>
-                        </Card>
-                      );
-                    })}
-                  </div>
-                </TabsContent>
-              ))}
             </Tabs>
-          ) : (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">
-                {t('achievements.noAchievements', 'No achievements available yet')}
-              </p>
-            </div>
-          )}
+          </div>
+          
+          <AchievementsSection 
+            achievements={filteredAchievements} 
+            loading={false} 
+          />
         </>
       )}
     </div>

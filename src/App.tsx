@@ -24,6 +24,9 @@ import { AdminGuard } from './hooks/useAdminGuard';
 import { Web3Provider } from './providers/Web3Provider';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from "@/components/ui/toaster";
+import { AppLayout } from './components/layout/AppLayout';
+import { TournamentLobby, TournamentDetail, TournamentCreateDialog } from './pages/Tournaments';
+import { AchievementsPage, LeaderboardsPage } from './pages/Gamification';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -66,42 +69,20 @@ function App() {
       <Web3Provider>
         <Router>
           <Routes>
-            {/* Auth routes */}
+            {/* Auth routes - No layout wrapper */}
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignUpPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
             
-            {/* Public routes */}
-            <Route path="/" element={<DashboardPage />} />
-            <Route path="/lobby" element={<LobbyPage />} />
-            
-            {/* Protected routes */}
+            {/* Game room has its own specific layout */}
             <Route path="/game/:tableId" element={
               <ProtectedRoute>
                 <GameRoom />
               </ProtectedRoute>
             } />
             
-            <Route path="/profile" element={
-              <ProtectedRoute>
-                <ProfilePage />
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/settings" element={
-              <ProtectedRoute>
-                <SettingsPage />
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/funds" element={
-              <ProtectedRoute>
-                <FundsPage />
-              </ProtectedRoute>
-            } />
-            
-            {/* Admin routes */}
+            {/* Admin routes with admin layout */}
             <Route path="/admin" element={
               <AdminGuard>
                 <AdminLayout />
@@ -113,8 +94,77 @@ function App() {
               <Route path="ledger" element={<Ledger />} />
             </Route>
             
+            {/* All other routes with standard layout */}
+            <Route path="/" element={
+              <AppLayout>
+                <DashboardPage />
+              </AppLayout>
+            } />
+            
+            <Route path="/lobby" element={
+              <AppLayout>
+                <LobbyPage />
+              </AppLayout>
+            } />
+            
+            <Route path="/profile" element={
+              <AppLayout>
+                <ProtectedRoute>
+                  <ProfilePage />
+                </ProtectedRoute>
+              </AppLayout>
+            } />
+            
+            <Route path="/settings" element={
+              <AppLayout>
+                <ProtectedRoute>
+                  <SettingsPage />
+                </ProtectedRoute>
+              </AppLayout>
+            } />
+            
+            <Route path="/funds" element={
+              <AppLayout>
+                <ProtectedRoute>
+                  <FundsPage />
+                </ProtectedRoute>
+              </AppLayout>
+            } />
+            
+            {/* Tournament routes */}
+            <Route path="/tournaments" element={
+              <AppLayout>
+                <TournamentLobby />
+              </AppLayout>
+            } />
+            
+            <Route path="/tournaments/:id" element={
+              <AppLayout>
+                <TournamentDetail />
+              </AppLayout>
+            } />
+            
+            {/* Gamification routes */}
+            <Route path="/achievements" element={
+              <AppLayout>
+                <ProtectedRoute>
+                  <AchievementsPage />
+                </ProtectedRoute>
+              </AppLayout>
+            } />
+            
+            <Route path="/leaderboards" element={
+              <AppLayout>
+                <LeaderboardsPage />
+              </AppLayout>
+            } />
+            
             {/* 404 route */}
-            <Route path="*" element={<NotFound />} />
+            <Route path="*" element={
+              <AppLayout>
+                <NotFound />
+              </AppLayout>
+            } />
           </Routes>
         </Router>
         <Toaster />
