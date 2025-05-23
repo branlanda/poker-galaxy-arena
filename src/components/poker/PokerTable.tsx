@@ -5,6 +5,7 @@ import { PlayerSeat } from './PlayerSeat';
 import { CommunityCards } from './CommunityCards';
 import { PokerChip } from './PokerChip';
 import { BetActions } from './BetActions';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface PokerTableProps {
   gameState: GameState | null;
@@ -24,6 +25,7 @@ export function PokerTable({
   onSitDown
 }: PokerTableProps) {
   const [seatPositions, setSeatPositions] = useState<{ top: string; left: string }[]>([]);
+  const [animatePot, setAnimatePot] = useState(false);
   
   // Calculate seat positions based on table size and number of seats
   useEffect(() => {
@@ -49,28 +51,63 @@ export function PokerTable({
     
     setSeatPositions(positions);
   }, [gameState]);
+  
+  // Animate pot changes
+  useEffect(() => {
+    if (gameState && gameState.pot > 0 && gameState.lastAction) {
+      setAnimatePot(true);
+      const timer = setTimeout(() => setAnimatePot(false), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [gameState?.pot, gameState?.lastAction]);
 
   if (!gameState) return null;
 
   const playerSeat = isPlayerSeated && playerSeatIndex >= 0 ? gameState.seats[playerSeatIndex] as SeatState : null;
   
+  // Determine the dealer position marker
+  const dealerPosition = gameState.dealer >= 0 && gameState.seats[gameState.dealer] ? 
+    seatPositions[gameState.dealer] : { top: '50%', left: '50%' };
+  
   return (
-    <div className="relative w-full aspect-[16/9] max-w-4xl mx-auto bg-emerald-900 rounded-[50%] border-8 border-brown-800 shadow-2xl">
+    <div className="relative w-full aspect-[16/9] max-w-4xl mx-auto bg-emerald-900 rounded-[50%] border-8 border-brown-800 shadow-2xl overflow-hidden">
+      {/* Table pattern overlay */}
+      <div className="absolute inset-0 bg-[url('/textures/felt.webp')] bg-repeat opacity-30"></div>
+      
       {/* Dealer button */}
       {gameState.dealer >= 0 && gameState.seats[gameState.dealer] && (
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
-          <div className="bg-white text-black font-bold rounded-full w-8 h-8 flex items-center justify-center">
+        <motion.div 
+          className="absolute z-10 transform -translate-x-1/2 -translate-y-1/2"
+          style={{
+            top: dealerPosition.top,
+            left: dealerPosition.left,
+          }}
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.3 }}
+        >
+          <div className="bg-white text-black font-bold rounded-full w-8 h-8 flex items-center justify-center border-2 border-black">
             D
           </div>
-        </div>
+        </motion.div>
       )}
       
       {/* Pot display */}
-      {gameState.pot > 0 && (
-        <div className="absolute top-[40%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20">
-          <PokerChip value={gameState.pot} size="lg" />
-        </div>
-      )}
+      <AnimatePresence>
+        {gameState.pot > 0 && (
+          <motion.div 
+            className="absolute top-[40%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20"
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ 
+              scale: animatePot ? [1, 1.2, 1] : 1, 
+              opacity: 1 
+            }}
+            transition={{ duration: 0.5 }}
+          >
+            <PokerChip value={gameState.pot} size="lg" />
+          </motion.div>
+        )}
+      </AnimatePresence>
       
       {/* Community cards */}
       <div className="absolute top-[30%] left-1/2 transform -translate-x-1/2 w-full max-w-md z-10">
@@ -79,7 +116,7 @@ export function PokerTable({
       
       {/* Player seats */}
       {gameState.seats.map((seat, index) => (
-        <div 
+        <motion.div 
           key={index}
           className="absolute"
           style={{
@@ -87,6 +124,9 @@ export function PokerTable({
             left: seatPositions[index]?.left,
             transform: 'translate(-50%, -50%)'
           }}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: index * 0.05 }}
         >
           <PlayerSeat 
             position={index}
@@ -95,20 +135,39 @@ export function PokerTable({
             isActive={gameState.activePlayerId === seat?.playerId}
             onSitDown={!isPlayerSeated ? onSitDown : undefined}
           />
-        </div>
+        </motion.div>
       ))}
       
+      {/* Table center logo/watermark */}
+      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full bg-emerald-800/30 flex items-center justify-center pointer-events-none">
+        <span className="text-emerald-200/30 font-bold text-xl">POKER</span>
+      </div>
+      
       {/* Player actions bar */}
-      {isPlayerTurn && playerSeat && (
-        <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-full z-30">
-          <BetActions 
-            playerId={playerSeat.playerId}
-            playerStack={playerSeat.stack}
-            currentBet={gameState.currentBet}
-            playerBet={playerSeat.bet}
-          />
-        </div>
-      )}
+      <AnimatePresence>
+        {isPlayerTurn && playerSeat && (
+          <motion.div 
+            className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-full z-30 px-4 pb-4"
+            initial={{ y: 50, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 50, opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <BetActions 
+              playerId={playerSeat.playerId}
+              playerStack={playerSeat.stack}
+              currentBet={gameState.currentBet}
+              playerBet={playerSeat.bet}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+      
+      {/* Table status - shows current phase */}
+      <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-black/50 text-white text-xs px-3 py-1 rounded-full">
+        {gameState.phase}
+        {gameState.phase !== 'WAITING' && ` • Pot: $${gameState.pot}`}
+      </div>
     </div>
   );
 }

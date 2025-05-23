@@ -59,7 +59,7 @@ export function GameInfo({ gamePhase, lastAction, smallBlind, bigBlind }: GameIn
   return (
     <div className="space-y-4">
       <div>
-        <h3 className="text-sm font-medium mb-2 text-gray-300">Table Information</h3>
+        <h3 className="text-sm font-medium mb-2 text-gray-300">Game Information</h3>
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div className="flex flex-col space-y-1">
             <p className="text-gray-400">Blinds:</p>
