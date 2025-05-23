@@ -102,10 +102,10 @@ export const AchievementsSection: React.FC<AchievementsSectionProps> = ({
                     )}
                   </div>
                 </div>
-                {item.completed && item.unlocked_at && (
+                {item.completed && item.completed_at && (
                   <div className="absolute bottom-2 right-3 text-xs text-emerald/70">
                     {t('profile.unlockedOn', {
-                      date: new Date(item.unlocked_at).toLocaleDateString()
+                      date: new Date(item.completed_at).toLocaleDateString()
                     })}
                   </div>
                 )}

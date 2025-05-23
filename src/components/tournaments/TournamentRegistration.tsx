@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Tournament } from '@/types/tournaments';
 import { useTournamentRegistration } from '@/hooks/useTournamentRegistration';
@@ -69,7 +70,7 @@ export const TournamentRegistration: React.FC<TournamentRegistrationProps> = ({
             <span>{tournament.registered_players_count} / {tournament.max_players} {t('tournaments.players')}</span>
           </div>
           <Button 
-            variant="destructive" 
+            variant="accent" 
             onClick={handleUnregisterClick}
             disabled={loading}
             className="w-full mt-4"
