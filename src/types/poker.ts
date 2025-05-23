@@ -23,14 +23,22 @@ export interface PlayerState {
   id: string;
   gameId: string;
   playerId: string;
+  playerName?: string; // Adding this to match what's used in PlayerSeat
   seatNumber: number;
   stack: number;
   holeCards?: Card[];
   status: PlayerStatus;
   currentBet: number;
+  bet?: number; // For compatibility with existing code
+  cards?: Card[]; // For compatibility with existing code
   isDealer: boolean;
   isSmallBlind: boolean;
   isBigBlind: boolean;
+  isFolded?: boolean; // For compatibility with existing views
+  isAllIn?: boolean; // For compatibility with existing views
+  isWinner?: boolean; // For future use
+  winAmount?: number; // For future use
+  isActive?: boolean; // For compatibility with existing views
   createdAt: string;
 }
 
@@ -52,10 +60,16 @@ export interface GameState {
   pot: number;
   dealerSeat?: number;
   activeSeat?: number;
+  activePlayerId?: string; // Added for compatibility
   communityCards: Card[];
   currentBet: number;
   lastActionTime: string;
+  lastAction?: GameAction; // For animation triggers
+  seats?: any[]; // For compatibility with existing views
   createdAt: string;
+  dealer?: number; // Added for compatibility
+  smallBlind?: number; // For game rules
+  bigBlind?: number; // For game rules
 }
 
 // Complete poker table state
@@ -65,4 +79,24 @@ export interface TableState {
   actions: GameAction[];
   isLoading: boolean;
   error: string | null;
+}
+
+// Added for compatibility with existing code and stories
+export interface SeatState {
+  playerId: string;
+  playerName: string;
+  stack: number;
+  bet: number;
+  cards?: Card[];
+  isActive: boolean;
+  isDealer: boolean;
+  isSmallBlind?: boolean;
+  isBigBlind?: boolean;
+  isFolded?: boolean;
+  isAllIn?: boolean;
+  isWinner?: boolean;
+  winAmount?: number;
+  status: PlayerStatus;
+  lastAction?: PlayerAction;
+  currentBet?: number;
 }

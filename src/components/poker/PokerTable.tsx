@@ -1,6 +1,5 @@
 
 import { useState, useEffect } from 'react';
-import { SeatState, GameState } from '@/types/game';
 import { PlayerSeat } from './PlayerSeat';
 import { CommunityCards } from './CommunityCards';
 import { PokerChip } from './PokerChip';
@@ -9,7 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { PlayerStatus, Card as PokerCard } from '@/types/poker';
 
 interface PokerTableProps {
-  gameState: GameState | null;
+  gameState: any | null;
   isPlayerSeated: boolean;
   isPlayerTurn: boolean;
   playerSeatIndex: number;
@@ -71,7 +70,7 @@ export function PokerTable({
     seatPositions[gameState.dealer] : { top: '50%', left: '50%' };
     
   // Convert the community cards to the proper type
-  const communityCards: PokerCard[] = gameState.communityCards.map(card => ({
+  const communityCards: PokerCard[] = gameState.communityCards.map((card: any) => ({
     suit: card.suit,
     value: card.value,
     code: `${card.value}${card.suit.charAt(0).toUpperCase()}`
@@ -123,13 +122,7 @@ export function PokerTable({
       </div>
       
       {/* Player seats */}
-      {gameState.seats.map((seat, index) => {
-        // Add status property to seat if it's not null
-        const seatWithStatus = seat ? {
-          ...seat,
-          status: seat.isFolded ? 'AWAY' : 'PLAYING' as PlayerStatus
-        } : null;
-        
+      {gameState.seats.map((seat: any, index: number) => {
         return (
           <motion.div 
             key={index}
@@ -145,7 +138,7 @@ export function PokerTable({
           >
             <PlayerSeat 
               position={index}
-              state={seatWithStatus}
+              state={seat}
               isCurrentPlayer={userId && seat?.playerId === userId}
               isActive={gameState.activePlayerId === seat?.playerId}
               onSitDown={() => onSitDown(index)}

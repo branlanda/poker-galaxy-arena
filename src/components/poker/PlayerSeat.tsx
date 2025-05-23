@@ -16,11 +16,12 @@ import {
 interface PlayerSeatProps {
   position: number;
   player?: PlayerState;
+  state?: any; // Adding this prop to match what's coming from PokerTable
   isCurrentPlayer: boolean;
   isActive: boolean;
-  isDealer: boolean;
-  isSmallBlind: boolean;
-  isBigBlind: boolean;
+  isDealer?: boolean;
+  isSmallBlind?: boolean;
+  isBigBlind?: boolean;
   holeCards?: Card[];
   onSitDown: () => void;
   disabled?: boolean;
@@ -29,15 +30,19 @@ interface PlayerSeatProps {
 export function PlayerSeat({
   position,
   player,
+  state,
   isCurrentPlayer,
   isActive,
-  isDealer,
-  isSmallBlind,
-  isBigBlind,
+  isDealer = false,
+  isSmallBlind = false,
+  isBigBlind = false,
   holeCards,
   onSitDown,
   disabled = false
 }: PlayerSeatProps) {
+  // Use state prop if provided (from PokerTable)
+  const playerState = state || player;
+  
   // Calculate the position on the table
   // This is just one way to position seats in a circle
   const positions = [
@@ -54,7 +59,7 @@ export function PlayerSeat({
   
   const seatStyle = positions[position % positions.length];
   
-  if (!player) {
+  if (!playerState) {
     // Empty seat that can be taken
     return (
       <div 
@@ -75,7 +80,7 @@ export function PlayerSeat({
   }
   
   // Get initials for avatar fallback
-  const initials = 'P' + player.playerId.substring(0, 1);
+  const initials = 'P' + (playerState.playerId?.substring(0, 1) || '?');
   
   // Display occupied seat with player info
   return (
@@ -87,8 +92,8 @@ export function PlayerSeat({
     >
       <div className={`
         p-3 rounded-lg ${isActive ? 'bg-emerald-600/30 border border-emerald-500/50 animate-pulse shadow-lg' : 'bg-navy/70 border border-emerald/10'}
-        ${player.status === 'FOLDED' ? 'opacity-50' : ''}
-        ${player.status === 'ALL_IN' ? 'border-amber-500/70' : ''}
+        ${playerState.status === 'FOLDED' ? 'opacity-50' : ''}
+        ${playerState.status === 'ALL_IN' ? 'border-amber-500/70' : ''}
       `}>
         {/* Player indicators */}
         <div className="flex space-x-1 mb-1">
@@ -101,10 +106,10 @@ export function PlayerSeat({
           {isBigBlind && (
             <Badge className="bg-red-800 text-xs px-1.5 py-0">BB</Badge>
           )}
-          {player.status === 'FOLDED' && (
+          {playerState.status === 'FOLDED' && (
             <Badge className="bg-gray-700 text-xs px-1.5 py-0">Folded</Badge>
           )}
-          {player.status === 'ALL_IN' && (
+          {playerState.status === 'ALL_IN' && (
             <Badge className="bg-amber-600 text-xs px-1.5 py-0">All In!</Badge>
           )}
         </div>
@@ -117,24 +122,24 @@ export function PlayerSeat({
           </Avatar>
           <div>
             <div className="text-sm font-medium truncate w-20">
-              {isCurrentPlayer ? 'You' : `Player ${player.playerId.substring(0, 4)}`}
+              {isCurrentPlayer ? 'You' : playerState.playerName || `Player ${playerState.playerId?.substring(0, 4) || '?'}`}
             </div>
             <div className="flex items-center text-xs text-emerald-300">
               <DollarSign className="h-3 w-3 mr-1" />
-              <span>{player.stack}</span>
+              <span>{playerState.stack}</span>
             </div>
           </div>
         </div>
         
         {/* Current bet display */}
-        {player.currentBet > 0 && (
+        {playerState.currentBet > 0 && (
           <div className="flex items-center justify-center p-1 bg-black/30 rounded text-xs mb-2">
-            <span className="font-bold text-emerald-300">{player.currentBet}</span>
+            <span className="font-bold text-emerald-300">{playerState.currentBet}</span>
           </div>
         )}
         
         {/* Player cards */}
-        {player.status !== 'FOLDED' && (
+        {playerState.status !== 'FOLDED' && (
           <div className="flex justify-center space-x-1">
             {holeCards && holeCards.length === 2 ? (
               <>
