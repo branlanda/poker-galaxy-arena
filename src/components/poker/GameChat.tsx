@@ -54,8 +54,12 @@ export function GameChat({ tableId, userId }: GameChatProps) {
   const fetchMessages = async () => {
     setIsLoading(true);
     try {
+      // Using a direct Supabase query instead of RPC for now
       const { data, error } = await supabase
-        .rpc('get_table_chat_messages', { p_table_id: tableId });
+        .from('table_chat_messages')
+        .select('*')
+        .eq('table_id', tableId)
+        .order('created_at', { ascending: true });
       
       if (error) {
         console.error('Error fetching messages:', error);
@@ -77,12 +81,14 @@ export function GameChat({ tableId, userId }: GameChatProps) {
     
     setIsLoading(true);
     try {
+      // Using a direct insert instead of RPC for now
       const { error } = await supabase
-        .rpc('insert_chat_message', { 
-          p_table_id: tableId, 
-          p_player_id: user.id, 
-          p_player_name: user?.user_metadata?.name || user.email || 'Player',
-          p_message: newMessage.trim() 
+        .from('table_chat_messages')
+        .insert({
+          table_id: tableId,
+          player_id: user.id,
+          player_name: (user as any).user_metadata?.name || user.email || 'Player',
+          message: newMessage.trim()
         });
       
       if (error) {

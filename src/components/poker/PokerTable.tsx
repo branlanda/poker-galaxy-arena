@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { SeatState, GameState } from '@/types/game';
 import { PlayerSeat } from './PlayerSeat';
@@ -6,6 +5,7 @@ import { CommunityCards } from './CommunityCards';
 import { PokerChip } from './PokerChip';
 import { BetActions } from './BetActions';
 import { motion, AnimatePresence } from 'framer-motion';
+import { PlayerStatus } from '@/types/lobby';
 
 interface PokerTableProps {
   gameState: GameState | null;
@@ -63,7 +63,7 @@ export function PokerTable({
 
   if (!gameState) return null;
 
-  const playerSeat = isPlayerSeated && playerSeatIndex >= 0 ? gameState.seats[playerSeatIndex] as SeatState : null;
+  const playerSeat = isPlayerSeated && playerSeatIndex >= 0 ? gameState.seats[playerSeatIndex] : null;
   
   // Determine the dealer position marker
   const dealerPosition = gameState.dealer >= 0 && gameState.seats[gameState.dealer] ? 
@@ -115,28 +115,36 @@ export function PokerTable({
       </div>
       
       {/* Player seats */}
-      {gameState.seats.map((seat, index) => (
-        <motion.div 
-          key={index}
-          className="absolute"
-          style={{
-            top: seatPositions[index]?.top,
-            left: seatPositions[index]?.left,
-            transform: 'translate(-50%, -50%)'
-          }}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: index * 0.05 }}
-        >
-          <PlayerSeat 
-            position={index}
-            state={seat}
-            isCurrentPlayer={userId && seat?.playerId === userId}
-            isActive={gameState.activePlayerId === seat?.playerId}
-            onSitDown={!isPlayerSeated ? onSitDown : undefined}
-          />
-        </motion.div>
-      ))}
+      {gameState.seats.map((seat, index) => {
+        // Add status property to seat if it's not null
+        const seatWithStatus = seat ? {
+          ...seat,
+          status: seat.isFolded ? 'AWAY' : 'PLAYING' as PlayerStatus
+        } : null;
+        
+        return (
+          <motion.div 
+            key={index}
+            className="absolute"
+            style={{
+              top: seatPositions[index]?.top,
+              left: seatPositions[index]?.left,
+              transform: 'translate(-50%, -50%)'
+            }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: index * 0.05 }}
+          >
+            <PlayerSeat 
+              position={index}
+              state={seatWithStatus}
+              isCurrentPlayer={userId && seat?.playerId === userId}
+              isActive={gameState.activePlayerId === seat?.playerId}
+              onSitDown={!isPlayerSeated ? onSitDown : undefined}
+            />
+          </motion.div>
+        );
+      })}
       
       {/* Table center logo/watermark */}
       <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full bg-emerald-800/30 flex items-center justify-center pointer-events-none">

@@ -49,14 +49,13 @@ export const GameRoomContent: React.FC<GameRoomContentProps> = ({
         {/* Game messages, chat, and player list */}
         <div className="mt-6">
           <GameTabs 
-            gameState={gameState}
             tableId={table.id}
             players={players}
+            gameState={gameState}
             userId={userId}
-            maxPlayers={table.max_players}
           />
         </div>
       </div>
     </div>
   );
-};
+}

@@ -1,11 +1,11 @@
 
 import React from 'react';
-import { Card } from '@/types/lobby';
+import { Card, GamePhase } from '@/types/lobby';
 import { PokerCard } from './PokerCard';
 
 interface CommunityCardsProps {
   cards: Card[];
-  phase: 'PREFLOP' | 'FLOP' | 'TURN' | 'RIVER' | 'SHOWDOWN' | 'WAITING';
+  phase: GamePhase;
 }
 
 export const CommunityCards: React.FC<CommunityCardsProps> = ({ cards, phase }) => {

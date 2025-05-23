@@ -4,6 +4,9 @@ export type TableType = 'CASH' | 'TOURNAMENT' | 'ALL';
 export type TableStatus = 'WAITING' | 'ACTIVE' | 'CLOSED' | 'PAUSED' | 'FINISHED';
 export type SortOption = 'activity' | 'players' | 'newest' | 'blinds_asc' | 'blinds_desc';
 
+// Game phase types
+export type GamePhase = 'PREFLOP' | 'FLOP' | 'TURN' | 'RIVER' | 'SHOWDOWN' | 'WAITING';
+
 // Player types
 export type PlayerStatus = 'SITTING' | 'PLAYING' | 'AWAY' | 'LEFT';
 export type PlayerAction = 'FOLD' | 'CHECK' | 'CALL' | 'BET' | 'RAISE' | 'ALL_IN';
@@ -12,8 +15,7 @@ export type PlayerAction = 'FOLD' | 'CHECK' | 'CALL' | 'BET' | 'RAISE' | 'ALL_IN
 export interface Card {
   suit: 'hearts' | 'diamonds' | 'clubs' | 'spades';
   value: string;
-  rank: string; // Added to match existing component usage
-  hidden?: boolean;
+  rank?: string; // Made optional to be compatible with existing code
 }
 
 // Seat state for poker table
@@ -25,12 +27,12 @@ export type SeatState = {
   cards?: Card[];
   isActive: boolean;
   isDealer: boolean;
-  isSmallBlind?: boolean; // Added to match existing component usage
-  isBigBlind?: boolean; // Added to match existing component usage
-  isFolded?: boolean; // Added to match existing component usage
-  isAllIn?: boolean; // Added to match existing component usage
-  isWinner?: boolean; // Added to match existing component usage
-  winAmount?: number; // Added to match existing component usage
+  isSmallBlind?: boolean;
+  isBigBlind?: boolean;
+  isFolded?: boolean;
+  isAllIn?: boolean;
+  isWinner?: boolean;
+  winAmount?: number;
   status: PlayerStatus;
   lastAction?: PlayerAction;
 } | null;

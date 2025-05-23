@@ -12,10 +12,9 @@ interface GameTabsProps {
   players: PlayerAtTable[];
   gameState?: GameState | null;
   userId?: string;
-  maxPlayers?: number;
 }
 
-export function GameTabs({ tableId, players, gameState, userId, maxPlayers }: GameTabsProps) {
+export function GameTabs({ tableId, players, gameState, userId }: GameTabsProps) {
   const [tab, setTab] = useState<string>('chat');
   
   return (
