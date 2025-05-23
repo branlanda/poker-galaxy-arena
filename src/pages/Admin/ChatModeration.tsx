@@ -62,10 +62,10 @@ const ChatModeration = () => {
           id: '1',
           user_id: 'user1',
           username: 'player123',
-          message: 'Hey, what's your real name?',
+          message: 'Hey, what\'s your real name?',
           created_at: new Date().toISOString(),
           room_id: 'table1',
-          room_name: 'Texas Hold'em $1/$2',
+          room_name: 'Texas Hold\'em $1/$2',
           reported: true,
           reported_by: 'user2',
           report_reason: 'Personal information request'
@@ -93,7 +93,7 @@ const ChatModeration = () => {
           message: 'Good game everyone!',
           created_at: new Date(Date.now() - 7200000).toISOString(),
           room_id: 'table1',
-          room_name: 'Texas Hold'em $1/$2',
+          room_name: 'Texas Hold\'em $1/$2',
           reported: false
         },
         {
