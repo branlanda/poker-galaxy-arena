@@ -129,14 +129,14 @@ export default function GameRoom() {
 
   return (
     <GameRoomContent 
-      table={table}
+      tableId={tableId || ''}
+      tableData={table}
+      players={players}
       gameState={gameState}
       isPlayerSeated={isPlayerSeated}
       isPlayerTurn={isPlayerTurn}
-      playerSeatIndex={playerSeatIndex}
+      isJoining={false}
       userId={userId}
-      players={players}
-      turnTimeRemaining={turnTimeRemaining}
       onSitDown={handleSitDown}
       onAction={handleAction}
       onLeaveTable={leaveTable}

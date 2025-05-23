@@ -6,14 +6,18 @@ import { TableHeader } from './TableHeader';
 import { PlayerAction } from '@/types/poker';
 import { toast } from '@/hooks/use-toast';
 import { GameTabs } from './GameTabs';
+import { LobbyTable, PlayerAtTable } from '@/types/lobby';
+import { GameState } from '@/types/game';
 
 interface GameRoomContentProps {
   tableId: string;
-  tableData: any;
-  players: any[];
+  tableData: LobbyTable;
+  players: PlayerAtTable[];
+  gameState?: GameState | null;
   isPlayerSeated: boolean;
   isPlayerTurn: boolean;
   isJoining: boolean;
+  userId?: string;
   onSitDown: (seatNumber: number, buyIn: number) => void;
   onAction: (action: PlayerAction, amount?: number) => Promise<void>;
   onLeaveTable: () => void;
@@ -23,9 +27,11 @@ export const GameRoomContent: React.FC<GameRoomContentProps> = ({
   tableId,
   tableData,
   players,
+  gameState,
   isPlayerSeated,
   isPlayerTurn,
   isJoining,
+  userId,
   onSitDown,
   onAction,
   onLeaveTable
@@ -81,14 +87,16 @@ export const GameRoomContent: React.FC<GameRoomContentProps> = ({
       
       <div className="w-full lg:w-80 order-1 lg:order-2 space-y-4">
         <TableHeader
-          name={tableData.name}
-          blinds={`${tableData.small_blind}/${tableData.big_blind}`}
-          buyIn={`${tableData.min_buy_in}-${tableData.max_buy_in}`}
-          players={`${players.length}/${tableData.max_players}`}
-          onLeave={onLeaveTable}
+          table={tableData}
+          onLeaveTable={onLeaveTable}
         />
         
-        <GameTabs tableId={tableId} />
+        <GameTabs 
+          tableId={tableId} 
+          players={players} 
+          gameState={gameState}
+          userId={userId} 
+        />
       </div>
     </div>
   );
