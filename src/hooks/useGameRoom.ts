@@ -127,7 +127,7 @@ export function useGameRoom(tableId: string | undefined) {
     } finally {
       setLoading(false);
     }
-  }, [tableId, user, toast, navigate, initializeGame]);
+  }, [tableId, user, navigate, initializeGame]);
   
   // Set up real-time subscriptions
   useEffect(() => {
@@ -308,7 +308,10 @@ export function useGameRoom(tableId: string | undefined) {
     if (!user || !isPlayerTurn) return;
     
     try {
-      await placeBet(user.id, action, amount);
+      // Fix: Convert amount to number if it's passed as a string
+      const numericAmount = amount !== undefined ? Number(amount) : undefined;
+      
+      await placeBet(user.id, numericAmount || 0, action);
       
       // Reset turn timer
       setTurnTimeRemaining(TURN_TIMEOUT_MS);
@@ -316,7 +319,7 @@ export function useGameRoom(tableId: string | undefined) {
       
       toast({
         title: 'Action performed',
-        description: `You ${action.toLowerCase()}${amount ? ` ${amount}` : ''}`,
+        description: `You ${action.toLowerCase()}${numericAmount ? ` ${numericAmount}` : ''}`,
       });
     } catch (error: any) {
       toast({

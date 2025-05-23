@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { usePokerGame } from '@/hooks/usePokerGame';
 import { Card, GamePhase, PlayerAction, PlayerState } from '@/types/poker';
@@ -17,7 +16,7 @@ interface PokerGameProps {
   tableId: string;
   isPlayerTurn: boolean;
   isPlayerSeated: boolean;
-  onAction: (action: PlayerAction, amount?: number) => void;
+  onAction: (action: PlayerAction, amount?: number) => Promise<void>;
   onSitDown: (seatNumber: number, buyIn?: number) => void;
 }
 
@@ -194,7 +193,9 @@ export function PokerGame({
           <ActionControls
             playerState={playerState}
             currentBet={game.currentBet}
-            onAction={onAction}
+            onAction={async (action, amount) => {
+              await onAction(action, amount);
+            }}
           />
         </div>
       )}
