@@ -15,6 +15,7 @@ export type PlayerAction = 'FOLD' | 'CHECK' | 'CALL' | 'BET' | 'RAISE' | 'ALL_IN
 export interface Card {
   suit: 'hearts' | 'diamonds' | 'clubs' | 'spades';
   value: string;
+  code?: string; // Made optional to be compatible with existing code
   rank?: string; // Made optional to be compatible with existing code
 }
 

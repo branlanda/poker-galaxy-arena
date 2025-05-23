@@ -5,9 +5,10 @@ import { Card } from '@/types/poker';
 interface PokerCardProps {
   card: Card;
   size?: 'sm' | 'md' | 'lg';
+  faceDown?: boolean;
 }
 
-export function PokerCard({ card, size = 'md' }: PokerCardProps) {
+export function PokerCard({ card, size = 'md', faceDown = false }: PokerCardProps) {
   const { suit, value, code } = card;
   
   const sizeClasses = {
@@ -21,6 +22,17 @@ export function PokerCard({ card, size = 'md' }: PokerCardProps) {
     md: 'text-lg',
     lg: 'text-xl'
   };
+  
+  // If card is face down, show back design
+  if (faceDown) {
+    return (
+      <div className={`${sizeClasses[size]} bg-blue-800 rounded shadow-md flex items-center justify-center`}>
+        <div className="w-3/4 h-3/4 bg-blue-600 rounded border-2 border-white/20 flex items-center justify-center">
+          <div className="text-white font-bold">PG</div>
+        </div>
+      </div>
+    );
+  }
   
   const suitColor = suit === 'hearts' || suit === 'diamonds' ? 'text-red-600' : 'text-black';
   

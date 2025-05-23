@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { SeatState, GameState } from '@/types/game';
 import { PlayerSeat } from './PlayerSeat';
@@ -5,7 +6,7 @@ import { CommunityCards } from './CommunityCards';
 import { PokerChip } from './PokerChip';
 import { BetActions } from './BetActions';
 import { motion, AnimatePresence } from 'framer-motion';
-import { PlayerStatus } from '@/types/lobby';
+import { PlayerStatus, Card as PokerCard } from '@/types/poker';
 
 interface PokerTableProps {
   gameState: GameState | null;
@@ -68,6 +69,13 @@ export function PokerTable({
   // Determine the dealer position marker
   const dealerPosition = gameState.dealer >= 0 && gameState.seats[gameState.dealer] ? 
     seatPositions[gameState.dealer] : { top: '50%', left: '50%' };
+    
+  // Convert the community cards to the proper type
+  const communityCards: PokerCard[] = gameState.communityCards.map(card => ({
+    suit: card.suit,
+    value: card.value,
+    code: `${card.value}${card.suit.charAt(0).toUpperCase()}`
+  }));
   
   return (
     <div className="relative w-full aspect-[16/9] max-w-4xl mx-auto bg-emerald-900 rounded-[50%] border-8 border-brown-800 shadow-2xl overflow-hidden">
@@ -111,7 +119,7 @@ export function PokerTable({
       
       {/* Community cards */}
       <div className="absolute top-[30%] left-1/2 transform -translate-x-1/2 w-full max-w-md z-10">
-        <CommunityCards cards={gameState.communityCards} phase={gameState.phase} />
+        <CommunityCards cards={communityCards} phase={gameState.phase} />
       </div>
       
       {/* Player seats */}
@@ -140,7 +148,7 @@ export function PokerTable({
               state={seatWithStatus}
               isCurrentPlayer={userId && seat?.playerId === userId}
               isActive={gameState.activePlayerId === seat?.playerId}
-              onSitDown={!isPlayerSeated ? onSitDown : undefined}
+              onSitDown={() => onSitDown(index)}
             />
           </motion.div>
         );

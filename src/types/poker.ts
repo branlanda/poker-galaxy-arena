@@ -6,6 +6,7 @@ export interface Card {
   suit: 'spades' | 'hearts' | 'diamonds' | 'clubs';
   value: string; // '2', '3', ... 'A'
   code: string; // '2S', 'KH', etc.
+  rank?: string; // Optional for backward compatibility with stories
 }
 
 // Game phases
