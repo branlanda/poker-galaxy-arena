@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { render, screen } from '@/test/utils';
+import { describe, it, expect, vi } from 'vitest';
 import { TournamentStatusBadge } from '../TournamentStatusBadge';
 import { TournamentStatus } from '@/types/tournaments';
 
@@ -33,7 +34,7 @@ describe('TournamentStatusBadge', () => {
     'CANCELLED'
   ];
 
-  test.each(statuses)('renders correct text for %s status', (status) => {
+  it.each(statuses)('renders correct text for %s status', (status) => {
     render(<TournamentStatusBadge status={status} />);
     
     // Check that we have the appropriate text for each status
@@ -50,7 +51,7 @@ describe('TournamentStatusBadge', () => {
     expect(screen.getByText(expectedTexts[status])).toBeInTheDocument();
   });
 
-  test('applies the correct color class for each status', () => {
+  it('applies the correct color class for each status', () => {
     const { rerender } = render(<TournamentStatusBadge status="SCHEDULED" />);
     
     // Check SCHEDULED status has blue color

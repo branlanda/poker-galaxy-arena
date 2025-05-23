@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { render, screen } from '@/test/utils';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import DepositConnectionPrompt from '../DepositConnectionPrompt';
 
 // Mock the wallet connect component
@@ -16,7 +17,7 @@ vi.mock('@/hooks/useTranslation', () => ({
 }));
 
 describe('DepositConnectionPrompt', () => {
-  test('renders without crashing', () => {
+  it('renders without crashing', () => {
     render(<DepositConnectionPrompt />);
     
     // Check for key elements
@@ -25,20 +26,20 @@ describe('DepositConnectionPrompt', () => {
     expect(screen.getByTestId('wallet-connect')).toBeInTheDocument();
   });
 
-  test('contains wallet connect button', () => {
+  it('contains wallet connect button', () => {
     render(<DepositConnectionPrompt />);
     const connectButton = screen.getByTestId('wallet-connect');
     expect(connectButton).toBeInTheDocument();
   });
 
-  test('contains learn more link', () => {
+  it('contains learn more link', () => {
     render(<DepositConnectionPrompt />);
     const learnMoreLink = screen.getByText(/Aprender más/i);
     expect(learnMoreLink).toBeInTheDocument();
     expect(learnMoreLink.closest('a')).toHaveAttribute('href', '/funds');
   });
 
-  test('displays supported wallets text', () => {
+  it('displays supported wallets text', () => {
     render(<DepositConnectionPrompt />);
     expect(screen.getByText(/Soportamos MetaMask, WalletConnect y más/i)).toBeInTheDocument();
   });

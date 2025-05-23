@@ -60,7 +60,9 @@ export function TableInfoGrid({
           {activePlayerCount > 0 ? activePlayerCount : t('noActivePlayers', 'Ninguno')}
         </div>
         <div className="text-xs text-gray-500 mt-1">
-          {t('ofTotalPlayers', 'de {total} jugadores', { total: table.current_players })}
+          {t('ofTotalPlayers', 'de {total} jugadores', {
+            total: table.current_players
+          })}
         </div>
       </div>
       

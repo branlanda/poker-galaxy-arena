@@ -1,245 +1,170 @@
 
-import React, { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/Button';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { useToast } from '@/hooks/use-toast';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Lock, Users, AlertCircle, Check } from 'lucide-react';
-import { Tournament } from '@/types/tournaments';
-import { useTournamentRegistration } from '@/hooks/useTournamentRegistration';
-import { useTranslation } from '@/hooks/useTranslation';
-import { TournamentRegistrationsList } from './TournamentRegistrationsList';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useTranslation } from '@/hooks/useTranslation';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/Button';
+import { useTournamentRegistration } from '@/hooks/useTournamentRegistration';
 
 interface TournamentRegistrationProps {
-  tournament: Tournament;
-  onRegistrationChange?: () => void;
+  tournamentId: string;
+  maxPlayers: number;
+  registrationInfo?: {
+    open: boolean;
+    startTime: string;
+    endTime?: string;
+  };
 }
 
-export function TournamentRegistration({ tournament, onRegistrationChange }: TournamentRegistrationProps) {
+type RegistrationPlayer = {
+  id: string;
+  player_id: string;
+  registration_time: string;
+  player_name?: string;
+  avatar_url?: string;
+};
+
+export function TournamentRegistration({ 
+  tournamentId, 
+  maxPlayers,
+  registrationInfo 
+}: TournamentRegistrationProps) {
   const { t } = useTranslation();
-  const { toast } = useToast();
-  const [accessCode, setAccessCode] = useState('');
-  const [registrationsVisible, setRegistrationsVisible] = useState(false);
-  const [registrations, setRegistrations] = useState<any[]>([]);
-  const [loadingRegistrations, setLoadingRegistrations] = useState(false);
+  const [registrations, setRegistrations] = useState<RegistrationPlayer[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { registerForTournament, unregister, isRegistered, isRegistering } = useTournamentRegistration();
   
-  const { 
-    registered, 
-    registration,
-    loading, 
-    checkRegistration, 
-    registerForTournament, 
-    unregisterFromTournament 
-  } = useTournamentRegistration(tournament);
-
   useEffect(() => {
-    checkRegistration();
-  }, [tournament.id]);
-
-  const handleRegister = async () => {
-    const result = await registerForTournament(tournament.is_private ? accessCode : undefined);
-    if (result) {
-      onRegistrationChange?.();
-    }
-  };
-
-  const handleUnregister = async () => {
-    const result = await unregisterFromTournament();
-    if (result) {
-      onRegistrationChange?.();
-    }
-  };
-
-  const loadRegistrations = async () => {
-    setLoadingRegistrations(true);
-    try {
-      const { data, error } = await supabase
-        .from('tournament_registrations')
-        .select('*, players!inner(alias, avatar_url)')
-        .eq('tournament_id', tournament.id);
+    const fetchRegistrations = async () => {
+      setLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from('tournament_registrations')
+          .select(`
+            id, 
+            player_id,
+            registration_time
+          `)
+          .eq('tournament_id', tournamentId)
+          .eq('is_active', true);
+          
+        if (error) throw error;
         
-      if (error) throw error;
-      
-      const formattedData = data.map(reg => ({
-        ...reg,
-        player_name: reg.players?.alias,
-        player_avatar: reg.players?.avatar_url
-      }));
-      
-      setRegistrations(formattedData);
-    } catch (err) {
-      console.error('Error loading registrations:', err);
-      toast({
-        title: t('errors.loadingFailed'),
-        description: t('tournaments.registrationsLoadError'),
-        variant: 'destructive',
-      });
-    } finally {
-      setLoadingRegistrations(false);
-    }
-  };
-
-  const toggleRegistrationsList = () => {
-    if (!registrationsVisible) {
-      loadRegistrations();
-    }
-    setRegistrationsVisible(!registrationsVisible);
-  };
-
-  const getRegistrationStatus = () => {
-    const now = new Date();
-    const registrationOpenTime = new Date(tournament.registration_open_time);
-    const registrationCloseTime = tournament.registration_close_time 
-      ? new Date(tournament.registration_close_time) 
-      : new Date(tournament.start_time);
+        // Get player info for each registration
+        const enrichedData = await Promise.all((data || []).map(async (reg) => {
+          const { data: playerData } = await supabase
+            .from('profiles')
+            .select('alias, avatar_url')
+            .eq('id', reg.player_id)
+            .single();
+            
+          return {
+            ...reg,
+            player_name: playerData?.alias || 'Unknown Player',
+            avatar_url: playerData?.avatar_url || undefined
+          };
+        }));
+        
+        setRegistrations(enrichedData);
+      } catch (err) {
+        console.error('Error fetching registrations:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
     
-    if (now < registrationOpenTime) {
-      return 'not-open';
-    } else if (now > registrationCloseTime) {
-      return 'closed';
-    } else {
-      return 'open';
-    }
-  };
-
-  const registrationStatus = getRegistrationStatus();
+    fetchRegistrations();
+    
+    // Set up realtime subscription
+    const channel = supabase
+      .channel('tournament-registrations')
+      .on('postgres_changes', 
+        { event: 'INSERT', schema: 'public', table: 'tournament_registrations', filter: `tournament_id=eq.${tournamentId}` }, 
+        fetchRegistrations
+      )
+      .on('postgres_changes',
+        { event: 'DELETE', schema: 'public', table: 'tournament_registrations', filter: `tournament_id=eq.${tournamentId}` },
+        fetchRegistrations
+      )
+      .subscribe();
+    
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [tournamentId]);
+  
+  const isRegistrationOpen = registrationInfo?.open ?? true;
   
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t('tournaments.registration')}</CardTitle>
-      </CardHeader>
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h3 className="text-lg font-semibold">
+          {t('registeredPlayers', 'Jugadores Registrados')}
+        </h3>
+        <Badge variant={isRegistrationOpen ? "outline" : "destructive"}>
+          {isRegistrationOpen 
+            ? t('registrationOpen', 'Registro Abierto') 
+            : t('registrationClosed', 'Registro Cerrado')}
+        </Badge>
+      </div>
       
-      <CardContent>
-        <div className="space-y-4">
-          {registrationStatus === 'not-open' && (
-            <Alert>
-              <AlertCircle className="h-4 w-4" />
-              <AlertTitle>{t('tournaments.registrationNotOpen')}</AlertTitle>
-              <AlertDescription>
-                {t('tournaments.registrationOpensAt', { 
-                  time: new Date(tournament.registration_open_time).toLocaleString() 
-                })}
-              </AlertDescription>
-            </Alert>
-          )}
-          
-          {registrationStatus === 'closed' && (
-            <Alert>
-              <AlertCircle className="h-4 w-4" />
-              <AlertTitle>{t('tournaments.registrationClosed')}</AlertTitle>
-              <AlertDescription>
-                {t('tournaments.registrationClosedAt', { 
-                  time: tournament.registration_close_time 
-                    ? new Date(tournament.registration_close_time).toLocaleString()
-                    : new Date(tournament.start_time).toLocaleString()
-                })}
-              </AlertDescription>
-            </Alert>
-          )}
-          
-          {tournament.is_private && (
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                {t('tournaments.accessCode')}
-              </label>
-              <Input 
-                type="text"
-                value={accessCode}
-                onChange={(e) => setAccessCode(e.target.value)}
-                placeholder={t('tournaments.enterAccessCode')}
-                disabled={registrationStatus !== 'open' || registered || loading}
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                <Lock className="h-3 w-3 inline-block mr-1" />
-                {t('tournaments.privateEvent')}
-              </p>
-            </div>
-          )}
-          
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="flex items-center">
-                <Users className="h-4 w-4 mr-2 text-emerald" />
-                <span>
-                  {t('tournaments.registeredPlayers', {
-                    count: tournament.registered_players_count || 0,
-                    total: tournament.max_players
+      <div className="flex justify-between items-center">
+        <span className="text-sm text-gray-400">
+          {registrations.length} / {maxPlayers} {t('players', 'jugadores')}
+        </span>
+        {isRegistrationOpen && (
+          <Button 
+            onClick={() => isRegistered 
+              ? unregister(tournamentId) 
+              : registerForTournament(tournamentId)
+            }
+            disabled={isRegistering || (!isRegistered && registrations.length >= maxPlayers)}
+            variant={isRegistered ? "destructive" : "primary"}
+          >
+            {isRegistering 
+              ? t('processing', 'Procesando...') 
+              : isRegistered 
+                ? t('unregister', 'Cancelar Registro') 
+                : t('register', 'Registrarse')}
+          </Button>
+        )}
+      </div>
+      
+      <ScrollArea className="h-64 rounded-md border border-gray-700">
+        {loading ? (
+          <div className="flex justify-center items-center h-full">
+            <p className="text-gray-500">{t('loading', 'Cargando...')}</p>
+          </div>
+        ) : registrations.length > 0 ? (
+          <div className="p-4 space-y-2">
+            {registrations.map((registration) => (
+              <div 
+                key={registration.id}
+                className="flex items-center justify-between py-2"
+              >
+                <div className="flex items-center">
+                  <Avatar className="h-8 w-8 mr-2">
+                    <AvatarImage src={registration.avatar_url} />
+                    <AvatarFallback>{registration.player_name?.substring(0, 2) || 'P'}</AvatarFallback>
+                  </Avatar>
+                  <span>{registration.player_name}</span>
+                </div>
+                <span className="text-xs text-gray-500">
+                  {new Date(registration.registration_time).toLocaleTimeString([], { 
+                    hour: '2-digit', minute: '2-digit' 
                   })}
                 </span>
-              </p>
-              <p className="text-sm text-muted-foreground mt-1">
-                {t('tournaments.minPlayers', { count: tournament.min_players })}
-              </p>
-            </div>
-            
-            {registered && (
-              <div className="bg-emerald-500/10 text-emerald-500 px-3 py-1 rounded-full text-sm flex items-center">
-                <Check className="h-4 w-4 mr-1" />
-                {t('tournaments.registered')}
               </div>
-            )}
+            ))}
           </div>
-          
-          {registered && registration && (
-            <div className="p-4 bg-muted/40 rounded-md">
-              <h4 className="font-medium mb-2">{t('tournaments.yourRegistration')}</h4>
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <p className="text-muted-foreground">{t('tournaments.registrationTime')}</p>
-                  <p>{new Date(registration.registration_time).toLocaleString()}</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground">{t('tournaments.startingChips')}</p>
-                  <p>{registration.chips.toLocaleString()}</p>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </CardContent>
-      
-      <CardFooter className="flex-col space-y-4">
-        {registrationStatus === 'open' && (
-          registered ? (
-            <Button 
-              variant="outline"
-              onClick={handleUnregister} 
-              disabled={loading}
-              className="w-full text-red-500 hover:bg-red-500/10"
-            >
-              {t('tournaments.unregister')}
-            </Button>
-          ) : (
-            <Button 
-              onClick={handleRegister} 
-              disabled={loading || (tournament.is_private && !accessCode)}
-              className="w-full"
-            >
-              {t('tournaments.register')}
-            </Button>
-          )
-        )}
-        
-        <Button
-          variant="outline"
-          onClick={toggleRegistrationsList}
-          className="w-full"
-        >
-          {registrationsVisible ? t('hideRegistrations') : t('showRegistrations')}
-        </Button>
-        
-        {registrationsVisible && (
-          <div className="w-full">
-            <TournamentRegistrationsList 
-              registrations={registrations}
-              loading={loadingRegistrations}
-            />
+        ) : (
+          <div className="flex justify-center items-center h-full">
+            <p className="text-gray-500">{t('noRegistrations', 'No hay jugadores registrados')}</p>
           </div>
         )}
-      </CardFooter>
-    </Card>
+      </ScrollArea>
+    </div>
   );
 }

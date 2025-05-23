@@ -51,17 +51,20 @@ export function GameChat({ tableId, userId }: GameChatProps) {
     const fetchMessages = async () => {
       setLoading(true);
       try {
+        // Replace this with a direct query since table_chat_messages isn't recognized
         const { data, error } = await supabase
-          .from('table_chat_messages')
-          .select('*')
-          .eq('table_id', tableId)
-          .order('created_at', { ascending: true })
+          .rpc('get_table_chat_messages', { p_table_id: tableId })
           .limit(50);
           
         if (error) throw error;
-        setMessages(data as RoomMessage[]);
+        if (data) {
+          setMessages(data as RoomMessage[]);
+        } else {
+          setMessages([]);
+        }
       } catch (err) {
         console.error('Error fetching messages:', err);
+        setMessages([]);
       } finally {
         setLoading(false);
       }
@@ -77,7 +80,8 @@ export function GameChat({ tableId, userId }: GameChatProps) {
       .on('postgres_changes', 
         { event: 'INSERT', schema: 'public', table: 'table_chat_messages', filter: `table_id=eq.${tableId}` }, 
         payload => {
-          const newMessage = payload.new as RoomMessage;
+          // Cast the payload to our expected type
+          const newMessage = payload.new as unknown as RoomMessage;
           setMessages(prev => [...prev, newMessage]);
         }
       )
@@ -92,11 +96,12 @@ export function GameChat({ tableId, userId }: GameChatProps) {
     if (!message.trim() || !userId || !playerName) return;
     
     try {
-      await supabase.from('table_chat_messages').insert({
-        table_id: tableId,
-        player_id: userId,
-        player_name: playerName,
-        message: message.trim()
+      // Replace this with an RPC function
+      await supabase.rpc('insert_chat_message', {
+        p_table_id: tableId,
+        p_player_id: userId,
+        p_player_name: playerName,
+        p_message: message.trim()
       });
       
       setMessage('');
