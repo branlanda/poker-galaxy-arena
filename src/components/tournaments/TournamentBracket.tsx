@@ -19,7 +19,7 @@ export function TournamentBracket({
 }: TournamentBracketProps) {
   const { t } = useTranslation();
   const [zoomLevel, setZoomLevel] = useState(1);
-  const [bracketMode, setBracketMode<'standard' | 'tables'>('standard');
+  const [bracketMode, setBracketMode] = useState<'standard' | 'tables'>('standard');
 
   const increaseZoom = () => {
     if (zoomLevel < 1.5) {
