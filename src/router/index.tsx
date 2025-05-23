@@ -1,5 +1,5 @@
 
-import { createBrowserRouter, RouteObject } from 'react-router-dom';
+import { createBrowserRouter } from 'react-router-dom';
 import Index from '@/pages/Index';
 import { NotFound } from '@/pages/NotFound';
 import Login from '@/pages/auth/Login';
@@ -11,10 +11,10 @@ import LobbyPage from '@/pages/Lobby/LobbyPage';
 import ProfilePage from '@/pages/profile/ProfilePage';
 import FundsPage from '@/pages/Funds/FundsPage';
 import Settings from '@/pages/settings/Settings';
-import { TournamentsRoutes } from './router/TournamentsRoutes';
-import AdminRoutes from './router/AdminRoutes';
+import { TournamentsRoutes } from './TournamentsRoutes';
+import AdminRoutes from './AdminRoutes';
 
-const routes: RouteObject[] = [
+const routes = [
   {
     path: '/',
     element: <Index />,

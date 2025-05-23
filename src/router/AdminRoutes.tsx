@@ -6,6 +6,8 @@ import Dashboard from '@/pages/Admin/Dashboard';
 import Users from '@/pages/Admin/Users';
 import Tables from '@/pages/Admin/Tables';
 import Ledger from '@/pages/Admin/Ledger';
+import SecurityCenter from '@/pages/Admin/SecurityCenter';
+import KpiExport from '@/pages/Admin/KpiExport';
 
 const AdminRoutes = () => {
   return (
@@ -22,6 +24,8 @@ const AdminRoutes = () => {
         <Route path="users" element={<Users />} />
         <Route path="tables" element={<Tables />} />
         <Route path="ledger" element={<Ledger />} />
+        <Route path="security" element={<SecurityCenter />} />
+        <Route path="export" element={<KpiExport />} />
       </Route>
     </Routes>
   );
