@@ -1,8 +1,6 @@
 
 import { LobbyTable } from '@/types/lobby';
-import { Users, Clock, Activity, DollarSign } from 'lucide-react';
-import { TableTypeBadge } from './TableTypeBadge';
-import { TableStatusBadge } from './TableStatusBadge';
+import { DollarSign, Clock, Activity, Users } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 
 interface TableInfoGridProps {
@@ -14,54 +12,64 @@ interface TableInfoGridProps {
 
 export function TableInfoGrid({ 
   table, 
-  lastActivityTime, 
+  lastActivityTime,
   activityStatus,
-  activePlayerCount 
+  activePlayerCount
 }: TableInfoGridProps) {
   const { t } = useTranslation();
   
+  const activityStatusColors = {
+    active: "text-emerald-400",
+    idle: "text-amber-400",
+    inactive: "text-gray-500"
+  };
+  
   return (
-    <div className="p-4 pt-0">
-      <div className="grid grid-cols-2 gap-y-2 text-sm">
-        <div className="flex items-center text-gray-300">
-          <Users className="h-4 w-4 mr-1.5 text-emerald-400" aria-hidden="true" />
-          <span>
-            {t('playersCount', 'Jugadores')}: <span className="font-semibold text-white">{table.current_players}/{table.max_players}</span>
-          </span>
+    <div className="grid grid-cols-2 p-5 gap-4">
+      <div>
+        <div className="text-gray-400 text-xs flex items-center">
+          <DollarSign className="h-3 w-3 mr-1" /> {t('blinds', 'Blinds')}
         </div>
-        
-        <div className="flex items-center text-gray-300">
-          <DollarSign className="h-4 w-4 mr-1.5 text-emerald-400" aria-hidden="true" />
-          <span>
-            {t('blinds', 'Ciegas')}: <span className="font-semibold text-white">${table.small_blind}/{table.big_blind}</span>
-          </span>
+        <div className="font-medium">
+          ${table.small_blind} / ${table.big_blind}
         </div>
-        
-        <div className="flex items-center text-gray-300">
-          <Activity className={`h-4 w-4 mr-1.5 ${activityStatus === 'active' ? 'text-emerald-400 animate-pulse' : activityStatus === 'idle' ? 'text-amber-400' : 'text-gray-400'}`} aria-hidden="true" />
-          <div className="flex items-center">
-            <span>{t('activity', 'Actividad')}: </span>
-            {activePlayerCount > 0 ? (
-              <span className="font-semibold text-white ml-1">
-                {activePlayerCount} {t('activePlayers', 'jugando')}
-              </span>
-            ) : (
-              <span className="text-gray-400 ml-1">{t('inactive', 'inactiva')}</span>
-            )}
-          </div>
+        <div className="text-xs text-gray-500 mt-1">
+          {t('buyIn', 'Buy-in')}: ${table.min_buy_in} - ${table.max_buy_in}
         </div>
-        
-        <div className="flex items-center text-gray-300">
-          <Clock className="h-4 w-4 mr-1.5 text-emerald-400" aria-hidden="true" />
-          <span className="text-gray-400 overflow-hidden text-ellipsis whitespace-nowrap">{lastActivityTime}</span>
+      </div>
+      
+      <div>
+        <div className="text-gray-400 text-xs flex items-center">
+          <Activity className="h-3 w-3 mr-1" /> {t('activity', 'Actividad')}
         </div>
-        
-        <div className="col-span-2 flex space-x-2 mt-1.5">
-          <TableTypeBadge type={table.table_type} />
-          <TableStatusBadge 
-            status={table.status} 
-            isPrivate={table.is_private}
-          />
+        <div className={`font-medium ${activityStatusColors[activityStatus]}`}>
+          {activityStatus === 'active' ? t('active', 'Activa') : 
+           activityStatus === 'idle' ? t('idle', 'Inactiva') : 
+           t('inactive', 'Sin actividad')}
+        </div>
+        <div className="text-xs text-gray-500 mt-1">
+          {lastActivityTime}
+        </div>
+      </div>
+      
+      <div>
+        <div className="text-gray-400 text-xs flex items-center">
+          <Users className="h-3 w-3 mr-1" /> {t('activePlayers', 'Jugando')}
+        </div>
+        <div className="font-medium">
+          {activePlayerCount > 0 ? activePlayerCount : t('noActivePlayers', 'Ninguno')}
+        </div>
+        <div className="text-xs text-gray-500 mt-1">
+          {t('ofTotalPlayers', 'de {total} jugadores', { total: table.current_players })}
+        </div>
+      </div>
+      
+      <div>
+        <div className="text-gray-400 text-xs flex items-center">
+          <Clock className="h-3 w-3 mr-1" /> {t('handNumber', 'Hand #')}
+        </div>
+        <div className="font-medium">
+          {table.hand_number > 0 ? table.hand_number : t('notStarted', 'No iniciada')}
         </div>
       </div>
     </div>

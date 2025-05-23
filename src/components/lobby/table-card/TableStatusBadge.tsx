@@ -1,42 +1,50 @@
 
-import { Badge } from '@/components/ui/badge';
 import { TableStatus } from '@/types/lobby';
 import { useTranslation } from '@/hooks/useTranslation';
 
-export interface TableStatusBadgeProps {
+interface TableStatusBadgeProps {
   status: TableStatus;
-  isPrivate?: boolean;
+  className?: string;
 }
 
-export function TableStatusBadge({ status, isPrivate = false }: TableStatusBadgeProps) {
+export function TableStatusBadge({ status, className = '' }: TableStatusBadgeProps) {
   const { t } = useTranslation();
-
-  // Determine variant and text based on status and privacy
-  const getVariant = () => {
-    if (isPrivate) return "warning";
-    
-    switch(status) {
-      case 'ACTIVE': return "success";
-      case 'WAITING': return "default";
-      case 'PAUSED': return "secondary";
-      case 'FINISHED': return "outline";
-      default: return "default";
+  
+  const getStatusConfig = () => {
+    switch (status) {
+      case 'ACTIVE':
+        return {
+          label: t('tableStatus.active', 'Activa'),
+          color: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
+        };
+      case 'WAITING':
+        return {
+          label: t('tableStatus.waiting', 'Esperando'),
+          color: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
+        };
+      case 'PAUSED':
+        return {
+          label: t('tableStatus.paused', 'Pausada'),
+          color: 'bg-orange-500/20 text-orange-300 border-orange-500/30',
+        };
+      case 'FINISHED':
+        return {
+          label: t('tableStatus.finished', 'Finalizada'),
+          color: 'bg-gray-500/20 text-gray-300 border-gray-500/30',
+        };
+      default:
+        return {
+          label: status,
+          color: 'bg-gray-500/20 text-gray-300 border-gray-500/30',
+        };
     }
   };
   
-  const getText = () => {
-    if (isPrivate) return t('private', 'Private');
-    
-    switch(status) {
-      case 'ACTIVE': return t('active', 'Active');
-      case 'WAITING': return t('waiting', 'Waiting');
-      case 'PAUSED': return t('paused', 'Paused');
-      case 'FINISHED': return t('finished', 'Finished');
-      default: return status;
-    }
-  };
-
+  const { label, color } = getStatusConfig();
+  
   return (
-    <Badge variant={getVariant()}>{getText()}</Badge>
+    <span className={`px-2 py-0.5 rounded-full text-xs font-medium border ${color} ${className}`}>
+      {label}
+    </span>
   );
 }

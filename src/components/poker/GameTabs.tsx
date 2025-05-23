@@ -1,11 +1,12 @@
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Award, MessageCircle, Users, Info } from 'lucide-react';
-import { GameState } from '@/types/game';
+import { useState } from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useTranslation } from '@/hooks/useTranslation';
+import { MessageSquare, Clock, Users } from 'lucide-react';
 import { PlayerAtTable } from '@/types/lobby';
-import { GameChat } from './GameChat';
+import { GameState } from '@/types/game';
 import { PlayerList } from './PlayerList';
-import { GameInfo } from './GameInfo';
+import { GameChat } from './GameChat';
 import { HandHistory } from './HandHistory';
 
 interface GameTabsProps {
@@ -13,57 +14,49 @@ interface GameTabsProps {
   tableId: string;
   players: PlayerAtTable[];
   maxPlayers: number;
-  userId: string | undefined;
+  userId?: string;
 }
 
-export function GameTabs({ 
-  gameState, 
-  tableId, 
-  players, 
-  maxPlayers, 
-  userId 
-}: GameTabsProps) {
+export function GameTabs({ gameState, tableId, players, maxPlayers, userId }: GameTabsProps) {
+  const { t } = useTranslation();
+  const [activeTab, setActiveTab] = useState("chat");
+  
   return (
-    <Tabs defaultValue="info" className="w-full">
-      <TabsList className="mb-4">
-        <TabsTrigger value="info">
-          <Info className="h-4 w-4 mr-2" /> Game Info
+    <Tabs defaultValue="chat" value={activeTab} onValueChange={setActiveTab} className="w-full">
+      <TabsList className="grid grid-cols-3">
+        <TabsTrigger value="chat" className="flex items-center">
+          <MessageSquare className="h-4 w-4 mr-2" />
+          {t('chat', 'Chat')}
         </TabsTrigger>
-        <TabsTrigger value="chat">
-          <MessageCircle className="h-4 w-4 mr-2" /> Chat
+        <TabsTrigger value="players" className="flex items-center">
+          <Users className="h-4 w-4 mr-2" />
+          {t('players', 'Jugadores')} ({players.length}/{maxPlayers})
         </TabsTrigger>
-        <TabsTrigger value="players">
-          <Users className="h-4 w-4 mr-2" /> Players
-        </TabsTrigger>
-        <TabsTrigger value="history">
-          <Award className="h-4 w-4 mr-2" /> Hand History
+        <TabsTrigger value="history" className="flex items-center">
+          <Clock className="h-4 w-4 mr-2" />
+          {t('handHistory', 'Historial')}
         </TabsTrigger>
       </TabsList>
       
-      <TabsContent value="info" className="border border-emerald/10 rounded-md p-4 bg-navy/30">
-        <GameInfo 
-          gamePhase={gameState?.phase || 'WAITING'} 
-          lastAction={gameState?.lastAction}
-          smallBlind={gameState?.smallBlind || 0}
-          bigBlind={gameState?.bigBlind || 0}
-        />
-      </TabsContent>
-      
-      <TabsContent value="chat" className="border border-emerald/10 rounded-md p-4 bg-navy/30 h-[350px]">
-        <GameChat tableId={tableId} />
-      </TabsContent>
-      
-      <TabsContent value="players" className="border border-emerald/10 rounded-md p-4 bg-navy/30">
-        <PlayerList 
-          players={players}
-          maxPlayers={maxPlayers}
-          userId={userId}
-        />
-      </TabsContent>
-      
-      <TabsContent value="history" className="border border-emerald/10 rounded-md p-4 bg-navy/30">
-        <HandHistory />
-      </TabsContent>
+      <div className="mt-4 border border-emerald/10 rounded-md bg-navy-800/60">
+        <TabsContent value="chat" className="m-0">
+          <div className="h-64 md:h-80">
+            <GameChat tableId={tableId} userId={userId} />
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="players" className="m-0">
+          <div className="h-64 md:h-80 overflow-y-auto p-4">
+            <PlayerList players={players} gameState={gameState} />
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="history" className="m-0">
+          <div className="h-64 md:h-80 overflow-y-auto p-4">
+            <HandHistory />
+          </div>
+        </TabsContent>
+      </div>
     </Tabs>
   );
 }

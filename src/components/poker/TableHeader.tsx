@@ -1,9 +1,10 @@
 
-import { X, Users, Clock, CircleDollarSign } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/badge';
-import { formatDistanceToNow } from 'date-fns';
 import { LobbyTable } from '@/types/lobby';
+import { useTranslation } from '@/hooks/useTranslation';
+import { Button } from '@/components/ui/Button';
+import { ChevronLeft, Info, Users, Clock } from 'lucide-react';
+import { TableTypeBadge } from '../lobby/table-card/TableTypeBadge';
+import { TableStatusBadge } from '../lobby/table-card/TableStatusBadge';
 
 interface TableHeaderProps {
   table: LobbyTable;
@@ -11,48 +12,60 @@ interface TableHeaderProps {
 }
 
 export function TableHeader({ table, onLeaveTable }: TableHeaderProps) {
-  const blindsText = `${table.small_blind} / ${table.big_blind}`;
-  const timeAgo = formatDistanceToNow(new Date(table.created_at), { addSuffix: true });
+  const { t } = useTranslation();
 
   return (
-    <div className="flex flex-wrap justify-between items-center bg-navy/50 border border-emerald/10 rounded-lg p-4 mb-4">
-      <div className="space-y-1">
-        <div className="flex items-center gap-2">
-          <h1 className="text-xl md:text-2xl font-bold">{table.name}</h1>
-          {table.is_private && (
-            <Badge variant="warning">Private</Badge>
-          )}
-          <Badge variant={table.status === 'ACTIVE' ? 'success' : 'default'}>
-            {table.status}
-          </Badge>
+    <div className="bg-navy-800/60 border border-emerald/10 rounded-lg p-4 mb-6">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onLeaveTable}
+              className="h-8 w-8 rounded-full bg-navy-700/50"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            
+            <h1 className="text-xl font-bold">{table.name}</h1>
+            
+            <div className="flex gap-2">
+              <TableTypeBadge type={table.table_type} />
+              <TableStatusBadge status={table.status} />
+              {table.is_private && (
+                <span className="px-2 py-0.5 rounded-full bg-gray-500/20 text-gray-300 border border-gray-500/30 text-xs font-medium">
+                  {t('private', 'Privada')}
+                </span>
+              )}
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-4 mt-2 text-gray-400 text-sm">
+            <div className="flex items-center">
+              <Info className="h-4 w-4 mr-1" />
+              {t('blinds', 'Blinds')}: ${table.small_blind} / ${table.big_blind}
+            </div>
+            
+            <div className="flex items-center">
+              <Users className="h-4 w-4 mr-1" />
+              {t('players', 'Jugadores')}: {table.current_players}/{table.max_players}
+            </div>
+            
+            {table.hand_number > 0 && (
+              <div className="flex items-center">
+                <Clock className="h-4 w-4 mr-1" />
+                {t('handNumber', 'Mano')}: #{table.hand_number}
+              </div>
+            )}
+          </div>
         </div>
-        <div className="flex flex-wrap gap-4 text-sm text-gray-300">
-          <div className="flex items-center gap-1">
-            <CircleDollarSign className="h-4 w-4" />
-            <span>Blinds: {blindsText}</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <Users className="h-4 w-4" />
-            <span>
-              Players: {table.current_players}/{table.max_players}
-            </span>
-          </div>
-          <div className="flex items-center gap-1">
-            <Clock className="h-4 w-4" />
-            <span>Created {timeAgo}</span>
-          </div>
+        
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm">
+            {t('inviteFriends', 'Invitar amigos')}
+          </Button>
         </div>
-      </div>
-      <div className="mt-2 md:mt-0">
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={onLeaveTable}
-          className="flex items-center gap-1 text-red-500 hover:bg-red-500/10 hover:text-red-500"
-        >
-          <X className="h-4 w-4" />
-          Leave Table
-        </Button>
       </div>
     </div>
   );

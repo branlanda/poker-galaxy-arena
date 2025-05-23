@@ -1,49 +1,56 @@
 
 import { useState, useEffect, useRef } from 'react';
-import { supabase } from '@/lib/supabase';
-import { useAuth } from '@/stores/auth';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/Button';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Send } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
+import { useTranslation } from '@/hooks/useTranslation';
+import { supabase } from '@/integrations/supabase/client';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { RoomMessage } from '@/types/lobby';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface GameChatProps {
   tableId: string;
+  userId?: string;
 }
 
-interface Message {
-  id: string;
-  player_id: string;
-  player_name: string;
-  message: string;
-  created_at: string;
-  table_id: string;
-}
-
-export function GameChat({ tableId }: GameChatProps) {
-  const { user } = useAuth();
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [newMessage, setNewMessage] = useState('');
-  const [loading, setLoading] = useState(false);
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
+export function GameChat({ tableId, userId }: GameChatProps) {
+  const { t } = useTranslation();
+  const [message, setMessage] = useState('');
+  const [messages, setMessages] = useState<RoomMessage[]>([]);
+  const [loading, setLoading] = useState(true);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [playerName, setPlayerName] = useState<string>('');
   
-  // Fetch existing messages when component mounts
+  // Scroll to bottom of chat when new messages arrive
   useEffect(() => {
-    if (!tableId || !user) return;
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+  
+  // Fetch player name
+  useEffect(() => {
+    if (!userId) return;
     
+    const fetchPlayerName = async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('alias')
+        .eq('id', userId)
+        .single();
+        
+      if (!error && data) {
+        setPlayerName(data.alias || 'Player');
+      }
+    };
+    
+    fetchPlayerName();
+  }, [userId]);
+  
+  // Fetch initial messages
+  useEffect(() => {
     const fetchMessages = async () => {
+      setLoading(true);
       try {
-        setLoading(true);
-        
-        // Create a custom channel for room messages
-        const channel = supabase.channel(`chat:${tableId}`)
-          .on('broadcast', { event: 'new_message' }, (payload) => {
-            setMessages(current => [...current, payload.payload as Message]);
-          })
-          .subscribe();
-        
-        // Load initial messages from database
         const { data, error } = await supabase
           .from('table_chat_messages')
           .select('*')
@@ -51,141 +58,138 @@ export function GameChat({ tableId }: GameChatProps) {
           .order('created_at', { ascending: true })
           .limit(50);
           
-        if (error) {
-          console.error('Error fetching chat messages:', error);
-          return;
-        }
-        
-        if (data) {
-          setMessages(data as Message[]);
-        }
-        
+        if (error) throw error;
+        setMessages(data as RoomMessage[]);
       } catch (err) {
-        console.error('Error setting up message channel:', err);
+        console.error('Error fetching messages:', err);
       } finally {
         setLoading(false);
       }
     };
     
     fetchMessages();
-    
-    return () => {
-      // Cleanup channel subscription
-      supabase.removeChannel(supabase.channel(`chat:${tableId}`));
-    };
-  }, [tableId, user]);
+  }, [tableId]);
   
-  // Auto-scroll to bottom when messages update
+  // Set up realtime subscription
   useEffect(() => {
-    if (scrollAreaRef.current) {
-      const scrollableNode = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
-      if (scrollableNode) {
-        scrollableNode.scrollTop = scrollableNode.scrollHeight;
-      }
-    }
-  }, [messages]);
+    const channel = supabase
+      .channel('table-chat')
+      .on('postgres_changes', 
+        { event: 'INSERT', schema: 'public', table: 'table_chat_messages', filter: `table_id=eq.${tableId}` }, 
+        payload => {
+          const newMessage = payload.new as RoomMessage;
+          setMessages(prev => [...prev, newMessage]);
+        }
+      )
+      .subscribe();
+      
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [tableId]);
   
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!user || !newMessage.trim() || !tableId) return;
+  const handleSendMessage = async () => {
+    if (!message.trim() || !userId || !playerName) return;
     
     try {
-      setLoading(true);
-      
-      const messageData = {
-        id: crypto.randomUUID(),
+      await supabase.from('table_chat_messages').insert({
         table_id: tableId,
-        player_id: user.id,
-        player_name: user.alias || user.email || 'Anonymous',
-        message: newMessage.trim(),
-        created_at: new Date().toISOString()
-      };
-      
-      // Store message in database for persistence
-      const { error } = await supabase
-        .from('table_chat_messages')
-        .insert([messageData]);
-        
-      if (error) {
-        throw error;
-      }
-      
-      // Broadcast message to all connected clients
-      await supabase.channel(`chat:${tableId}`).send({
-        type: 'broadcast',
-        event: 'new_message',
-        payload: messageData,
+        player_id: userId,
+        player_name: playerName,
+        message: message.trim()
       });
       
-      setNewMessage('');
-    } catch (err: any) {
+      setMessage('');
+    } catch (err) {
       console.error('Error sending message:', err);
-      toast({
-        title: "Failed to send message",
-        description: err.message,
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
     }
   };
   
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
+  
+  const formatTime = (timestamp: string) => {
+    const date = new Date(timestamp);
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
   return (
     <div className="flex flex-col h-full">
-      <ScrollArea className="flex-grow h-[280px]" ref={scrollAreaRef}>
-        <div className="p-4 space-y-4">
-          {messages.length === 0 ? (
-            <p className="text-center text-gray-400 py-4">No messages yet</p>
-          ) : (
-            messages.map(msg => (
-              <div 
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {loading ? (
+          <div className="flex justify-center items-center h-full">
+            <p className="text-gray-500">{t('loadingMessages', 'Cargando mensajes...')}</p>
+          </div>
+        ) : messages.length === 0 ? (
+          <div className="flex justify-center items-center h-full">
+            <p className="text-gray-500">{t('noMessages', 'No hay mensajes aún')}</p>
+          </div>
+        ) : (
+          <AnimatePresence initial={false}>
+            {messages.map((msg) => (
+              <motion.div
                 key={msg.id}
-                className={`max-w-[80%] ${msg.player_id === user?.id ? 'ml-auto' : ''}`}
+                className={`flex items-start gap-3 ${msg.player_id === userId ? 'justify-end' : ''}`}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
               >
-                <div 
-                  className={`rounded-lg p-3 ${
-                    msg.player_id === user?.id 
-                      ? 'bg-emerald/20 text-white' 
-                      : 'bg-gray-700/50 text-gray-200'
-                  }`}
-                >
-                  {msg.player_id !== user?.id && (
-                    <p className="text-xs font-medium text-emerald">{msg.player_name}</p>
-                  )}
-                  <p className="break-words">{msg.message}</p>
+                {msg.player_id !== userId && (
+                  <Avatar className="h-6 w-6">
+                    <AvatarFallback>{msg.player_name.substring(0, 2)}</AvatarFallback>
+                  </Avatar>
+                )}
+                
+                <div className={`max-w-[70%] ${msg.player_id === userId ? 'bg-emerald-950/30 border-emerald/30' : 'bg-navy-700/50 border-navy-600/50'} border p-3 rounded-lg`}>
+                  <div className="flex justify-between items-center mb-1 gap-4">
+                    <span className={`text-xs font-medium ${msg.player_id === userId ? 'text-emerald-400' : 'text-blue-400'}`}>
+                      {msg.player_name}
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      {formatTime(msg.created_at)}
+                    </span>
+                  </div>
+                  <p className="text-sm break-words">{msg.message}</p>
                 </div>
-                <p className="text-xs text-gray-400 mt-1">
-                  {new Date(msg.created_at).toLocaleTimeString([], {
-                    hour: '2-digit',
-                    minute: '2-digit'
-                  })}
-                </p>
-              </div>
-            ))
-          )}
-        </div>
-      </ScrollArea>
+                
+                {msg.player_id === userId && (
+                  <Avatar className="h-6 w-6">
+                    <AvatarFallback>{msg.player_name.substring(0, 2)}</AvatarFallback>
+                  </Avatar>
+                )}
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        )}
+        <div ref={messagesEndRef} />
+      </div>
       
-      <form 
-        onSubmit={handleSendMessage}
-        className="border-t border-gray-800 p-2 flex gap-2"
-      >
-        <Input
-          value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
-          placeholder="Type a message..."
-          disabled={!user || loading}
-          className="bg-gray-800"
-        />
-        <Button 
-          type="submit" 
-          size="icon" 
-          disabled={!user || loading || !newMessage.trim()}
-        >
-          <Send className="h-4 w-4" />
-        </Button>
-      </form>
+      <div className="p-3 border-t border-emerald/10 bg-navy-900/30">
+        <div className="flex gap-2">
+          <Input
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder={t('typeMessage', 'Escribe un mensaje...')}
+            disabled={!userId}
+            className="flex-1"
+          />
+          <Button 
+            onClick={handleSendMessage} 
+            disabled={!message.trim() || !userId}
+            size="icon"
+            variant="ghost"
+            className="bg-emerald/10"
+          >
+            <Send className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }

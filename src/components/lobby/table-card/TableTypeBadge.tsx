@@ -1,33 +1,40 @@
 
-import { Badge } from '@/components/ui/badge';
 import { TableType } from '@/types/lobby';
 import { useTranslation } from '@/hooks/useTranslation';
 
-export interface TableTypeBadgeProps {
+interface TableTypeBadgeProps {
   type: TableType;
+  className?: string;
 }
 
-export function TableTypeBadge({ type }: TableTypeBadgeProps) {
+export function TableTypeBadge({ type, className = '' }: TableTypeBadgeProps) {
   const { t } = useTranslation();
   
-  // Determine variant and text based on type
-  const getVariant = () => {
-    switch(type) {
-      case 'CASH': return "default";
-      case 'TOURNAMENT': return "secondary";
-      default: return "outline";
+  const getTypeConfig = () => {
+    switch (type) {
+      case 'CASH':
+        return {
+          label: t('tableType.cash', 'Efectivo'),
+          color: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
+        };
+      case 'TOURNAMENT':
+        return {
+          label: t('tableType.tournament', 'Torneo'),
+          color: 'bg-purple-500/20 text-purple-300 border-purple-500/30',
+        };
+      default:
+        return {
+          label: type,
+          color: 'bg-gray-500/20 text-gray-300 border-gray-500/30',
+        };
     }
   };
   
-  const getText = () => {
-    switch(type) {
-      case 'CASH': return t('cash', 'Cash');
-      case 'TOURNAMENT': return t('tournament', 'Tournament');
-      default: return type;
-    }
-  };
-
+  const { label, color } = getTypeConfig();
+  
   return (
-    <Badge variant={getVariant()} className="uppercase">{getText()}</Badge>
+    <span className={`px-2 py-0.5 rounded-full text-xs font-medium border ${color} ${className}`}>
+      {label}
+    </span>
   );
 }

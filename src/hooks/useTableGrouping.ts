@@ -2,84 +2,69 @@
 import { useState, useEffect, useCallback } from 'react';
 import { LobbyTable } from '@/types/lobby';
 
-export function useTableGrouping(tables: LobbyTable[]) {
+export const useTableGrouping = (tables: LobbyTable[]) => {
   const [newTableIds, setNewTableIds] = useState<Set<string>>(new Set());
-  const [previousTables, setPreviousTables] = useState<LobbyTable[]>([]);
-
-  // Track new tables by comparing with previous tables
+  
+  // Identify and track new tables for animation and highlighting
   useEffect(() => {
-    const existingIds = new Set(previousTables.map(table => table.id));
-    const newIds = new Set<string>();
+    const newTables = tables.filter(table => {
+      const creationTime = new Date(table.created_at).getTime();
+      const now = Date.now();
+      // Mark tables as "new" if they were created in the last 30 seconds
+      return now - creationTime < 30000;
+    });
     
-    tables.forEach(table => {
-      if (!existingIds.has(table.id)) {
-        newIds.add(table.id);
+    if (newTables.length > 0) {
+      setNewTableIds(prev => {
+        const updated = new Set(prev);
+        newTables.forEach(table => updated.add(table.id));
+        return updated;
+      });
+      
+      // Remove "new" status after 30 seconds
+      const timers = newTables.map(table => {
+        const creationTime = new Date(table.created_at).getTime();
+        const now = Date.now();
+        const timeLeft = Math.max(0, 30000 - (now - creationTime));
         
-        // Remove the new table indicator after 10 seconds
-        setTimeout(() => {
-          setNewTableIds(current => {
-            const updated = new Set(current);
+        return setTimeout(() => {
+          setNewTableIds(prev => {
+            const updated = new Set(prev);
             updated.delete(table.id);
             return updated;
           });
-        }, 10000);
-      }
-    });
-    
-    setNewTableIds(prev => new Set([...prev, ...newIds]));
-    setPreviousTables(tables);
+        }, timeLeft);
+      });
+      
+      return () => timers.forEach(timer => clearTimeout(timer));
+    }
   }, [tables]);
-
-  // Function to group and sort tables by various criteria
+  
+  // Group tables into categories for display
   const groupAndSortTables = useCallback((tables: LobbyTable[]) => {
-    const now = new Date().getTime();
-    
-    // Find hot tables (most players or high activity)
     const hotTables = tables.filter(table => {
-      const isNearlyFull = table.current_players >= Math.floor(table.max_players * 0.7);
-      const hasActivity = table.active_players >= 3;
-      return isNearlyFull || hasActivity;
+      // Hot tables have high activity or are nearly full
+      const isNearlyFull = table.current_players >= table.max_players * 0.7;
+      const hasHighActivity = table.active_players >= 3;
+      return isNearlyFull || hasHighActivity;
     });
     
-    // Find active tables (with active players but not "hot")
     const activeTables = tables.filter(table => {
-      return table.active_players > 0 && 
-             !hotTables.some(hot => hot.id === table.id);
+      // Active tables have some players and ongoing activity
+      return table.active_players > 0 && !hotTables.includes(table);
     });
     
-    // Find tables with players waiting but not active yet
     const waitingTables = tables.filter(table => {
-      return table.current_players > 0 && 
-             table.active_players === 0 &&
-             !hotTables.some(hot => hot.id === table.id) &&
-             !activeTables.some(active => active.id === table.id);
+      // Waiting tables have players but no active game yet
+      return table.current_players > 0 && table.active_players === 0 && 
+             !hotTables.includes(table) && !activeTables.includes(table);
     });
     
-    // All other tables
     const otherTables = tables.filter(table => {
-      return !hotTables.some(hot => hot.id === table.id) &&
-             !activeTables.some(active => active.id === table.id) &&
-             !waitingTables.some(waiting => waiting.id === table.id);
-    });
-    
-    // Sort hot tables by player count
-    hotTables.sort((a, b) => b.current_players - a.current_players);
-    
-    // Sort active tables by activity
-    activeTables.sort((a, b) => {
-      const aTimeActive = a.last_activity ? new Date(a.last_activity).getTime() : 0;
-      const bTimeActive = b.last_activity ? new Date(b.last_activity).getTime() : 0;
-      return bTimeActive - aTimeActive;
-    });
-    
-    // Sort waiting tables by number of players
-    waitingTables.sort((a, b) => b.current_players - a.current_players);
-    
-    // Sort other tables by creation date (newest first)
-    otherTables.sort((a, b) => {
-      const aCreated = new Date(a.created_at).getTime();
-      const bCreated = new Date(b.created_at).getTime();
-      return bCreated - aCreated;
+      // All other tables (empty, etc)
+      return !hotTables.includes(table) && 
+             !activeTables.includes(table) && 
+             !waitingTables.includes(table);
     });
     
     return {
@@ -90,5 +75,8 @@ export function useTableGrouping(tables: LobbyTable[]) {
     };
   }, []);
   
-  return { newTableIds, groupAndSortTables };
-}
+  return {
+    newTableIds,
+    groupAndSortTables
+  };
+};

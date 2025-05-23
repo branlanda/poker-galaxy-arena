@@ -1,4 +1,6 @@
 
+import { Flame } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { useTranslation } from '@/hooks/useTranslation';
 
 interface HotTableIndicatorProps {
@@ -9,8 +11,29 @@ export function HotTableIndicator({ isNew = false }: HotTableIndicatorProps) {
   const { t } = useTranslation();
   
   return (
-    <div className={`absolute -top-1 -right-1 transform rotate-12 ${isNew ? 'bg-amber-500' : 'bg-emerald-600'} text-white text-xs font-bold px-4 py-1 rounded shadow-lg z-10`}>
-      {isNew ? t('newTable', '¡NUEVA!') : t('hotTable', '¡POPULAR!')}
-    </div>
+    <motion.div
+      className={`absolute -top-3 -right-3 z-10 px-2 py-1 rounded-full shadow-lg flex items-center 
+                 ${isNew ? 'bg-amber-500' : 'bg-emerald-500'}`}
+      initial={{ scale: 0 }}
+      animate={{ scale: 1 }}
+      transition={{
+        type: "spring",
+        stiffness: 500,
+        damping: 15,
+      }}
+    >
+      {isNew ? (
+        <span className="text-xs font-bold text-white">
+          {t('new', 'NUEVA')}
+        </span>
+      ) : (
+        <>
+          <Flame className="h-3 w-3 text-white mr-1" />
+          <span className="text-xs font-bold text-white">
+            {t('hot', 'HOT')}
+          </span>
+        </>
+      )}
+    </motion.div>
   );
 }
