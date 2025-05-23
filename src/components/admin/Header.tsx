@@ -14,10 +14,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from '@/components/ui/badge';
+import { useAdmin } from '@/hooks/useAdmin';
+import { Link } from 'react-router-dom';
 
 const Header = () => {
   const { user, logout } = useAuth();
   const { t } = useTranslation();
+  const { adminRole } = useAdmin();
   const [notificationCount] = useState(3); // Mock notification count
   
   const handleLogout = async () => {
@@ -26,7 +29,14 @@ const Header = () => {
 
   return (
     <header className="bg-navy border-b border-emerald/10 h-16 flex items-center justify-between px-6">
-      <h1 className="text-lg font-semibold">{t('admin.dashboard.title')}</h1>
+      <h1 className="text-lg font-semibold">
+        {t('admin.dashboard.title')} 
+        {adminRole && (
+          <span className="ml-2 text-xs bg-emerald/20 text-emerald px-2 py-1 rounded">
+            {adminRole.toUpperCase()}
+          </span>
+        )}
+      </h1>
       
       <div className="flex items-center gap-4">
         <DropdownMenu>
@@ -67,7 +77,9 @@ const Header = () => {
             
             <DropdownMenuSeparator />
             <DropdownMenuItem className="justify-center font-medium text-emerald">
-              {t('admin.notifications.viewAll')}
+              <Link to="/admin/security" className="w-full text-center">
+                {t('admin.notifications.viewAll')}
+              </Link>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

@@ -5,8 +5,14 @@ import { useTranslation } from '@/hooks/useTranslation';
 import KycBadge from './KycBadge';
 import UserDrawer from './UserDrawer';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Eye } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
 
-const UserTable = () => {
+interface UserTableProps {
+  onUserSelect?: (userId: string) => void;
+}
+
+const UserTable: React.FC<UserTableProps> = ({ onUserSelect }) => {
   const { t } = useTranslation();
   const { users, filters } = useUsersStore();
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -37,7 +43,11 @@ const UserTable = () => {
   });
 
   const handleUserSelect = (user: User) => {
-    setSelectedUser(user);
+    if (onUserSelect) {
+      onUserSelect(user.id);
+    } else {
+      setSelectedUser(user);
+    }
   };
 
   return (
@@ -46,11 +56,12 @@ const UserTable = () => {
         <TableHeader>
           <TableRow className="bg-[#081624]">
             <TableHead>{t('admin.users.alias')}</TableHead>
-            <TableHead>{t('admin.users.email')}</TableHead>
-            <TableHead>{t('admin.users.country')}</TableHead>
+            <TableHead className="hidden md:table-cell">{t('admin.users.email')}</TableHead>
+            <TableHead className="hidden lg:table-cell">{t('admin.users.country')}</TableHead>
             <TableHead>{t('admin.users.balance')}</TableHead>
             <TableHead>KYC</TableHead>
             <TableHead>{t('admin.users.status')}</TableHead>
+            <TableHead className="text-right">{t('admin.users.actions')}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -58,12 +69,11 @@ const UserTable = () => {
             filteredUsers.map(user => (
               <TableRow 
                 key={user.id}
-                className="hover:bg-[#0e2337] cursor-pointer"
-                onClick={() => handleUserSelect(user)}
+                className="hover:bg-[#0e2337]"
               >
                 <TableCell>{user.alias}</TableCell>
-                <TableCell>{user.email}</TableCell>
-                <TableCell>{user.country}</TableCell>
+                <TableCell className="hidden md:table-cell">{user.email}</TableCell>
+                <TableCell className="hidden lg:table-cell">{user.country}</TableCell>
                 <TableCell className="font-mono">${user.balance.toFixed(2)}</TableCell>
                 <TableCell><KycBadge level={user.kyc} /></TableCell>
                 <TableCell>
@@ -77,11 +87,22 @@ const UserTable = () => {
                     </span>
                   )}
                 </TableCell>
+                <TableCell className="text-right">
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    className="h-8 w-8 p-0" 
+                    onClick={() => handleUserSelect(user)}
+                  >
+                    <Eye className="h-4 w-4" />
+                    <span className="sr-only">{t('admin.users.viewDetails')}</span>
+                  </Button>
+                </TableCell>
               </TableRow>
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={6} className="text-center py-10 text-gray-400">
+              <TableCell colSpan={7} className="text-center py-10 text-gray-400">
                 {t('admin.users.noResults')}
               </TableCell>
             </TableRow>
@@ -89,7 +110,7 @@ const UserTable = () => {
         </TableBody>
       </Table>
       
-      {selectedUser && (
+      {!onUserSelect && selectedUser && (
         <UserDrawer 
           user={selectedUser} 
           onClose={() => setSelectedUser(null)} 

@@ -115,7 +115,7 @@ const TransactionVolumeChart: React.FC<TransactionVolumeChartProps> = ({ timeRan
                   return (
                     <ChartTooltipContent>
                       <div className="text-sm font-bold mb-1">{label}</div>
-                      {payload.map((item, index) => (
+                      {payload.map((item: any, index: number) => (
                         <div key={index} className="flex justify-between gap-2">
                           <span style={{ color: item.color }}>{item.name}:</span>
                           <span className="font-medium">${item.value.toLocaleString()}</span>

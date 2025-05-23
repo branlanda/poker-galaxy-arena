@@ -15,6 +15,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { useAdmin } from '@/hooks/useAdmin';
 
 interface UserDrawerProps {
   user: User;
@@ -23,12 +24,14 @@ interface UserDrawerProps {
 
 const UserDrawer = ({ user, onClose }: UserDrawerProps) => {
   const { t } = useTranslation();
-  const { banUser, unbanUser, approveKyc } = useUsersStore();
+  const { banUser, unbanUser, approveKyc, resetUserFunds } = useUsersStore();
   const { toast } = useToast();
+  const { createAuditLog } = useAdmin();
   const [isResetting, setIsResetting] = useState(false);
   
   const handleBan = () => {
     banUser(user.id);
+    createAuditLog('BAN_USER', `User ${user.alias} (${user.id}) banned`, { userId: user.id });
     toast({
       title: t('admin.users.userBanned'),
       description: t('admin.users.userBannedDescription'),
@@ -37,6 +40,7 @@ const UserDrawer = ({ user, onClose }: UserDrawerProps) => {
   
   const handleUnban = () => {
     unbanUser(user.id);
+    createAuditLog('UNBAN_USER', `User ${user.alias} (${user.id}) unbanned`, { userId: user.id });
     toast({
       title: t('admin.users.userUnbanned'),
       description: t('admin.users.userUnbannedDescription'),
@@ -45,6 +49,7 @@ const UserDrawer = ({ user, onClose }: UserDrawerProps) => {
   
   const handleApproveKyc = () => {
     approveKyc(user.id);
+    createAuditLog('APPROVE_KYC', `KYC approved for user ${user.alias} (${user.id})`, { userId: user.id });
     toast({
       title: t('admin.users.kycApproved'),
       description: t('admin.users.kycApprovedDescription'),
@@ -56,6 +61,8 @@ const UserDrawer = ({ user, onClose }: UserDrawerProps) => {
     // In a real app, we would make an API call here
     setTimeout(() => {
       setIsResetting(false);
+      resetUserFunds(user.id);
+      createAuditLog('RESET_FUNDS', `Funds reset for user ${user.alias} (${user.id})`, { userId: user.id });
       toast({
         title: t('admin.users.fundsReset'),
         description: t('admin.users.fundsResetDescription'),
@@ -65,6 +72,7 @@ const UserDrawer = ({ user, onClose }: UserDrawerProps) => {
 
   const handleExportUserData = () => {
     // In a real app, we would trigger an export here
+    createAuditLog('EXPORT_USER_DATA', `Data exported for user ${user.alias} (${user.id})`, { userId: user.id });
     toast({
       title: t('admin.users.dataExported'),
       description: t('admin.users.dataExportedDescription'),

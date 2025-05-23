@@ -14,7 +14,9 @@ import {
   Settings, 
   LogOut,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  MessageCircle,
+  FileText
 } from 'lucide-react';
 
 const Sidebar = () => {
@@ -34,9 +36,10 @@ const Sidebar = () => {
     { to: '/admin/users', icon: <Users size={20} />, label: t('admin.sidebar.users') },
     { to: '/admin/tables', icon: <Table size={20} />, label: t('admin.sidebar.tables') },
     { to: '/admin/ledger', icon: <CreditCard size={20} />, label: t('admin.sidebar.ledger') },
+    { to: '/admin/chat', icon: <MessageCircle size={20} />, label: t('admin.sidebar.chat') },
     { to: '/admin/security', icon: <Shield size={20} />, label: t('admin.sidebar.security') },
-    { to: '/admin/export', icon: <BarChart4 size={20} />, label: t('admin.sidebar.export') },
-    { to: '/admin/settings', icon: <Settings size={20} />, label: t('admin.sidebar.settings') }
+    { to: '/admin/audit', icon: <FileText size={20} />, label: t('admin.sidebar.audit') },
+    { to: '/admin/export', icon: <BarChart4 size={20} />, label: t('admin.sidebar.export') }
   ];
 
   return (

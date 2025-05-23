@@ -3,90 +3,96 @@ import React from 'react';
 import { AlertCircle, ArrowUp, AlertTriangle, UserX, AlertOctagon } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { useToast } from '@/hooks/use-toast';
+import { Alert } from '@/stores/alerts';
+import { useAdmin } from '@/hooks/useAdmin';
+import { useTranslation } from '@/hooks/useTranslation';
 
-// Mock alerts data
-const alerts = [
-  {
-    id: 1,
-    type: 'withdrawal',
-    user: 'player123',
-    message: 'Unusual withdrawal pattern detected',
-    amount: '$500.00',
-    time: '10 minutes ago',
-    severity: 'high',
-    icon: <ArrowUp className="h-5 w-5" />,
-  },
-  {
-    id: 2,
-    type: 'suspicious',
-    user: 'gambler42',
-    message: 'Multiple failed login attempts',
-    amount: null,
-    time: '1 hour ago',
-    severity: 'medium',
-    icon: <AlertTriangle className="h-5 w-5" />,
-  },
-  {
-    id: 3,
-    type: 'chargeback',
-    user: 'pokerface99',
-    message: 'Chargeback request received',
-    amount: '$200.00',
-    time: '3 hours ago',
-    severity: 'high',
-    icon: <AlertOctagon className="h-5 w-5" />,
-  },
-  {
-    id: 4,
-    type: 'abuse',
-    user: 'cardshark77',
-    message: 'Chat abuse reported by multiple users',
-    amount: null,
-    time: '5 hours ago',
-    severity: 'medium',
-    icon: <UserX className="h-5 w-5" />,
-  },
-];
+interface AlertsPanelProps {
+  alerts: Alert[];
+}
 
-const getSeverityClass = (severity: string) => {
-  switch (severity) {
-    case 'high':
-      return 'text-red-400 bg-red-400/10';
-    case 'medium':
-      return 'text-amber-400 bg-amber-400/10';
-    case 'low':
-      return 'text-emerald bg-emerald/10';
-    default:
-      return 'text-gray-400 bg-gray-400/10';
-  }
-};
-
-const AlertsPanel: React.FC = () => {
+const AlertsPanel: React.FC<AlertsPanelProps> = ({ alerts = [] }) => {
   const { toast } = useToast();
+  const { createAuditLog } = useAdmin();
+  const { t } = useTranslation();
 
-  const handleResolve = (id: number, user: string) => {
+  const handleResolve = (id: string, description: string) => {
+    createAuditLog('RESOLVE_ALERT', `Alert resolved: ${description}`, { alertId: id });
+    
     toast({
       title: 'Alert marked as resolved',
-      description: `Alert for ${user} has been resolved`,
+      description: `Alert has been resolved`,
     });
   };
   
-  const handleInvestigate = (id: number, user: string) => {
+  const handleInvestigate = (id: string, type: string) => {
+    createAuditLog('INVESTIGATE_ALERT', `Investigation started for alert: ${type}`, { alertId: id });
+    
     toast({
       title: 'Investigation started',
-      description: `Investigation for ${user} has been initiated`,
+      description: `Investigation has been initiated`,
     });
   };
+  
+  const getAlertIcon = (type: string) => {
+    switch (type) {
+      case 'withdrawal':
+        return <ArrowUp className="h-5 w-5" />;
+      case 'suspicious':
+        return <AlertTriangle className="h-5 w-5" />;
+      case 'abuse':
+        return <UserX className="h-5 w-5" />;
+      case 'chargeback':
+        return <AlertOctagon className="h-5 w-5" />;
+      default:
+        return <AlertCircle className="h-5 w-5" />;
+    }
+  };
+  
+  const getSeverityClass = (severity: string) => {
+    switch (severity) {
+      case 'high':
+        return 'text-red-400 bg-red-400/10';
+      case 'medium':
+        return 'text-amber-400 bg-amber-400/10';
+      case 'low':
+        return 'text-emerald bg-emerald/10';
+      default:
+        return 'text-gray-400 bg-gray-400/10';
+    }
+  };
+  
+  // Mock alerts if none provided for preview purposes
+  const displayAlerts = alerts.length > 0 ? alerts : [
+    {
+      id: '1',
+      type: 'withdrawal',
+      severity: 'high',
+      description: 'Unusual withdrawal pattern detected for player123',
+      created_at: new Date().toISOString(),
+      resolved: false,
+      metadata: { amount: '$500.00', userId: 'player123' }
+    },
+    {
+      id: '2',
+      type: 'suspicious',
+      severity: 'medium',
+      description: 'Multiple failed login attempts for gambler42',
+      created_at: new Date(Date.now() - 3600000).toISOString(),
+      resolved: false,
+      metadata: { userId: 'gambler42' }
+    }
+  ];
   
   return (
     <div className="space-y-4">
-      {alerts.length === 0 ? (
+      {displayAlerts.length === 0 ? (
         <div className="flex flex-col items-center justify-center p-6 text-muted-foreground">
           <AlertCircle className="h-10 w-10 mb-2 opacity-50" />
-          <p>No alerts at this time</p>
+          <p>{t('admin.dashboard.noAlerts')}</p>
         </div>
       ) : (
-        alerts.map(alert => (
+        displayAlerts.map(alert => (
           <div 
             key={alert.id}
             className="bg-[#0e2337] rounded-lg p-4 border-l-4"
@@ -94,32 +100,42 @@ const AlertsPanel: React.FC = () => {
           >
             <div className="flex gap-3">
               <div className={`p-2 rounded-lg ${getSeverityClass(alert.severity)}`}>
-                {alert.icon}
+                {getAlertIcon(alert.type)}
               </div>
               <div className="flex-1">
                 <div className="flex justify-between">
-                  <h4 className="font-medium">{alert.message}</h4>
-                  <span className="text-xs text-muted-foreground">{alert.time}</span>
+                  <h4 className="font-medium">{alert.description}</h4>
+                  <span className="text-xs text-muted-foreground">
+                    {new Date(alert.created_at).toLocaleTimeString()}
+                  </span>
                 </div>
                 <div className="flex justify-between items-center">
                   <div className="space-y-1 mt-1">
-                    <p className="text-sm text-muted-foreground">User: <span className="text-white">{alert.user}</span></p>
-                    {alert.amount && <p className="text-sm text-muted-foreground">Amount: <span className="text-white">{alert.amount}</span></p>}
+                    {alert.metadata?.userId && (
+                      <p className="text-sm text-muted-foreground">
+                        {t('admin.users.user')}: <span className="text-white">{alert.metadata.userId}</span>
+                      </p>
+                    )}
+                    {alert.metadata?.amount && (
+                      <p className="text-sm text-muted-foreground">
+                        {t('admin.users.amount')}: <span className="text-white">{alert.metadata.amount}</span>
+                      </p>
+                    )}
                   </div>
                   <div className="flex gap-2">
                     <Button 
                       size="sm" 
                       variant="secondary"
-                      onClick={() => handleResolve(alert.id, alert.user)}
+                      onClick={() => handleResolve(alert.id, alert.description)}
                     >
-                      Resolve
+                      {t('admin.resolve')}
                     </Button>
                     <Button 
                       size="sm"
                       variant="outline"
-                      onClick={() => handleInvestigate(alert.id, alert.user)}
+                      onClick={() => handleInvestigate(alert.id, alert.type)}
                     >
-                      Investigate
+                      {t('admin.investigate')}
                     </Button>
                   </div>
                 </div>
