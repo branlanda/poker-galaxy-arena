@@ -1,9 +1,10 @@
+
 import { useState, useEffect } from 'react';
-import { TableData } from '@/types/lobby';
+import { LobbyTable } from '@/types/lobby';
 import { supabase } from '@/lib/supabase';
 
 export function useLobbyTables() {
-  const [tables, setTables] = useState<TableData[]>([]);
+  const [tables, setTables] = useState<LobbyTable[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -51,4 +52,3 @@ export function useLobbyTables() {
 
   return { tables, loading, error };
 }
-

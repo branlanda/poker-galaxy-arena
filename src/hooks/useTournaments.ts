@@ -1,11 +1,12 @@
+
 import { useState, useEffect } from 'react';
-import { TournamentData, TournamentDetailData } from '@/types/tournaments';
+import { Tournament, TournamentDetail } from '@/types/tournaments';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from '@/hooks/useTranslation';
 
 export function useTournaments() {
-  const [tournaments, setTournaments] = useState<TournamentData[]>([]);
+  const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const { t } = useTranslation();
@@ -45,4 +46,3 @@ export function useTournaments() {
     fetchTournaments
   };
 }
-

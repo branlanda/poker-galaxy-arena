@@ -1,10 +1,11 @@
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/stores/auth';
 import { useToast } from '@/hooks/use-toast';
 import { useLobby } from '@/stores/lobby';
-import { TableData } from '@/types/lobby';
+import { LobbyTable } from '@/types/lobby';
 import { useTranslation } from '@/hooks/useTranslation';
 
 export function useJoinTable() {
@@ -15,7 +16,7 @@ export function useJoinTable() {
   const { setTables } = useLobby();
   const { t } = useTranslation();
 
-  const joinTable = async (table: TableData, passwordAttempt?: string) => {
+  const joinTable = async (table: LobbyTable, passwordAttempt?: string) => {
     if (!user) {
       toast({
         title: t('error'),
@@ -109,4 +110,3 @@ export function useJoinTable() {
     loading,
   };
 }
-
