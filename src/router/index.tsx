@@ -1,3 +1,4 @@
+
 import { createBrowserRouter } from "react-router-dom";
 import AppLayout from "@/components/layout/AppLayout";
 import Index from "@/pages";
@@ -26,7 +27,7 @@ const routes = createBrowserRouter([
       { path: "/profile/edit", element: <EditProfile /> },
       { path: "/room/:id", element: <Room /> },
       { path: "/game/:tableId", element: <GameRoom /> },
-      { path: "/tournaments", element: <Tournaments() /> },
+      { path: "/tournaments", element: <Tournaments /> },
       { path: "/tournaments/lobby", element: <TournamentLobby /> },
       { path: "/tournaments/:id", element: <TournamentDetails /> },
     ],
