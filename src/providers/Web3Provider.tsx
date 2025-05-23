@@ -1,113 +1,140 @@
-
-import React, { ReactNode, useEffect } from 'react';
-import { useWalletStore } from '@/stores/wallet';
+import React, {
+  createContext,
+  useState,
+  useEffect,
+  useContext,
+  ReactNode,
+} from 'react';
 import { ethers } from 'ethers';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/stores/auth';
+import { supabase } from '@/lib/supabase';
+
+interface Web3ContextType {
+  provider: ethers.providers.Web3Provider | null;
+  account: string | null;
+  connectWallet: () => Promise<void>;
+  disconnectWallet: () => void;
+  signer: ethers.providers.JsonRpcSigner | null;
+}
+
+const Web3Context = createContext<Web3ContextType | undefined>(undefined);
 
 interface Web3ProviderProps {
   children: ReactNode;
 }
 
-export function Web3Provider({ children }: Web3ProviderProps) {
-  const { setAddress, setEthBalance, setConnecting, address } = useWalletStore();
-  const { toast } = useToast();
+export const Web3Provider: React.FC<Web3ProviderProps> = ({ children }) => {
+  const [provider, setProvider] = useState<ethers.providers.Web3Provider | null>(null);
+  const [account, setAccount] = useState<string | null>(null);
+  const [signer, setSigner] = useState<ethers.providers.JsonRpcSigner | null>(null);
+  const { setUser } = useAuth();
 
-  // Check if wallet is already connected on component mount
   useEffect(() => {
-    const checkConnection = async () => {
-      if (window.ethereum && address) {
+    // Check if metamask is already connected
+    const checkExistingConnection = async () => {
+      if (window.ethereum) {
         try {
-          // Check if we're still authorized with this address
-          const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-          if (accounts.length > 0 && accounts[0] === address) {
-            // Update balance
-            updateBalance(address);
-          } else {
-            // Clear stored address if no longer connected
-            setAddress(null);
+          const web3Provider = new ethers.providers.Web3Provider(window.ethereum as any);
+          const accounts = await web3Provider.listAccounts();
+
+          if (accounts.length > 0) {
+            const account = accounts[0];
+            setProvider(web3Provider);
+            setAccount(account);
+            setSigner(web3Provider.getSigner(account));
           }
         } catch (error) {
-          console.error("Failed to check wallet connection:", error);
-          setAddress(null);
+          console.error("Error checking existing connection:", error);
         }
       }
     };
 
-    checkConnection();
+    checkExistingConnection();
+  }, []);
 
-    // Setup event listeners for wallet changes
+  const connectWallet = async () => {
     if (window.ethereum) {
-      window.ethereum.on('accountsChanged', handleAccountsChanged);
-      window.ethereum.on('chainChanged', () => window.location.reload());
-      window.ethereum.on('disconnect', () => {
-        setAddress(null);
-        setEthBalance(null);
-        toast({
-          title: "Wallet disconnected",
-          description: "Your crypto wallet has been disconnected",
-        });
-      });
-    }
-
-    return () => {
-      if (window.ethereum) {
-        window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
-      }
-    };
-  }, [address]);
-
-  // Handle account changes
-  const handleAccountsChanged = async (accounts: string[]) => {
-    if (accounts.length === 0) {
-      // User disconnected wallet
-      setAddress(null);
-      setEthBalance(null);
-      toast({
-        title: "Wallet disconnected",
-        description: "Your crypto wallet has been disconnected",
-      });
-    } else if (accounts[0] !== address) {
-      // User switched account
-      setAddress(accounts[0]);
-      updateBalance(accounts[0]);
-      
-      // Record wallet connection in the database
       try {
-        const user = await supabase.auth.getUser();
-        if (user.data.user) {
-          await supabase.from('profiles').update({
-            wallet_address: accounts[0].toLowerCase()
-          }).eq('id', user.data.user.id);
+        await window.ethereum.request({ method: 'eth_requestAccounts' });
+        const web3Provider = new ethers.providers.Web3Provider(window.ethereum as any);
+        const accounts = await web3Provider.listAccounts();
+        const account = accounts[0];
+
+        setProvider(web3Provider);
+        setAccount(account);
+        setSigner(web3Provider.getSigner(account));
+
+        // Fetch or create user profile in Supabase
+        const { data: existingUser, error: selectError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('wallet_address', account)
+          .single();
+
+        if (selectError && selectError.code !== 'PGRST116') {
+          throw selectError; // Real error
         }
-      } catch (error) {
-        console.error("Failed to update wallet address in profile:", error);
+
+        if (!existingUser) {
+          // Generate a random alias
+          const randomAlias = `user_${Math.random().toString(36).substring(7)}`;
+
+          // Create a new profile
+          const { data: newUser, error: insertError } = await supabase
+            .from('profiles')
+            .insert([{ wallet_address: account, alias: randomAlias }])
+            .select('*')
+            .single();
+
+          if (insertError) throw insertError;
+
+          // Optimistically update user state
+          setUser({
+            id: newUser.id,
+            alias: newUser.alias,
+            avatarUrl: newUser.avatar_url,
+          });
+        } else {
+          // Optimistically update user state
+          setUser({
+            id: existingUser.id,
+            alias: existingUser.alias,
+            avatarUrl: existingUser.avatar_url,
+          });
+        }
+      } catch (error: any) {
+        console.error("Error connecting to Metamask:", error);
       }
-      
-      toast({
-        title: "Wallet account changed",
-        description: `Connected to ${accounts[0].substring(0, 6)}...${accounts[0].substring(38)}`,
-      });
+    } else {
+      console.log("Metamask not detected");
     }
   };
 
-  // Update ETH balance
-  const updateBalance = async (address: string) => {
-    try {
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const balance = await provider.getBalance(address);
-      setEthBalance(ethers.formatEther(balance));
-    } catch (error) {
-      console.error("Failed to get balance:", error);
-    }
+  const disconnectWallet = () => {
+    setProvider(null);
+    setAccount(null);
+    setSigner(null);
   };
 
-  return <>{children}</>;
-}
+  const value: Web3ContextType = {
+    provider,
+    account,
+    connectWallet,
+    disconnectWallet,
+    signer,
+  };
 
-// Add type definition for window.ethereum
-declare global {
-  interface Window {
-    ethereum?: any;
+  return (
+    <Web3Context.Provider value={value}>
+      {children}
+    </Web3Context.Provider>
+  );
+};
+
+export const useWeb3 = (): Web3ContextType => {
+  const context = useContext(Web3Context);
+  if (context === undefined) {
+    throw new Error("useWeb3 must be used within a Web3Provider");
   }
-}
+  return context;
+};

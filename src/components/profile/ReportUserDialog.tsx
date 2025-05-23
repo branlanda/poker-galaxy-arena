@@ -12,7 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/Button';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from '@/hooks/useTranslation';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/stores/auth';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 

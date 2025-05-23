@@ -1,11 +1,10 @@
-
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link, useLocation } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
+import { Link, useNavigate } from 'react-router-dom';
+import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/input';
-import { toast } from 'sonner';
 import { useAuth } from '@/stores/auth';
+import { toast } from 'sonner';
 import { AlertCircle } from 'lucide-react';
 
 const Login = () => {
@@ -14,13 +13,9 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
-  const location = useLocation();
   const user = useAuth((s) => s.user);
-  
-  // Get redirect path from location state, or default to '/lobby'
-  const from = (location.state as any)?.from?.pathname || '/lobby';
 
-  // If user is already logged in, redirect to appropriate page
+  // If user is already logged in, redirect to lobby
   useEffect(() => {
     if (user) {
       navigate('/lobby', { replace: true });
@@ -39,18 +34,20 @@ const Login = () => {
     setLoading(true);
     
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
+      const { error } = await supabase.auth.signInWithPassword({
+        email: email,
+        password: password,
       });
+
+      if (error) {
+        throw error;
+      }
       
-      if (error) throw error;
-      
-      toast.success("Successfully logged in");
-      navigate(from, { replace: true });
+      toast.success("Logged in successfully!");
+      navigate('/lobby');
     } catch (error: any) {
-      setError(error.message || "Failed to sign in");
-      toast.error(error.message || "Failed to sign in");
+      setError(error.message || "Failed to log in");
+      toast.error(error.message || "Failed to log in");
       console.error("Login error:", error);
     } finally {
       setLoading(false);
@@ -62,7 +59,7 @@ const Login = () => {
       <div className="w-full max-w-md space-y-8 rounded-xl bg-navy/50 p-8 shadow-lg backdrop-blur-md border border-emerald/20">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-emerald">Welcome Back</h1>
-          <p className="text-gray-400 mt-2">Sign in to your account</p>
+          <p className="text-gray-400 mt-2">Login to access your poker dashboard</p>
         </div>
         
         {error && (
@@ -101,11 +98,6 @@ const Login = () => {
               disabled={loading}
               autoComplete="current-password"
             />
-            <div className="text-right">
-              <Link to="/forgot-password" className="text-sm text-emerald hover:underline">
-                Forgot password?
-              </Link>
-            </div>
           </div>
           
           <Button 
@@ -114,7 +106,7 @@ const Login = () => {
             loading={loading}
             fullWidth
           >
-            {loading ? "Signing In..." : "Sign In"}
+            {loading ? "Logging In..." : "Sign In"}
           </Button>
         </form>
         
@@ -122,6 +114,12 @@ const Login = () => {
           Don't have an account?{" "}
           <Link to="/signup" className="text-emerald hover:underline">
             Sign Up
+          </Link>
+        </div>
+        
+        <div className="text-center text-gray-400 text-sm">
+          <Link to="/forgot-password" className="text-emerald hover:underline">
+            Forgot Password?
           </Link>
         </div>
       </div>

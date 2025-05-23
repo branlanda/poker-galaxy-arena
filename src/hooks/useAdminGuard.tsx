@@ -1,9 +1,8 @@
-
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/stores/auth';
 import { useEffect, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 
 export const AdminGuard = ({ children }: { children: JSX.Element }) => {
   const { user } = useAuth();
@@ -62,3 +61,4 @@ export const AdminGuard = ({ children }: { children: JSX.Element }) => {
   
   return children;
 };
+

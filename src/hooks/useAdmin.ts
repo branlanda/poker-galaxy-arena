@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/stores/auth';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 
 export interface AdminUser {
   id: string;
@@ -93,3 +93,4 @@ export function useAdmin() {
     canPerformAction
   };
 }
+

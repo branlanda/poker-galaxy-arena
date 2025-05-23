@@ -1,19 +1,21 @@
-
 import { useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/stores/auth';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/stores/auth';
+import { useToast } from '@/hooks/use-toast';
+import { useLobby } from '@/stores/lobby';
+import { TableData } from '@/types/lobby';
 import { useTranslation } from '@/hooks/useTranslation';
 
 export function useJoinTable() {
   const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
   const { user } = useAuth();
+  const { toast } = useToast();
   const navigate = useNavigate();
+  const { setTables } = useLobby();
   const { t } = useTranslation();
 
-  const joinTable = async (tableId: string, buyIn: number, password?: string) => {
+  const joinTable = async (table: TableData, passwordAttempt?: string) => {
     if (!user) {
       toast({
         title: t('error'),
@@ -23,99 +25,72 @@ export function useJoinTable() {
       return false;
     }
 
+    if (table.is_private && !passwordAttempt) {
+      toast({
+        title: t('error'),
+        description: t('privateTablePasswordRequired'),
+        variant: 'destructive',
+      });
+      return false;
+    }
+
+    if (table.is_private && table.password !== passwordAttempt) {
+       toast({
+         title: t('error'),
+         description: t('incorrectPassword'),
+         variant: 'destructive',
+       });
+       return false;
+    }
+
     try {
       setLoading(true);
-      
-      // Check if the player is already at this table
-      const { data: existingPlayer, error: checkError } = await supabase
+
+      // Check if the user already is at the table
+      const { data: existingEntry, error: existingEntryError } = await supabase
         .from('players_at_table')
-        .select('id, status')
-        .eq('player_id', user.id)
-        .eq('table_id', tableId)
-        .single();
-        
-      if (!checkError && existingPlayer) {
-        // If player is already at this table and not left
-        if (existingPlayer.status !== 'LEFT') {
-          // Navigate to game room since player is already joined
-          navigate(`/game/${tableId}`);
-          return true;
-        }
-        
-        // If player has left previously, update their status and stack
-        const { error: updateError } = await supabase
-          .from('players_at_table')
-          .update({
-            status: 'SITTING',
-            stack: buyIn
-          })
-          .eq('id', existingPlayer.id);
-          
-        if (updateError) throw updateError;
-        
-        toast({
-          title: t('success'),
-          description: t('rejoinedTable'),
-        });
-        
-        navigate(`/game/${tableId}`);
-        return true;
-      }
-      
-      // Verify table exists and check password if needed
-      const { data: tableData, error: tableError } = await supabase
-        .from('lobby_tables')
         .select('*')
-        .eq('id', tableId)
+        .eq('player_id', user.id)
+        .eq('table_id', table.id)
         .single();
-        
-      if (tableError) throw new Error(tableError.message);
-      
-      // Check if table is full
-      if (tableData.current_players >= tableData.max_players) {
-        throw new Error(t('tableIsFull'));
-      }
-      
-      // Check password for private tables
-      if (tableData.is_private && tableData.password !== password) {
-        throw new Error(t('invalidPassword'));
-      }
-      
-      // Check buy-in range
-      if (buyIn < tableData.min_buy_in || buyIn > tableData.max_buy_in) {
-        throw new Error(t('buyInRange', { 
-          min: tableData.min_buy_in, 
-          max: tableData.max_buy_in 
-        }));
+
+      if (existingEntryError && existingEntryError.code !== 'PGRST116') {
+        throw existingEntryError;
       }
 
-      // Add player to table
-      const { error: joinError } = await supabase
+      if (existingEntry) {
+        toast({
+          title: t('error'),
+          description: t('alreadyAtTable'),
+          variant: 'destructive',
+        });
+        navigate(`/game/${table.id}`);
+        return false;
+      }
+
+      // Join the table
+      const { error } = await supabase
         .from('players_at_table')
         .insert({
           player_id: user.id,
-          table_id: tableId,
-          stack: buyIn,
+          table_id: table.id,
+          stack: table.min_buy_in, // Default to min buy-in
         });
 
-      if (joinError) throw new Error(joinError.message);
-      
-      // Update the table's last activity timestamp
-      const timestamp = new Date().toISOString();
-      await supabase
-        .from('lobby_tables')
-        .update({
-          updated_at: timestamp
-        })
-        .eq('id', tableId);
-      
+      if (error) throw error;
+
+      // Optimistically update the lobby tables
+      setTables((prevTables) =>
+        prevTables.map((t) =>
+          t.id === table.id ? { ...t, current_players: (t.current_players || 0) + 1 } : t
+        )
+      );
+
       toast({
         title: t('success'),
-        description: t('joinedTableSuccess'),
+        description: t('joinedTable', { name: table.name }),
       });
-      
-      // Navigate to game room
-      navigate(`/game/${tableId}`);
+      navigate(`/game/${table.id}`);
       return true;
     } catch (error: any) {
       toast({
@@ -134,3 +109,4 @@ export function useJoinTable() {
     loading,
   };
 }
+

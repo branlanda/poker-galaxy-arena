@@ -1,276 +1,289 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/stores/auth';
+import { useNavigate } from 'react-router-dom';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/input';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { toast } from 'sonner';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { supabase } from '@/integrations/supabase/client';
-import { useUserProfile } from '@/hooks/useUserProfile';
-import { AchievementsSection } from '@/components/profile/AchievementsSection';
-import { StatisticsSection } from '@/components/profile/StatisticsSection';
-import { FriendsSection } from '@/components/profile/FriendsSection';
-import { RecentGamesSection } from '@/components/profile/RecentGamesSection';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from '@/hooks/useTranslation';
-import { Trophy, User, Calendar, Shield } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
+import { ReportUserDialog } from '@/components/profile/ReportUserDialog';
+import { FriendsSection } from '@/components/profile/FriendsSection';
+import { NotificationsPanel } from '@/components/profile/NotificationsPanel';
+import { Bell } from 'lucide-react';
 
 const ProfilePage = () => {
-  const { user, updateUserProfile } = useAuth();
+  const { user, updateUserProfile, logout } = useAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
   const { t } = useTranslation();
-  const [loading, setLoading] = useState(false);
-  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [alias, setAlias] = useState(user?.alias || '');
-  const [showInLeaderboard, setShowInLeaderboard] = useState(user?.showInLeaderboard ?? false);
+  const [showInLeaderboard, setShowInLeaderboard] = useState(user?.showInLeaderboard || false);
+  const [avatarUrl, setAvatarUrl] = useState(user?.avatarUrl || '');
+  const [loading, setLoading] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
+  const [reportDialogOpen, setReportDialogOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [friends, setFriends] = useState<any[]>([]);
+  const [friendsLoading, setFriendsLoading] = useState(false);
   
-  const { 
-    profile,
-    loading: profileLoading,
-    refreshProfile
-  } = useUserProfile();
+  const reportedUserId = user?.id || '';
+  const reportedUserAlias = user?.alias || '';
 
-  if (!user) {
-    return <div className="p-8 text-center">{t('loading')}...</div>;
-  }
+  useEffect(() => {
+    if (user) {
+      setAlias(user.alias || '');
+      setShowInLeaderboard(user.showInLeaderboard || false);
+      setAvatarUrl(user.avatarUrl || '');
+    }
+  }, [user]);
 
-  const handleSave = async () => {
+  useEffect(() => {
+    setIsDirty(
+      alias !== user?.alias ||
+      showInLeaderboard !== user?.showInLeaderboard ||
+      avatarUrl !== user?.avatarUrl
+    );
+  }, [alias, showInLeaderboard, avatarUrl, user]);
+  
+  useEffect(() => {
+    fetchFriends();
+  }, [user]);
+
+  const fetchFriends = async () => {
     if (!user) return;
     
-    if (alias && (alias.length < 3 || alias.length > 24)) {
-      toast.error(t('errors.aliasLength', { min: 3, max: 24 }));
-      return;
+    try {
+      setFriendsLoading(true);
+      const { data, error } = await supabase
+        .from('friends')
+        .select(`
+          id,
+          status,
+          friend:friend_id (
+            user_id,
+            alias,
+            avatar_url
+          )
+        `)
+        .eq('user_id', user.id)
+        .eq('status', 'ACCEPTED');
+      
+      if (error) throw error;
+      
+      setFriends(data || []);
+    } catch (error: any) {
+      toast({
+        title: t('errors.failedToLoad'),
+        description: error.message,
+        variant: 'destructive',
+      });
+    } finally {
+      setFriendsLoading(false);
     }
-    
+  };
+
+  const handleUpdateProfile = async () => {
     setLoading(true);
-    
     try {
       await updateUserProfile({
         alias,
-        showInLeaderboard
+        showInLeaderboard,
+        avatarUrl
       });
-      
-      toast.success(t('profile.updateSuccess'));
+      toast({
+        title: t('profile.profileUpdated'),
+        description: t('profile.profileUpdatedSuccess'),
+      });
     } catch (error: any) {
-      toast.error(error.message || t('errors.updateFailed'));
+      toast({
+        title: t('errors.updateFailed'),
+        description: error.message,
+        variant: 'destructive',
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  const uploadAvatar = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file || !user) return;
-
-    if (file.size > 2 * 1024 * 1024) {
-      toast.error(t('errors.fileTooLarge', { size: '2MB' }));
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+  };
+  
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) {
       return;
     }
-
-    setUploadingAvatar(true);
-
+    
+    const file = e.target.files[0];
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${user?.id}.${fileExt}`;
+    const filePath = `${fileName}`;
+    
+    uploadAvatar(file, filePath);
+  };
+  
+  const uploadAvatar = async (file: File, filePath: string) => {
     try {
-      // Upload image to supabase storage
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}.${fileExt}`;
-      const filePath = `avatars/${fileName}`;
-
-      // Check if storage bucket exists, create it if it doesn't
-      const { data: bucketData } = await supabase.storage.getBucket('avatars');
-      if (!bucketData) {
-        await supabase.storage.createBucket('avatars', { public: true });
-      }
-
-      // Upload the file
-      const { error: uploadError, data } = await supabase.storage
+      setLoading(true);
+      
+      // Upload the image to Supabase storage
+      const { error: uploadError } = await supabase.storage
         .from('avatars')
-        .upload(filePath, file, { upsert: true });
-
-      if (uploadError) throw uploadError;
-
-      // Get public URL
-      const { data: publicUrlData } = supabase.storage
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+      
+      if (uploadError) {
+        throw uploadError;
+      }
+      
+      // Get public URL of the image
+      const { data: urlData } = supabase.storage
         .from('avatars')
         .getPublicUrl(filePath);
-
-      if (!publicUrlData?.publicUrl) throw new Error(t('errors.failedToGetUrl'));
-
-      // Update profile with new avatar URL
-      await updateUserProfile({
-        avatarUrl: publicUrlData.publicUrl
+      
+      if (!urlData?.publicUrl) {
+        throw new Error('Could not retrieve public URL for avatar.');
+      }
+      
+      // Update the user profile with the new avatar URL
+      await updateUserProfile({ avatarUrl: urlData.publicUrl });
+      setAvatarUrl(urlData.publicUrl);
+      
+      toast({
+        title: t('profile.avatarUpdated'),
+        description: t('profile.avatarUpdatedSuccess'),
       });
-
-      toast.success(t('profile.avatarUpdateSuccess'));
     } catch (error: any) {
-      toast.error(error.message || t('errors.avatarUpdateFailed'));
-      console.error("Avatar upload error:", error);
+      toast({
+        title: t('errors.uploadFailed'),
+        description: error.message,
+        variant: 'destructive',
+      });
     } finally {
-      setUploadingAvatar(false);
+      setLoading(false);
     }
   };
-
+  
   const getInitials = (name: string) => {
-    return name?.substring(0, 2).toUpperCase() || 'P2';
+    return name?.substring(0, 2).toUpperCase() || 'U';
   };
 
   return (
-    <div className="container max-w-4xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold text-white mb-8">{t('profile.title')}</h1>
-      
-      <div className="bg-navy/50 rounded-xl p-6 shadow-md backdrop-blur-md border border-emerald/20">
-        <div className="space-y-6">
-          {/* Avatar and Basic Info Section */}
-          <div className="flex flex-col md:flex-row md:items-center space-y-4 md:space-y-0 md:space-x-6">
-            <div className="flex flex-col items-center">
-              <Avatar className="h-24 w-24 border-2 border-emerald/20">
-                {user.avatarUrl ? (
-                  <AvatarImage src={user.avatarUrl} alt={user.alias || 'User'} />
-                ) : (
-                  <AvatarFallback className="bg-navy/50 text-emerald text-xl">
-                    {getInitials(user.alias || user.email || '')}
-                  </AvatarFallback>
-                )}
-              </Avatar>
-              
-              <div className="mt-3">
-                <label className="inline-block bg-emerald/20 hover:bg-emerald/30 text-emerald rounded-md px-4 py-2 text-sm font-medium cursor-pointer transition-colors">
-                  {uploadingAvatar ? t('loading') : t('profile.changeAvatar')}
-                  <input 
-                    type="file"
-                    accept="image/*"
-                    onChange={uploadAvatar}
-                    disabled={uploadingAvatar}
-                    className="hidden"
-                  />
-                </label>
-              </div>
-            </div>
-            
-            <div className="flex-grow">
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-200">
-                    {t('email')}
-                  </label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={user.email || ''}
-                    disabled
-                    className="w-full bg-gray-800 text-gray-400"
-                  />
-                  <p className="text-xs text-gray-500">{t('profile.emailChangeHelp')}</p>
-                </div>
-                
-                <div className="space-y-2">
-                  <label htmlFor="alias" className="block text-sm font-medium text-gray-200">
-                    {t('profile.pokerAlias')}
-                    <span className="text-xs text-gray-400 ml-2">({t('profile.aliasLength')})</span>
-                  </label>
-                  <Input
-                    id="alias"
-                    type="text"
-                    value={alias}
-                    onChange={(e) => setAlias(e.target.value)}
-                    minLength={3}
-                    maxLength={24}
-                    className="w-full"
-                  />
-                </div>
-                
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="show-in-leaderboard"
-                    checked={showInLeaderboard}
-                    onCheckedChange={(checked) => setShowInLeaderboard(!!checked)}
-                  />
-                  <label 
-                    htmlFor="show-in-leaderboard" 
-                    className="text-sm font-medium text-gray-200 cursor-pointer"
-                  >
-                    {t('profile.showInLeaderboard')}
-                  </label>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="pt-4 border-t border-emerald/10">
-            <Tabs defaultValue="statistics" className="w-full">
-              <TabsList className="grid grid-cols-4 mb-6">
-                <TabsTrigger value="statistics">
-                  <Trophy className="h-4 w-4 mr-2" />
-                  <span className="hidden sm:inline">{t('profile.statistics')}</span>
-                </TabsTrigger>
-                <TabsTrigger value="achievements">
-                  <Shield className="h-4 w-4 mr-2" />
-                  <span className="hidden sm:inline">{t('profile.achievements')}</span>
-                </TabsTrigger>
-                <TabsTrigger value="friends">
-                  <User className="h-4 w-4 mr-2" />
-                  <span className="hidden sm:inline">{t('profile.friends')}</span>
-                </TabsTrigger>
-                <TabsTrigger value="history">
-                  <Calendar className="h-4 w-4 mr-2" />
-                  <span className="hidden sm:inline">{t('profile.history')}</span>
-                </TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="statistics" className="pt-2">
-                <h2 className="text-lg font-medium text-emerald mb-4">{t('profile.statistics')}</h2>
-                <StatisticsSection
-                  stats={profile?.stats || {
-                    totalHands: 0,
-                    winRate: 0,
-                    totalWinnings: 0,
-                    bestHand: "-",
-                    tournamentWins: 0,
-                    rankPosition: 0,
-                    longestStreak: 0
-                  }}
-                  loading={profileLoading}
-                />
-              </TabsContent>
-              
-              <TabsContent value="achievements" className="pt-2">
-                <h2 className="text-lg font-medium text-emerald mb-4">{t('profile.achievements')}</h2>
-                <AchievementsSection 
-                  achievements={profile?.achievements || []}
-                  loading={profileLoading}
-                />
-              </TabsContent>
-              
-              <TabsContent value="friends" className="pt-2">
-                <h2 className="text-lg font-medium text-emerald mb-4">{t('profile.friends')}</h2>
-                <FriendsSection
-                  friends={profile?.friends || []}
-                  loading={profileLoading}
-                  onRefresh={refreshProfile}
-                />
-              </TabsContent>
-              
-              <TabsContent value="history" className="pt-2">
-                <h2 className="text-lg font-medium text-emerald mb-4">{t('profile.recentGames')}</h2>
-                <RecentGamesSection
-                  games={profile?.recentGames || []}
-                  loading={profileLoading}
-                />
-              </TabsContent>
-            </Tabs>
+    <div className="container mx-auto p-8 flex flex-col md:flex-row gap-8">
+      {/* Profile Section */}
+      <div className="md:w-1/3 space-y-6">
+        <div className="text-center">
+          <Avatar className="h-32 w-32 mx-auto">
+            {avatarUrl ? (
+              <AvatarImage src={avatarUrl} alt={alias} />
+            ) : (
+              <AvatarFallback className="bg-navy/50 text-emerald">
+                {getInitials(alias)}
+              </AvatarFallback>
+            )}
+          </Avatar>
+          
+          <Label htmlFor="avatar-input" className="mt-4 block text-sm font-medium text-gray-200 cursor-pointer hover:text-emerald">
+            {t('profile.changeAvatar')}
+          </Label>
+          <Input
+            type="file"
+            id="avatar-input"
+            accept="image/*"
+            className="hidden"
+            onChange={handleAvatarChange}
+          />
+          
+          <h2 className="text-2xl font-bold text-emerald mt-4">{alias}</h2>
+          <p className="text-gray-400">{user?.email}</p>
+        </div>
+        
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="alias" className="block text-sm font-medium text-gray-200">
+              {t('profile.alias')}
+            </Label>
+            <Input
+              type="text"
+              id="alias"
+              value={alias}
+              onChange={(e) => setAlias(e.target.value)}
+              className="mt-1 w-full"
+            />
           </div>
           
-          <div className="pt-6 flex justify-end border-t border-emerald/10">
-            <Button
-              type="button"
-              variant="primary"
-              onClick={handleSave}
-              loading={loading}
-            >
-              {t('profile.saveChanges')}
-            </Button>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="showInLeaderboard" className="text-sm font-medium text-gray-200">
+              {t('profile.showInLeaderboard')}
+            </Label>
+            <Switch
+              id="showInLeaderboard"
+              checked={showInLeaderboard}
+              onCheckedChange={(checked) => setShowInLeaderboard(checked)}
+            />
           </div>
+          
+          <Button 
+            variant="primary" 
+            onClick={handleUpdateProfile} 
+            disabled={!isDirty || loading}
+            loading={loading}
+            className="w-full"
+          >
+            {t('profile.updateProfile')}
+          </Button>
+          
+          <Button 
+            variant="destructive" 
+            onClick={() => setReportDialogOpen(true)}
+            className="w-full"
+          >
+            {t('profile.reportUser')}
+          </Button>
+          
+          <Button 
+            variant="secondary" 
+            onClick={handleLogout} 
+            className="w-full"
+          >
+            {t('logout')}
+          </Button>
         </div>
       </div>
+      
+      {/* Community Section */}
+      <div className="md:w-2/3 space-y-6">
+        <div className="flex justify-between items-center">
+          <h2 className="text-2xl font-bold text-emerald">{t('community.title')}</h2>
+          <Button variant="outline" size="icon" onClick={() => setNotificationsOpen(true)}>
+            <Bell className="h-5 w-5" />
+          </Button>
+        </div>
+        
+        <FriendsSection 
+          friends={friends}
+          loading={friendsLoading}
+          onRefresh={fetchFriends}
+        />
+      </div>
+      
+      <ReportUserDialog
+        isOpen={reportDialogOpen}
+        onClose={() => setReportDialogOpen(false)}
+        reportedUserId={reportedUserId}
+        reportedUserAlias={reportedUserAlias}
+      />
+      
+      <NotificationsPanel
+        open={notificationsOpen}
+        onClose={() => setNotificationsOpen(false)}
+      />
     </div>
   );
 };

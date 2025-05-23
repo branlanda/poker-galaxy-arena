@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/stores/auth';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Send, X, MessageCircle } from 'lucide-react';

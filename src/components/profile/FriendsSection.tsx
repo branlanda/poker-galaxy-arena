@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { UserPlus, Search, User } from 'lucide-react';
 import { useAuth } from '@/stores/auth';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 
 interface FriendData {
