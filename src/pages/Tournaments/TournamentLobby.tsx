@@ -26,11 +26,6 @@ export const TournamentLobby = () => {
   );
   
   const { tournaments, loading, error, refreshTournaments } = useTournaments(filters);
-  
-  useEffect(() => {
-    // Refresh on initial load
-    refreshTournaments();
-  }, []);
 
   const handleViewTournament = (tournament: Tournament) => {
     navigate(`/tournaments/${tournament.id}`);
