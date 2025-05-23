@@ -36,7 +36,7 @@ export const CommunityCards: React.FC<CommunityCardsProps> = ({ cards, phase }) 
   return (
     <div className="flex justify-center space-x-2 my-4">
       {cards.slice(0, visibleCards).map((card, index) => (
-        <PokerCard key={`${card.rank}-${card.suit}-${index}`} card={card} />
+        <PokerCard key={`${card.value}-${card.suit}-${index}`} card={card} />
       ))}
       
       {/* Placeholder cards for future streets */}

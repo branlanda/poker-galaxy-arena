@@ -53,7 +53,7 @@ export const PokerCard: React.FC<PokerCardProps> = ({
   
   // Get card description for screen readers
   const getCardDescription = (card: Card) => {
-    return `${card.rank} of ${getSuitName(card.suit)}`;
+    return `${card.value} of ${getSuitName(card.suit)}`;
   };
   
   if (!card) {
@@ -82,7 +82,7 @@ export const PokerCard: React.FC<PokerCardProps> = ({
             className={`absolute top-1 left-1 ${getCardColor(card.suit)}`}
             aria-hidden="true"
           >
-            <div>{card.rank}</div>
+            <div>{card.value}</div>
             <div>{getSuitSymbol(card.suit)}</div>
           </div>
           <div 
@@ -95,7 +95,7 @@ export const PokerCard: React.FC<PokerCardProps> = ({
             className={`absolute bottom-1 right-1 rotate-180 ${getCardColor(card.suit)}`}
             aria-hidden="true"
           >
-            <div>{card.rank}</div>
+            <div>{card.value}</div>
             <div>{getSuitSymbol(card.suit)}</div>
           </div>
         </>

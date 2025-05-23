@@ -21,7 +21,7 @@ const meta: Meta<typeof PokerCard> = {
     },
     card: {
       control: 'object',
-      description: 'Card data with rank and suit',
+      description: 'Card data with value and suit',
     },
   },
 };
@@ -32,8 +32,9 @@ type Story = StoryObj<typeof PokerCard>;
 export const Default: Story = {
   args: {
     card: {
-      rank: 'A',
+      value: 'A',
       suit: 'spades',
+      rank: 'A'
     },
     faceDown: false,
     size: 'md',
@@ -43,8 +44,9 @@ export const Default: Story = {
 export const FaceDown: Story = {
   args: {
     card: {
-      rank: 'K',
+      value: 'K',
       suit: 'hearts',
+      rank: 'K'
     },
     faceDown: true,
     size: 'md',
@@ -54,8 +56,9 @@ export const FaceDown: Story = {
 export const SmallCard: Story = {
   args: {
     card: {
-      rank: 'Q',
+      value: 'Q',
       suit: 'diamonds',
+      rank: 'Q'
     },
     size: 'sm',
   },
@@ -64,8 +67,9 @@ export const SmallCard: Story = {
 export const LargeCard: Story = {
   args: {
     card: {
-      rank: 'J',
+      value: 'J',
       suit: 'clubs',
+      rank: 'J'
     },
     size: 'lg',
   },
@@ -74,10 +78,10 @@ export const LargeCard: Story = {
 export const SuitVariants: Story = {
   render: () => (
     <div className="flex gap-2">
-      <PokerCard card={{ rank: 'A', suit: 'hearts' }} />
-      <PokerCard card={{ rank: 'A', suit: 'diamonds' }} />
-      <PokerCard card={{ rank: 'A', suit: 'clubs' }} />
-      <PokerCard card={{ rank: 'A', suit: 'spades' }} />
+      <PokerCard card={{ value: 'A', suit: 'hearts', rank: 'A' }} />
+      <PokerCard card={{ value: 'A', suit: 'diamonds', rank: 'A' }} />
+      <PokerCard card={{ value: 'A', suit: 'clubs', rank: 'A' }} />
+      <PokerCard card={{ value: 'A', suit: 'spades', rank: 'A' }} />
     </div>
   ),
 };
@@ -85,19 +89,19 @@ export const SuitVariants: Story = {
 export const RankVariants: Story = {
   render: () => (
     <div className="flex flex-wrap gap-2 max-w-[400px]">
-      <PokerCard card={{ rank: '2', suit: 'spades' }} />
-      <PokerCard card={{ rank: '3', suit: 'spades' }} />
-      <PokerCard card={{ rank: '4', suit: 'spades' }} />
-      <PokerCard card={{ rank: '5', suit: 'spades' }} />
-      <PokerCard card={{ rank: '6', suit: 'spades' }} />
-      <PokerCard card={{ rank: '7', suit: 'spades' }} />
-      <PokerCard card={{ rank: '8', suit: 'spades' }} />
-      <PokerCard card={{ rank: '9', suit: 'spades' }} />
-      <PokerCard card={{ rank: '10', suit: 'spades' }} />
-      <PokerCard card={{ rank: 'J', suit: 'spades' }} />
-      <PokerCard card={{ rank: 'Q', suit: 'spades' }} />
-      <PokerCard card={{ rank: 'K', suit: 'spades' }} />
-      <PokerCard card={{ rank: 'A', suit: 'spades' }} />
+      <PokerCard card={{ value: '2', suit: 'spades', rank: '2' }} />
+      <PokerCard card={{ value: '3', suit: 'spades', rank: '3' }} />
+      <PokerCard card={{ value: '4', suit: 'spades', rank: '4' }} />
+      <PokerCard card={{ value: '5', suit: 'spades', rank: '5' }} />
+      <PokerCard card={{ value: '6', suit: 'spades', rank: '6' }} />
+      <PokerCard card={{ value: '7', suit: 'spades', rank: '7' }} />
+      <PokerCard card={{ value: '8', suit: 'spades', rank: '8' }} />
+      <PokerCard card={{ value: '9', suit: 'spades', rank: '9' }} />
+      <PokerCard card={{ value: '10', suit: 'spades', rank: '10' }} />
+      <PokerCard card={{ value: 'J', suit: 'spades', rank: 'J' }} />
+      <PokerCard card={{ value: 'Q', suit: 'spades', rank: 'Q' }} />
+      <PokerCard card={{ value: 'K', suit: 'spades', rank: 'K' }} />
+      <PokerCard card={{ value: 'A', suit: 'spades', rank: 'A' }} />
     </div>
   ),
 };

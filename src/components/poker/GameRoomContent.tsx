@@ -52,8 +52,8 @@ export const GameRoomContent: React.FC<GameRoomContentProps> = ({
             gameState={gameState}
             tableId={table.id}
             players={players}
-            maxPlayers={table.max_players}
             userId={userId}
+            maxPlayers={table.max_players}
           />
         </div>
       </div>

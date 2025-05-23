@@ -32,9 +32,14 @@ export function TableStatusBadge({ status, className = '' }: TableStatusBadgePro
           label: t('tableStatus.finished', 'Finalizada'),
           color: 'bg-gray-500/20 text-gray-300 border-gray-500/30',
         };
+      case 'CLOSED':
+        return {
+          label: t('tableStatus.closed', 'Cerrada'),
+          color: 'bg-gray-500/20 text-gray-300 border-gray-500/30',
+        };
       default:
         return {
-          label: status,
+          label: String(status),
           color: 'bg-gray-500/20 text-gray-300 border-gray-500/30',
         };
     }

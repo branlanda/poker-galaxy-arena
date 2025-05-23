@@ -37,7 +37,7 @@ export function TableInfoGrid({
         
         <div className="text-xs text-gray-400">{t('tableType', 'Tipo')}</div>
         <div className="text-xs text-right">
-          <TableTypeBadge tableType={table.table_type} />
+          <TableTypeBadge type={table.table_type} />
         </div>
         
         <div className="text-xs text-gray-400">{t('status', 'Estado')}</div>

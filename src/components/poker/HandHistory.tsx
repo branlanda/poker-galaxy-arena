@@ -1,177 +1,137 @@
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
-import { useParams } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { Card } from '@/types/lobby';
 import { PokerCard } from './PokerCard';
-import { Skeleton } from '@/components/ui/skeleton';
-import { useToast } from '@/hooks/use-toast';
+
+interface HandHistoryProps {
+  tableId: string;
+}
 
 interface HandRecord {
   id: string;
-  created_at: string;
+  hand_number: number;
+  timestamp: string;
   pot: number;
-  community_cards: { rank: string; suit: string }[];
-  winners: { player_id: string; player_name: string; amount: number; hand_description: string }[];
+  winner: string;
+  cards: Card[];
 }
 
-export function HandHistory() {
-  const { id: tableId } = useParams<{ id: string }>();
-  const [handHistory, setHandHistory] = useState<HandRecord[]>([]);
-  const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
+export function HandHistory({ tableId }: HandHistoryProps) {
+  const [hands, setHands] = useState<HandRecord[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (!tableId) return;
-    
+    // Simulate fetching hand history data
     const fetchHandHistory = async () => {
+      setIsLoading(true);
+      
       try {
-        setLoading(true);
+        // This would be replaced with an actual API call
+        // For now, we'll simulate a delay and return mock data
+        await new Promise(resolve => setTimeout(resolve, 1000));
         
-        // This is a mock implementation - in a real app, you'd fetch from your hands table
-        // For now, let's just set a mock hand history after a delay
-        setTimeout(() => {
-          setHandHistory([
-            {
-              id: '1',
-              created_at: new Date().toISOString(),
-              pot: 240,
-              community_cards: [
-                { rank: 'A', suit: 'hearts' },
-                { rank: 'K', suit: 'hearts' },
-                { rank: 'Q', suit: 'hearts' },
-                { rank: 'J', suit: 'clubs' },
-                { rank: '10', suit: 'diamonds' }
-              ],
-              winners: [
-                {
-                  player_id: 'player-1',
-                  player_name: 'Alex',
-                  amount: 240,
-                  hand_description: 'Flush, Ace high'
-                }
-              ]
-            },
-            {
-              id: '2',
-              created_at: new Date(Date.now() - 300000).toISOString(), // 5 minutes ago
-              pot: 180,
-              community_cards: [
-                { rank: '2', suit: 'clubs' },
-                { rank: '5', suit: 'diamonds' },
-                { rank: '7', suit: 'hearts' },
-                { rank: 'J', suit: 'spades' },
-                { rank: 'A', suit: 'diamonds' }
-              ],
-              winners: [
-                {
-                  player_id: 'player-2',
-                  player_name: 'Taylor',
-                  amount: 180,
-                  hand_description: 'Pair of Aces'
-                }
-              ]
-            }
-          ]);
-          setLoading(false);
-        }, 1000);
+        // Mock data for demonstration
+        const mockHands: HandRecord[] = [
+          {
+            id: '1',
+            hand_number: 1,
+            timestamp: new Date(Date.now() - 5 * 60000).toISOString(),
+            pot: 250,
+            winner: 'Player1',
+            cards: [
+              { suit: 'hearts', value: 'A', rank: 'A' },
+              { suit: 'hearts', value: 'K', rank: 'K' },
+              { suit: 'hearts', value: 'Q', rank: 'Q' },
+              { suit: 'hearts', value: '10', rank: '10' },
+              { suit: 'hearts', value: 'J', rank: 'J' }
+            ]
+          },
+          {
+            id: '2',
+            hand_number: 2,
+            timestamp: new Date(Date.now() - 3 * 60000).toISOString(),
+            pot: 180,
+            winner: 'Player2',
+            cards: [
+              { suit: 'clubs', value: '8', rank: '8' },
+              { suit: 'clubs', value: '8', rank: '8' },
+              { suit: 'diamonds', value: '8', rank: '8' },
+              { suit: 'hearts', value: 'A', rank: 'A' },
+              { suit: 'spades', value: 'K', rank: 'K' }
+            ]
+          },
+        ];
         
-        // In the real implementation, you'd use something like:
-        /*
-        const { data, error } = await supabase
-          .from('hand_history')
-          .select('*')
-          .eq('table_id', tableId)
-          .order('created_at', { ascending: false })
-          .limit(10);
-          
-        if (error) throw error;
-        setHandHistory(data || []);
-        */
-      } catch (error: any) {
-        toast({
-          title: 'Error loading hand history',
-          description: error.message,
-          variant: 'destructive'
-        });
+        setHands(mockHands);
+      } catch (error) {
+        console.error('Error fetching hand history:', error);
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
     
     fetchHandHistory();
-    
-    // Set up subscription for real-time updates
-    const channel = supabase
-      .channel(`table_hands_${tableId}`)
-      .on('broadcast', { event: 'hand_completed' }, (payload) => {
-        setHandHistory(prev => [payload.payload as HandRecord, ...prev.slice(0, 9)]);
-      })
-      .subscribe();
+  }, [tableId]);
+  
+  // Format timestamp to a readable format
+  const formatTime = (timestamp: string) => {
+    return new Date(timestamp).toLocaleTimeString([], { 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    });
+  };
+  
+  return (
+    <div className="space-y-4">
+      <h3 className="text-lg font-medium">Recent Hands</h3>
       
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [tableId, toast]);
-
-  if (loading) {
-    return (
-      <div className="space-y-4">
-        {[1, 2].map((i) => (
-          <Card key={i} className="bg-navy-dark/50">
-            <CardHeader className="pb-2">
-              <Skeleton className="h-5 w-3/5" />
-            </CardHeader>
-            <CardContent>
-              <Skeleton className="h-4 w-4/5 mb-2" />
-              <Skeleton className="h-4 w-2/3" />
-              <div className="flex gap-1 mt-3">
-                {[1, 2, 3, 4, 5].map((j) => (
-                  <Skeleton key={j} className="h-8 w-6" />
+      {isLoading ? (
+        <div className="h-80 flex items-center justify-center">
+          <div className="animate-pulse text-emerald-500">Loading hand history...</div>
+        </div>
+      ) : hands.length === 0 ? (
+        <div className="h-80 flex items-center justify-center">
+          <p className="text-gray-400">No hand history available</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {hands.map((hand) => (
+            <div 
+              key={hand.id}
+              className="border border-emerald/10 rounded-lg p-4 bg-navy/20 space-y-3"
+            >
+              <div className="flex justify-between items-center">
+                <div>
+                  <div className="text-sm font-medium">
+                    Hand #{hand.hand_number}
+                  </div>
+                  <div className="text-xs text-gray-400">
+                    {formatTime(hand.timestamp)}
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-emerald-500 font-medium">
+                    ${hand.pot}
+                  </div>
+                  <div className="text-xs">
+                    Winner: {hand.winner}
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex justify-center space-x-1">
+                {hand.cards.map((card, i) => (
+                  <PokerCard 
+                    key={i} 
+                    card={card} 
+                    size="sm" 
+                  />
                 ))}
               </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    );
-  }
-
-  return (
-    <ScrollArea className="h-[400px] pr-4">
-      <div className="space-y-4">
-        {handHistory.length === 0 ? (
-          <p className="text-center py-8 text-gray-400">
-            No hand history available yet. Complete some hands to see them here.
-          </p>
-        ) : (
-          handHistory.map((hand) => (
-            <Card key={hand.id} className="bg-navy-dark/50 border-emerald/10">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Hand #{hand.id} - {new Date(hand.created_at).toLocaleTimeString()}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-xs mb-1">Pot: <span className="font-medium text-emerald">${hand.pot}</span></p>
-                <p className="text-xs mb-3">
-                  Winner: <span className="font-medium text-yellow-400">{hand.winners[0].player_name}</span> with <span className="italic">{hand.winners[0].hand_description}</span>
-                </p>
-                
-                <div className="flex gap-1 justify-center mb-1">
-                  <p className="text-xs font-medium text-gray-400">Community Cards:</p>
-                </div>
-                <div className="flex gap-1 justify-center">
-                  {hand.community_cards.map((card, idx) => (
-                    <PokerCard key={`${card.rank}-${card.suit}-${idx}`} card={card} size="sm" />
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          ))
-        )}
-      </div>
-    </ScrollArea>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }

@@ -11,9 +11,11 @@ interface GameTabsProps {
   tableId: string;
   players: PlayerAtTable[];
   gameState?: GameState | null;
+  userId?: string;
+  maxPlayers?: number;
 }
 
-export function GameTabs({ tableId, players, gameState }: GameTabsProps) {
+export function GameTabs({ tableId, players, gameState, userId, maxPlayers }: GameTabsProps) {
   const [tab, setTab] = useState<string>('chat');
   
   return (
@@ -31,7 +33,7 @@ export function GameTabs({ tableId, players, gameState }: GameTabsProps) {
       </TabsList>
       
       <TabsContent value="chat" className="p-0 mt-4">
-        <GameChat tableId={tableId} />
+        <GameChat tableId={tableId} userId={userId} />
       </TabsContent>
       
       <TabsContent value="players" className="p-0 mt-4">
