@@ -44,7 +44,7 @@ export function TournamentRegistration({ tournament, onRegistrationChange }: Tou
     registered, 
     registerForTournament, 
     unregisterFromTournament 
-  } = useTournamentRegistration(tournament.id);
+  } = useTournamentRegistration(tournament);
   
   // Mock registrations data since we don't have it in the Tournament type
   const mockRegistrations: TournamentPlayerRegistration[] = [];

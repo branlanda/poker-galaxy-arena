@@ -1,6 +1,6 @@
 
-import { useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
 import { Tournament, TournamentRegistration } from '@/types/tournaments';
 import { useAuth } from '@/stores/auth';
 import { useToast } from '@/hooks/use-toast';
@@ -13,6 +13,12 @@ export const useTournamentRegistration = (tournament?: Tournament) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const { t } = useTranslation();
+
+  // Check if the user is registered for this tournament
+  useEffect(() => {
+    if (!user || !tournament) return;
+    checkRegistration();
+  }, [user, tournament]);
 
   // Check if the user is registered for this tournament
   const checkRegistration = async () => {
@@ -51,7 +57,7 @@ export const useTournamentRegistration = (tournament?: Tournament) => {
         description: t('errors.loginRequired'),
         variant: 'destructive',
       });
-      return null;
+      return false;
     }
     
     try {
@@ -64,7 +70,7 @@ export const useTournamentRegistration = (tournament?: Tournament) => {
           description: t('errors.cannotJoinPrivateTournament'),
           variant: 'destructive',
         });
-        return null;
+        return false;
       }
       
       // Check if the tournament is open for registration
@@ -82,7 +88,7 @@ export const useTournamentRegistration = (tournament?: Tournament) => {
           }),
           variant: 'destructive',
         });
-        return null;
+        return false;
       }
       
       if (now > registrationCloseTime) {
@@ -93,7 +99,7 @@ export const useTournamentRegistration = (tournament?: Tournament) => {
           }),
           variant: 'destructive',
         });
-        return null;
+        return false;
       }
       
       // Register the user
@@ -121,7 +127,7 @@ export const useTournamentRegistration = (tournament?: Tournament) => {
         }),
       });
       
-      return data;
+      return true;
     } catch (err: any) {
       console.error('Error registering for tournament:', err);
       toast({
@@ -129,7 +135,7 @@ export const useTournamentRegistration = (tournament?: Tournament) => {
         description: err.message,
         variant: 'destructive',
       });
-      return null;
+      return false;
     } finally {
       setLoading(false);
     }

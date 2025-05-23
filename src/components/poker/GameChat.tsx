@@ -3,8 +3,8 @@ import { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/input";
 import { Send } from "lucide-react";
-import { supabase } from '@/integrations/supabase/client';
-import { RoomMessage } from '@/types/lobby';
+import { supabase } from '@/lib/supabase';
+import { RoomMessageType } from '@/types/supabase';
 import { useAuth } from '@/stores/auth';
 
 interface GameChatProps {
@@ -13,7 +13,7 @@ interface GameChatProps {
 }
 
 export function GameChat({ tableId, userId }: GameChatProps) {
-  const [messages, setMessages] = useState<RoomMessage[]>([]);
+  const [messages, setMessages] = useState<RoomMessageType[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
@@ -35,7 +35,7 @@ export function GameChat({ tableId, userId }: GameChatProps) {
           filter: `table_id=eq.${tableId}`
         },
         (payload) => {
-          setMessages((prev) => [...prev, payload.new as RoomMessage]);
+          setMessages((prev) => [...prev, payload.new as RoomMessageType]);
         }
       )
       .subscribe();
@@ -50,23 +50,19 @@ export function GameChat({ tableId, userId }: GameChatProps) {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
   
-  // Fetch messages from the server
+  // Fetch messages from the server using RPC function
   const fetchMessages = async () => {
     setIsLoading(true);
     try {
-      // Using a direct Supabase query instead of RPC for now
       const { data, error } = await supabase
-        .from('table_chat_messages')
-        .select('*')
-        .eq('table_id', tableId)
-        .order('created_at', { ascending: true });
+        .rpc('get_table_chat_messages', { p_table_id: tableId });
       
       if (error) {
         console.error('Error fetching messages:', error);
         return;
       }
       
-      setMessages(data as RoomMessage[]);
+      setMessages(data as RoomMessageType[]);
     } catch (error) {
       console.error('Error fetching messages:', error);
     } finally {
@@ -74,21 +70,21 @@ export function GameChat({ tableId, userId }: GameChatProps) {
     }
   };
   
-  // Send a new message
+  // Send a new message using RPC function
   const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !newMessage.trim() || isLoading) return;
     
     setIsLoading(true);
     try {
-      // Using a direct insert instead of RPC for now
+      const playerName = (user as any).user_metadata?.name || user.email || 'Player';
+      
       const { error } = await supabase
-        .from('table_chat_messages')
-        .insert({
-          table_id: tableId,
-          player_id: user.id,
-          player_name: (user as any).user_metadata?.name || user.email || 'Player',
-          message: newMessage.trim()
+        .rpc('insert_chat_message', {
+          p_table_id: tableId,
+          p_player_id: user.id,
+          p_player_name: playerName,
+          p_message: newMessage.trim()
         });
       
       if (error) {
