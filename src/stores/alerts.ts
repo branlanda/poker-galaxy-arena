@@ -40,7 +40,13 @@ export const useAlertsStore = create<AlertsState>((set, get) => ({
       
       if (error) throw error;
       
-      set({ alerts: data || [] });
+      // Map the data to ensure severity is of type AlertSeverity
+      const typedAlerts: Alert[] = data?.map(alert => ({
+        ...alert,
+        severity: alert.severity as AlertSeverity // Type assertion to handle the string to AlertSeverity conversion
+      })) || [];
+      
+      set({ alerts: typedAlerts });
       
     } catch (error) {
       console.error('Error fetching alerts:', error);
