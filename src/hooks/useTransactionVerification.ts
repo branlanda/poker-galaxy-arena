@@ -210,7 +210,7 @@ export function useTransactionVerification() {
       toast({
         title: 'Transaction Flagged',
         description: `${tx.type.charAt(0).toUpperCase() + tx.type.slice(1)} has been flagged for review`,
-        variant: 'warning'
+        variant: 'destructive'  // Changed from 'warning' to 'destructive'
       });
     } catch (error) {
       console.error('Error flagging transaction:', error);

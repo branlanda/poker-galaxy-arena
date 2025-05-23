@@ -1,7 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { ethers } from 'ethers';
-import { WalletState, Transaction, TransactionStatus } from './types';
+import { WalletState, Transaction, TransactionStatus, TransactionType } from './types';
 import { checkDepositSafety, checkWithdrawSafety } from './transactionUtils';
 
 // Transaction-related actions
