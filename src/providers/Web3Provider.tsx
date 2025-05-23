@@ -73,17 +73,8 @@ export function Web3Provider({ children }: Web3ProviderProps) {
       updateBalance(accounts[0]);
       
       // Record wallet connection in the database
-      if (accounts[0]) {
-        try {
-          await supabase.from('wallet_connections').upsert({
-            wallet_address: accounts[0],
-            last_connected: new Date().toISOString(),
-            wallet_type: 'metamask'
-          }, { onConflict: 'wallet_address' });
-        } catch (error) {
-          console.error("Failed to record wallet connection:", error);
-        }
-      }
+      // Remove this section since the wallet_connections table doesn't exist
+      // We'll need to create the table first or use a different approach
       
       toast({
         title: "Wallet account changed",

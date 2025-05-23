@@ -3,6 +3,7 @@ import { create } from 'zustand';
 import { supabase } from '@/integrations/supabase/client';
 import { StoreAction } from './storeTypes';
 import { useToast } from '@/hooks/use-toast';
+import { ethers } from 'ethers'; // Add missing import
 
 export type TransactionStatus = 'pending' | 'confirmed' | 'failed';
 export type TransactionType = 'deposit' | 'withdraw';

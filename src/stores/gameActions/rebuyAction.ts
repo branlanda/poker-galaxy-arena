@@ -43,14 +43,16 @@ export const rebuyAction = async (
     // Update wallet balance in store
     useWalletStore.getState().setBalance(balance - amount);
     
-    // Log transaction to ledger
+    // Log transaction to ledger - fixed to match the actual schema
     await supabase.from('ledger_entries').insert({
-      player_id: playerId,
-      tx_type: 'BET_HOLD',
       amount: amount,
+      tx_type: 'BET_HOLD',
+      credit_account: 0, // Assuming a system account 
+      debit_account: 0, // Assuming a player account
       meta: {
         table_id: gameState.tableId,
         action: 'REBUY',
+        player_id: playerId, // Store player_id in meta instead
         status: 'confirmed'
       }
     });
