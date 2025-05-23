@@ -55,7 +55,7 @@ export function useLeaderboards() {
           score,
           rank,
           created_at,
-          profiles:player_id (alias)
+          profiles:player_id (id, alias)
         `)
         .eq('leaderboard_id', leaderboardId)
         .order('rank');
@@ -65,10 +65,19 @@ export function useLeaderboards() {
       }
       
       // Format data to include player names from profiles
-      const formattedEntries = (data || []).map(entry => ({
-        ...entry,
-        player_name: entry.profiles?.alias || 'Unknown Player'
-      }));
+      const formattedEntries = (data || []).map(entry => {
+        let playerName = 'Unknown Player';
+        
+        if (entry.profiles && typeof entry.profiles === 'object') {
+          // Safely access the alias property
+          playerName = (entry.profiles as any).alias || 'Unknown Player';
+        }
+        
+        return {
+          ...entry,
+          player_name: playerName
+        };
+      });
       
       setLeaderboardEntries(formattedEntries);
     } catch (error: any) {

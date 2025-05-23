@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
@@ -558,7 +557,6 @@ const TournamentDetail: React.FC = () => {
             <TabsContent value="registrations">
               <TournamentRegistrationsList 
                 registrations={registrations}
-                tournamentStatus={tournament.status}
               />
             </TabsContent>
             

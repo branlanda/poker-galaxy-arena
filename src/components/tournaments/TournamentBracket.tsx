@@ -1,9 +1,8 @@
-
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { TournamentRegistration, TournamentTable } from '@/types/tournaments';
 import { Card, CardContent } from '@/components/ui/card';
-import { Legend, Surface, ZoomIn, ZoomOut } from 'lucide-react';
+import { BadgeInfo, LayoutGrid, ZoomIn, ZoomOut } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/badge';
 
@@ -20,7 +19,7 @@ export function TournamentBracket({
 }: TournamentBracketProps) {
   const { t } = useTranslation();
   const [zoomLevel, setZoomLevel] = useState(1);
-  const [bracketMode, setBracketMode] = useState<'standard' | 'tables'>('standard');
+  const [bracketMode, setBracketMode<'standard' | 'tables'>('standard');
 
   const increaseZoom = () => {
     if (zoomLevel < 1.5) {
@@ -173,7 +172,7 @@ export function TournamentBracket({
     if (tables.length === 0) {
       return (
         <div className="text-center py-8">
-          <Legend className="h-12 w-12 mx-auto text-gray-400 mb-3" />
+          <BadgeInfo className="h-12 w-12 mx-auto text-gray-400 mb-3" />
           <p className="text-lg font-medium text-gray-300 mb-2">
             {t('tournaments.noTableData')}
           </p>
@@ -260,7 +259,7 @@ export function TournamentBracket({
             className={bracketMode === 'standard' ? 'bg-emerald/10' : ''}
             onClick={() => setBracketMode('standard')}
           >
-            <Legend className="h-4 w-4 mr-2" />
+            <BadgeInfo className="h-4 w-4 mr-2" />
             {t('tournaments.bracket')}
           </Button>
           <Button 
@@ -269,7 +268,7 @@ export function TournamentBracket({
             className={bracketMode === 'tables' ? 'bg-emerald/10' : ''}
             onClick={() => setBracketMode('tables')}
           >
-            <Surface className="h-4 w-4 mr-2" />
+            <LayoutGrid className="h-4 w-4 mr-2" />
             {t('tournaments.tables')}
           </Button>
         </div>

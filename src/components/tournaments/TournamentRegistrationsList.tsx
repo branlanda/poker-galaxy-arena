@@ -1,73 +1,119 @@
 
-import React from 'react';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import React, { useState } from 'react';
 import { TournamentRegistration } from '@/types/tournaments';
 import { useTranslation } from '@/hooks/useTranslation';
-import { formatDistanceToNow } from 'date-fns';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { format } from 'date-fns';
+import { SearchIcon, UsersIcon } from 'lucide-react';
 
 interface TournamentRegistrationsListProps {
   registrations: TournamentRegistration[];
-  loading: boolean;
 }
 
-export function TournamentRegistrationsList({ 
-  registrations,
-  loading
-}: TournamentRegistrationsListProps) {
+export function TournamentRegistrationsList({ registrations }: TournamentRegistrationsListProps) {
   const { t } = useTranslation();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState('time');
   
-  const getInitials = (name: string) => {
-    return name.split(' ')
-      .map(word => word[0]?.toUpperCase() || '')
-      .slice(0, 2)
-      .join('');
-  };
+  // Filter registrations by search query
+  const filteredRegistrations = registrations.filter(reg => 
+    reg.player_name?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
   
-  if (loading) {
-    return <p className="text-center py-4">{t('loading', 'Loading...')}</p>;
-  }
+  // Sort registrations by selected criteria
+  const sortedRegistrations = [...filteredRegistrations].sort((a, b) => {
+    if (sortBy === 'time') {
+      return new Date(a.registration_time).getTime() - new Date(b.registration_time).getTime();
+    } else if (sortBy === 'name') {
+      return (a.player_name || '').localeCompare(b.player_name || '');
+    }
+    return 0;
+  });
   
-  if (registrations.length === 0) {
-    return (
-      <p className="text-center py-4 text-muted-foreground">
-        {t('tournaments.noRegistrations', 'No players registered yet')}
-      </p>
-    );
-  }
-
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>{t('player', 'Player')}</TableHead>
-          <TableHead>{t('registeredAt', 'Registered')}</TableHead>
-          <TableHead className="text-right">{t('tournaments.chips', 'Chips')}</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {registrations.map((registration) => (
-          <TableRow key={registration.id}>
-            <TableCell className="flex items-center gap-2">
-              <Avatar className="h-8 w-8">
-                {registration.player_avatar ? (
-                  <AvatarImage src={registration.player_avatar} alt={registration.player_name || ''} />
-                ) : null}
-                <AvatarFallback>
-                  {getInitials(registration.player_name || 'Unknown Player')}
-                </AvatarFallback>
-              </Avatar>
-              <span className="font-medium">{registration.player_name || 'Unknown Player'}</span>
-            </TableCell>
-            <TableCell className="text-muted-foreground">
-              {formatDistanceToNow(new Date(registration.registration_time), { addSuffix: true })}
-            </TableCell>
-            <TableCell className="text-right font-medium">
-              {registration.chips.toLocaleString()}
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center justify-between">
+          <div className="flex items-center">
+            <UsersIcon className="h-5 w-5 mr-2" />
+            {t('tournaments.registeredPlayers')}
+          </div>
+          <div className="text-sm font-normal text-muted-foreground">
+            {registrations.length} {t('tournaments.players')}
+          </div>
+        </CardTitle>
+        <div className="flex flex-col sm:flex-row gap-4 mt-2">
+          <div className="relative flex-1">
+            <SearchIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder={t('search')}
+              className="pl-8"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          <Select value={sortBy} onValueChange={setSortBy}>
+            <SelectTrigger className="w-full sm:w-[180px]">
+              <SelectValue placeholder={t('tournaments.sortBy')} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="time">{t('tournaments.registrationTime')}</SelectItem>
+              <SelectItem value="name">{t('tournaments.playerName')}</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </CardHeader>
+      <CardContent>
+        {registrations.length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground">
+            {t('tournaments.noRegistrationsYet')}
+          </div>
+        ) : (
+          <div className="border rounded-md">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{t('tournaments.player')}</TableHead>
+                  <TableHead className="hidden md:table-cell">{t('tournaments.registrationTime')}</TableHead>
+                  <TableHead className="hidden md:table-cell">{t('tournaments.status')}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {sortedRegistrations.map((reg) => (
+                  <TableRow key={reg.id}>
+                    <TableCell>
+                      <div className="flex items-center">
+                        <Avatar className="h-8 w-8 mr-2">
+                          {reg.player_avatar && <AvatarImage src={reg.player_avatar} alt={reg.player_name} />}
+                          <AvatarFallback>{reg.player_name?.[0] || '?'}</AvatarFallback>
+                        </Avatar>
+                        <div>{reg.player_name}</div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      {format(new Date(reg.registration_time), 'PPp')}
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      <span className="inline-flex items-center rounded-full bg-green-100/10 px-2 py-1 text-xs font-medium text-green-500 ring-1 ring-inset ring-green-500/20">
+                        {reg.status || 'Registered'}
+                      </span>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
