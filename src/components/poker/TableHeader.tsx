@@ -6,7 +6,7 @@ import { ChevronLeft, Info, Users, Clock } from 'lucide-react';
 import { TableTypeBadge } from '../lobby/table-card/TableTypeBadge';
 import { TableStatusBadge } from '../lobby/table-card/TableStatusBadge';
 
-interface TableHeaderProps {
+export interface TableHeaderProps {
   table: LobbyTable;
   onLeaveTable: () => void;
 }

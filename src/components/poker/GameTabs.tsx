@@ -8,7 +8,7 @@ import { PlayerAtTable } from '@/types/lobby';
 import { GameState } from '@/types/game';
 import { Badge } from '@/components/ui/badge';
 
-interface GameTabsProps {
+export interface GameTabsProps {
   tableId: string;
   players: PlayerAtTable[];
   gameState?: GameState | null;
