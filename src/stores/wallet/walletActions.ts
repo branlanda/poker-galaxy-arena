@@ -7,23 +7,33 @@ import { checkDepositSafety, checkWithdrawSafety } from './transactionUtils';
 // Transaction-related actions
 export const loadTransactions = async (set: any, get: () => WalletState) => {
   try {
-    const { data: ledgerData } = await supabase
-      .from('ledger_entries')
-      .select('*')
-      .order('created_at', { ascending: false });
-      
-    if (!ledgerData) return;
+    // Check if we have a connected wallet
+    const address = get().address;
+    if (!address) return;
     
-    const transactions: Transaction[] = ledgerData.map(entry => ({
-      id: entry.id.toString(), // Convert to string
-      hash: entry.tx_hash || '',
-      amount: entry.amount,
-      type: entry.tx_type === 'DEPOSIT' ? 'deposit' : 'withdraw',
-      status: ((entry.meta as any)?.status as TransactionStatus) || 'confirmed',
-      timestamp: new Date(entry.created_at),
+    // Fetch transactions from Supabase
+    const { data: transactions, error } = await supabase
+      .from('transactions')
+      .select('*')
+      .eq('user_wallet_address', address.toLowerCase())
+      .order('created_at', { ascending: false })
+      .limit(50);
+    
+    if (error) throw error;
+    if (!transactions) return;
+    
+    // Transform the data into our store format
+    const mappedTransactions: Transaction[] = transactions.map(tx => ({
+      id: tx.id,
+      hash: tx.blockchain_tx_hash || '',
+      amount: tx.amount,
+      type: tx.type.toLowerCase() as 'deposit' | 'withdraw',
+      status: tx.status.toLowerCase() as TransactionStatus,
+      timestamp: new Date(tx.created_at),
+      description: tx.description
     }));
     
-    set({ transactions });
+    set({ transactions: mappedTransactions });
   } catch (error) {
     console.error('Failed to load transactions:', error);
   }
@@ -39,51 +49,71 @@ export const depositFunds = async (amount: number, set: any, get: () => WalletSt
     
     const txId = `${Math.random().toString(36).substring(2, 15)}`;
     const timestamp = new Date();
-    const txHash = `0x${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`;
     
-    // Add pending transaction to state
+    // Generate transaction pending in our store
     const transaction: Transaction = {
       id: txId,
-      hash: txHash,
+      hash: '',
       amount: amount,
       type: 'deposit',
       status: 'pending',
-      timestamp
+      timestamp,
+      description: 'Deposit via Web3 wallet'
     };
     
+    // Add pending transaction to state
     set({
       transactions: [transaction, ...get().transactions]
     });
     
-    // Call the deposit API
-    const response = await fetch(`${import.meta.env.VITE_WALLET_API}/deposit`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ 
-        amount: amount, 
-        wallet_address: get().address || undefined,
-        tx_hash: txHash
-      }),
-      credentials: 'include'
+    // Initialize provider
+    if (!window.ethereum) throw new Error('No Web3 wallet found');
+    const provider = new ethers.BrowserProvider(window.ethereum);
+    const signer = await provider.getSigner();
+    
+    // For demo, we'll simulate a deposit transaction
+    // In production, you would interact with an actual smart contract
+    const tx = await signer.sendTransaction({
+      to: "0x0000000000000000000000000000000000000000", // Replace with actual contract
+      value: ethers.parseEther((amount * 0.00025).toString()), // Simulate USDT with small ETH amount
+      data: "0x", // Contract function data would go here
     });
     
-    const result = await response.json();
-    
-    if (!result.success) {
-      throw new Error(result.message || 'Deposit failed');
-    }
-    
-    // Update transaction status
+    // Update transaction with hash
     set({
-      transactions: get().transactions.map(tx =>
-        tx.id === txId ? { ...tx, status: 'confirmed' as TransactionStatus } : tx
-      ),
-      balance: get().balance + amount,
+      transactions: get().transactions.map(t => 
+        t.id === txId ? { ...t, hash: tx.hash } : t
+      )
     });
     
-    return txId;
+    // Wait for transaction to be mined
+    const receipt = await tx.wait();
+    
+    if (receipt && receipt.status === 1) {
+      // Transaction successful - update state
+      set({
+        transactions: get().transactions.map(t => 
+          t.id === txId ? { ...t, status: 'confirmed' as TransactionStatus } : t
+        ),
+        balance: get().balance + amount
+      });
+      
+      // Save transaction to Supabase
+      await supabase.from('transactions').insert({
+        id: txId,
+        user_id: (await supabase.auth.getUser()).data.user?.id,
+        user_wallet_address: get().address?.toLowerCase(),
+        type: 'DEPOSIT',
+        amount: amount,
+        status: 'CONFIRMED',
+        blockchain_tx_hash: tx.hash,
+        description: 'Deposit via Web3 wallet'
+      });
+      
+      return txId;
+    } else {
+      throw new Error('Transaction failed');
+    }
   } catch (error) {
     console.error('Deposit error:', error);
     return null;
@@ -100,52 +130,73 @@ export const withdrawFunds = async (address: string, amount: number, set: any, g
     
     const txId = `${Math.random().toString(36).substring(2, 15)}`;
     const timestamp = new Date();
-    const txHash = `0x${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`;
     
-    // Add pending transaction to state
+    // Generate transaction pending in our store
     const transaction: Transaction = {
       id: txId,
-      hash: txHash,
+      hash: '',
       amount: amount,
       type: 'withdraw',
       status: 'pending',
-      timestamp
+      timestamp,
+      description: 'Withdrawal to external wallet'
     };
     
+    // Add pending transaction to state
     set({
       transactions: [transaction, ...get().transactions]
     });
     
-    // Call the withdraw API
-    const response = await fetch(`${import.meta.env.VITE_WALLET_API}/withdraw`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ 
-        address, 
-        amount: amount,
-        wallet_address: get().address || undefined,
-        tx_hash: txHash
-      }),
-      credentials: 'include'
+    // Initialize provider
+    if (!window.ethereum) throw new Error('No Web3 wallet found');
+    const provider = new ethers.BrowserProvider(window.ethereum);
+    const signer = await provider.getSigner();
+    
+    // For demo, we'll simulate a withdrawal transaction
+    // In production, you would interact with an actual smart contract
+    const tx = await signer.sendTransaction({
+      to: address,
+      value: ethers.parseEther((amount * 0.00025).toString()), // Simulate USDT with small ETH amount
+      data: "0x", // Contract function data would go here
     });
     
-    if (!response.ok) {
-      throw new Error('Withdraw request failed');
-    }
-    
-    // Update transaction status
+    // Update transaction with hash
     set({
-      transactions: get().transactions.map(tx =>
-        tx.id === txId ? { ...tx, status: 'confirmed' as TransactionStatus } : tx
-      ),
-      balance: get().balance - amount,
+      transactions: get().transactions.map(t => 
+        t.id === txId ? { ...t, hash: tx.hash } : t
+      )
     });
     
-    return txId;
+    // Wait for transaction to be mined
+    const receipt = await tx.wait();
+    
+    if (receipt && receipt.status === 1) {
+      // Transaction successful - update state
+      set({
+        transactions: get().transactions.map(t => 
+          t.id === txId ? { ...t, status: 'confirmed' as TransactionStatus } : t
+        ),
+        balance: get().balance - amount
+      });
+      
+      // Save transaction to Supabase
+      await supabase.from('transactions').insert({
+        id: txId,
+        user_id: (await supabase.auth.getUser()).data.user?.id,
+        user_wallet_address: get().address?.toLowerCase(),
+        type: 'WITHDRAW',
+        amount: amount,
+        status: 'CONFIRMED',
+        blockchain_tx_hash: tx.hash,
+        description: 'Withdrawal to external wallet'
+      });
+      
+      return txId;
+    } else {
+      throw new Error('Transaction failed');
+    }
   } catch (error) {
-    console.error('Withdraw error:', error);
+    console.error('Withdrawal error:', error);
     return null;
   }
 };

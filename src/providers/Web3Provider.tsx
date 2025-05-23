@@ -73,8 +73,16 @@ export function Web3Provider({ children }: Web3ProviderProps) {
       updateBalance(accounts[0]);
       
       // Record wallet connection in the database
-      // Remove this section since the wallet_connections table doesn't exist
-      // We'll need to create the table first or use a different approach
+      try {
+        const user = await supabase.auth.getUser();
+        if (user.data.user) {
+          await supabase.from('profiles').update({
+            wallet_address: accounts[0].toLowerCase()
+          }).eq('id', user.data.user.id);
+        }
+      } catch (error) {
+        console.error("Failed to update wallet address in profile:", error);
+      }
       
       toast({
         title: "Wallet account changed",

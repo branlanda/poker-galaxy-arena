@@ -9,6 +9,7 @@ export interface Transaction {
   type: TransactionType;
   status: TransactionStatus;
   timestamp: Date;
+  description?: string;
 }
 
 // Define state interface
