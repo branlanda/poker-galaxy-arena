@@ -1,189 +1,155 @@
 
-import React, { useRef } from 'react';
-import { SeatState } from '@/types/lobby';
+import React from 'react';
+import { Card, PlayerState } from '@/types/poker';
 import { PokerCard } from './PokerCard';
-import { PokerChip } from './PokerChip';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/Button';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import {
+  DollarSign,
+  Award,
+  UserCircle2,
+  ShieldAlert,
+  Clock
+} from 'lucide-react';
 
 interface PlayerSeatProps {
   position: number;
-  state: SeatState | null;
-  isCurrentPlayer?: boolean;
-  isActive?: boolean;
-  onSitDown?: (position: number) => void;
+  player?: PlayerState;
+  isCurrentPlayer: boolean;
+  isActive: boolean;
+  isDealer: boolean;
+  isSmallBlind: boolean;
+  isBigBlind: boolean;
+  holeCards?: Card[];
+  onSitDown: () => void;
+  disabled?: boolean;
 }
 
-export const PlayerSeat: React.FC<PlayerSeatProps> = ({
+export function PlayerSeat({
   position,
-  state,
-  isCurrentPlayer = false,
-  isActive = false,
+  player,
+  isCurrentPlayer,
+  isActive,
+  isDealer,
+  isSmallBlind,
+  isBigBlind,
+  holeCards,
   onSitDown,
-}) => {
-  const seatRef = useRef<HTMLDivElement>(null);
+  disabled = false
+}: PlayerSeatProps) {
+  // Calculate the position on the table
+  // This is just one way to position seats in a circle
+  const positions = [
+    { top: '85%', left: '50%' },      // bottom center (0)
+    { top: '75%', left: '20%' },      // bottom left (1)
+    { top: '50%', left: '5%' },       // middle left (2)
+    { top: '25%', left: '20%' },      // top left (3)
+    { top: '15%', left: '50%' },      // top center (4)
+    { top: '25%', left: '80%' },      // top right (5)
+    { top: '50%', left: '95%' },      // middle right (6)
+    { top: '75%', left: '80%' },      // bottom right (7)
+    { top: '85%', left: '35%' },      // bottom left-center (8)
+  ];
   
-  // Handle keyboard navigation for sit down button
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      onSitDown?.(position);
-    }
-  };
+  const seatStyle = positions[position % positions.length];
   
-  // Get status classes
-  const getStatusClasses = () => {
-    if (state?.isActive) return 'ring-2 ring-emerald transition-all duration-200';
-    if (state?.isFolded) return 'opacity-50';
-    if (state?.isAllIn) return 'ring-2 ring-amber-500';
-    if (state?.isWinner) return 'ring-4 ring-yellow-400 animate-pulse';
-    return '';
-  };
-  
-  // Get the player's initial for the avatar
-  const getPlayerInitial = () => {
-    return state?.playerName.charAt(0).toUpperCase() || '';
-  };
-  
-  // Get the seat's aria label
-  const getSeatAriaLabel = () => {
-    if (!state) return `Empty seat ${position + 1}`;
-    
-    let status = '';
-    if (state.isDealer) status += 'Dealer, ';
-    if (state.isSmallBlind) status += 'Small Blind, ';
-    if (state.isBigBlind) status += 'Big Blind, ';
-    if (state.isFolded) status += 'Folded, ';
-    if (state.isAllIn) status += 'All In, ';
-    if (state.isWinner) status += 'Winner, ';
-    if (state.isActive) status += 'Active, ';
-    
-    return `Seat ${position + 1}: ${state.playerName}, ${state.stack} chips, ${status}`.replace(/, $/, '');
-  };
-
-  // If no player in this seat
-  if (!state) {
+  if (!player) {
+    // Empty seat that can be taken
     return (
       <div 
-        ref={seatRef}
-        className={`
-          w-24 h-24 rounded-full flex items-center justify-center
-          ${isCurrentPlayer ? 'bg-emerald/10 border-2 border-emerald/30' : 'bg-navy/20'}
-          transition-all duration-200
-        `}
-        role="region"
-        aria-label={`Seat ${position + 1}: Empty`}
-        tabIndex={onSitDown ? 0 : -1}
-        onKeyDown={onSitDown ? handleKeyDown : undefined}
+        className="absolute transform -translate-x-1/2 -translate-y-1/2 z-10"
+        style={seatStyle}
       >
-        {onSitDown && (
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="text-xs focus:ring-2 focus:ring-offset-2 focus:ring-emerald" 
-            onClick={() => onSitDown(position)}
-          >
-            Sit Down
-          </Button>
-        )}
-        {!onSitDown && <span className="text-xs opacity-50">Empty</span>}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onSitDown}
+          disabled={disabled}
+          className="h-14 w-14 rounded-full bg-navy/60 hover:bg-navy/80 border border-emerald/30"
+        >
+          <UserCircle2 className="h-6 w-6" />
+        </Button>
       </div>
     );
   }
-
+  
+  // Get initials for avatar fallback
+  const initials = 'P' + player.playerId.substring(0, 1);
+  
+  // Display occupied seat with player info
   return (
     <div 
-      ref={seatRef}
-      className={`relative ${isCurrentPlayer ? 'z-10' : ''}`}
-      role="region"
-      aria-label={getSeatAriaLabel()}
-      tabIndex={0}
+      className={`absolute transform -translate-x-1/2 -translate-y-1/2 z-10 
+        ${isActive ? 'scale-110 transition-transform duration-300' : ''}
+      `}
+      style={seatStyle}
     >
-      {/* Player Avatar and Info */}
       <div className={`
-        relative flex flex-col items-center
-        ${getStatusClasses()}
+        p-3 rounded-lg ${isActive ? 'bg-emerald-600/30 border border-emerald-500/50 animate-pulse shadow-lg' : 'bg-navy/70 border border-emerald/10'}
+        ${player.status === 'FOLDED' ? 'opacity-50' : ''}
+        ${player.status === 'ALL_IN' ? 'border-amber-500/70' : ''}
       `}>
-        <Avatar className={`
-          w-16 h-16 border-2 
-          ${isActive ? 'border-emerald' : 'border-gray-700'}
-          ${state.isDealer ? 'ring-2 ring-yellow-400' : ''}
-        `}>
-          <AvatarFallback className="bg-navy text-emerald font-bold" aria-label={`${state.playerName}'s avatar`}>
-            {getPlayerInitial()}
-          </AvatarFallback>
-        </Avatar>
+        {/* Player indicators */}
+        <div className="flex space-x-1 mb-1">
+          {isDealer && (
+            <Badge className="bg-blue-800 text-xs px-1.5 py-0">D</Badge>
+          )}
+          {isSmallBlind && (
+            <Badge className="bg-amber-800 text-xs px-1.5 py-0">SB</Badge>
+          )}
+          {isBigBlind && (
+            <Badge className="bg-red-800 text-xs px-1.5 py-0">BB</Badge>
+          )}
+          {player.status === 'FOLDED' && (
+            <Badge className="bg-gray-700 text-xs px-1.5 py-0">Folded</Badge>
+          )}
+          {player.status === 'ALL_IN' && (
+            <Badge className="bg-amber-600 text-xs px-1.5 py-0">All In!</Badge>
+          )}
+        </div>
         
-        <div className="mt-1 text-center">
-          <p className="text-xs font-medium truncate w-20">{state.playerName}</p>
-          <p className="text-xs opacity-70">${state.stack}</p>
+        {/* Player avatar and info */}
+        <div className="flex items-center mb-2">
+          <Avatar className={`h-8 w-8 mr-2 ${isCurrentPlayer ? 'ring-2 ring-emerald-500' : ''}`}>
+            <AvatarImage src="#" />
+            <AvatarFallback className="bg-navy">{initials}</AvatarFallback>
+          </Avatar>
+          <div>
+            <div className="text-sm font-medium truncate w-20">
+              {isCurrentPlayer ? 'You' : `Player ${player.playerId.substring(0, 4)}`}
+            </div>
+            <div className="flex items-center text-xs text-emerald-300">
+              <DollarSign className="h-3 w-3 mr-1" />
+              <span>{player.stack}</span>
+            </div>
+          </div>
         </div>
-
-        {/* Player Tags */}
-        <div className="absolute -top-2 left-0 right-0 flex justify-center gap-1">
-          {state.isDealer && (
-            <span className="bg-yellow-500 text-black text-xs px-1 rounded" aria-label="Dealer">D</span>
-          )}
-          {state.isSmallBlind && (
-            <span className="bg-blue-500 text-white text-xs px-1 rounded" aria-label="Small Blind">SB</span>
-          )}
-          {state.isBigBlind && (
-            <span className="bg-red-500 text-white text-xs px-1 rounded" aria-label="Big Blind">BB</span>
-          )}
-        </div>
+        
+        {/* Current bet display */}
+        {player.currentBet > 0 && (
+          <div className="flex items-center justify-center p-1 bg-black/30 rounded text-xs mb-2">
+            <span className="font-bold text-emerald-300">{player.currentBet}</span>
+          </div>
+        )}
+        
+        {/* Player cards */}
+        {player.status !== 'FOLDED' && (
+          <div className="flex justify-center space-x-1">
+            {holeCards && holeCards.length === 2 ? (
+              <>
+                <PokerCard card={holeCards[0]} size="sm" />
+                <PokerCard card={holeCards[1]} size="sm" />
+              </>
+            ) : (
+              <>
+                <div className="w-8 h-12 bg-gray-800 rounded border border-gray-700"></div>
+                <div className="w-8 h-12 bg-gray-800 rounded border border-gray-700"></div>
+              </>
+            )}
+          </div>
+        )}
       </div>
-      
-      {/* Cards */}
-      {state.cards && (
-        <div 
-          className="absolute -top-4 left-1/2 transform -translate-x-1/2 flex -space-x-4"
-          aria-label={`${state.playerName}'s cards`}
-        >
-          <PokerCard 
-            card={state.cards[0]} 
-            faceDown={!isCurrentPlayer && !state.isWinner} 
-            size="sm" 
-            className="transform -rotate-6"
-          />
-          <PokerCard 
-            card={state.cards[1]} 
-            faceDown={!isCurrentPlayer && !state.isWinner} 
-            size="sm"
-            className="transform rotate-6"
-          />
-        </div>
-      )}
-      
-      {/* Bet */}
-      {state.bet > 0 && (
-        <div 
-          className="absolute -bottom-4 left-1/2 transform -translate-x-1/2"
-          aria-label={`${state.playerName}'s bet: ${state.bet} chips`}
-        >
-          <PokerChip value={state.bet} size="sm" />
-        </div>
-      )}
-      
-      {/* Winner Amount */}
-      {state.isWinner && state.winAmount && (
-        <div 
-          className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-yellow-500 text-black px-2 py-1 rounded text-xs font-bold animate-bounce"
-          aria-live="assertive"
-          aria-label={`${state.playerName} won ${state.winAmount} chips`}
-        >
-          +{state.winAmount}
-        </div>
-      )}
-      
-      {/* Fold indicator */}
-      {state.isFolded && (
-        <div 
-          className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center"
-          aria-label={`${state.playerName} folded`}
-        >
-          <span className="text-white text-xs font-medium">Folded</span>
-        </div>
-      )}
     </div>
   );
-};
+}

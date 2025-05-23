@@ -3,7 +3,7 @@ import React from 'react';
 import { GameState } from '@/types/game';
 import { LobbyTable, PlayerAtTable } from '@/types/lobby';
 import { TableHeader } from '@/components/poker/TableHeader';
-import { PokerTable } from '@/components/poker/PokerTable';
+import { PokerGame } from '@/components/poker/PokerGame';
 import { GameTabs } from '@/components/poker/GameTabs';
 
 interface GameRoomContentProps {
@@ -36,15 +36,8 @@ export const GameRoomContent: React.FC<GameRoomContentProps> = ({
       
       {/* Main poker table layout */}
       <div className="bg-navy/50 border border-emerald/10 rounded-lg p-6 mb-6">
-        {/* The table itself */}
-        <PokerTable 
-          gameState={gameState}
-          isPlayerSeated={isPlayerSeated}
-          isPlayerTurn={isPlayerTurn}
-          playerSeatIndex={playerSeatIndex}
-          userId={userId}
-          onSitDown={onSitDown}
-        />
+        {/* The table itself - now using our new PokerGame component */}
+        <PokerGame tableId={table.id} />
         
         {/* Game messages, chat, and player list */}
         <div className="mt-6">

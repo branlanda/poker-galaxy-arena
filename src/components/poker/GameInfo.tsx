@@ -1,14 +1,11 @@
 
-import { PlayerAction } from '@/types/lobby';
+import React from 'react';
+import { PlayerAction, GameAction, GamePhase } from '@/types/poker';
 import { Badge } from '@/components/ui/badge';
 
 interface GameInfoProps {
   gamePhase: string;
-  lastAction?: {
-    playerId: string;
-    action: PlayerAction;
-    amount?: number;
-  } | null;
+  lastAction?: GameAction | null;
   smallBlind: number;
   bigBlind: number;
 }
@@ -57,7 +54,7 @@ export function GameInfo({ gamePhase, lastAction, smallBlind, bigBlind }: GameIn
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 bg-navy/30 p-4 rounded-lg border border-emerald/10">
       <div>
         <h3 className="text-sm font-medium mb-2 text-gray-300">Game Information</h3>
         <div className="grid grid-cols-2 gap-4 text-sm">

@@ -1708,6 +1708,141 @@ export type Database = {
         }
         Relationships: []
       }
+      table_actions: {
+        Row: {
+          action: string
+          amount: number | null
+          created_at: string | null
+          game_id: string | null
+          id: string
+          player_id: string | null
+        }
+        Insert: {
+          action: string
+          amount?: number | null
+          created_at?: string | null
+          game_id?: string | null
+          id?: string
+          player_id?: string | null
+        }
+        Update: {
+          action?: string
+          amount?: number | null
+          created_at?: string | null
+          game_id?: string | null
+          id?: string
+          player_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "table_actions_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "table_games"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      table_games: {
+        Row: {
+          active_seat: number | null
+          community_cards: Json | null
+          created_at: string | null
+          current_bet: number | null
+          dealer_seat: number | null
+          id: string
+          last_action_time: string | null
+          phase: string
+          pot: number
+          table_id: string | null
+        }
+        Insert: {
+          active_seat?: number | null
+          community_cards?: Json | null
+          created_at?: string | null
+          current_bet?: number | null
+          dealer_seat?: number | null
+          id?: string
+          last_action_time?: string | null
+          phase?: string
+          pot?: number
+          table_id?: string | null
+        }
+        Update: {
+          active_seat?: number | null
+          community_cards?: Json | null
+          created_at?: string | null
+          current_bet?: number | null
+          dealer_seat?: number | null
+          id?: string
+          last_action_time?: string | null
+          phase?: string
+          pot?: number
+          table_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "table_games_table_id_fkey"
+            columns: ["table_id"]
+            isOneToOne: false
+            referencedRelation: "lobby_tables"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      table_player_states: {
+        Row: {
+          created_at: string | null
+          current_bet: number | null
+          game_id: string | null
+          hole_cards: Json | null
+          id: string
+          is_big_blind: boolean | null
+          is_dealer: boolean | null
+          is_small_blind: boolean | null
+          player_id: string | null
+          seat_number: number
+          stack: number
+          status: string
+        }
+        Insert: {
+          created_at?: string | null
+          current_bet?: number | null
+          game_id?: string | null
+          hole_cards?: Json | null
+          id?: string
+          is_big_blind?: boolean | null
+          is_dealer?: boolean | null
+          is_small_blind?: boolean | null
+          player_id?: string | null
+          seat_number: number
+          stack: number
+          status?: string
+        }
+        Update: {
+          created_at?: string | null
+          current_bet?: number | null
+          game_id?: string | null
+          hole_cards?: Json | null
+          id?: string
+          is_big_blind?: boolean | null
+          is_dealer?: boolean | null
+          is_small_blind?: boolean | null
+          player_id?: string | null
+          seat_number?: number
+          stack?: number
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "table_player_states_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "table_games"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       telemetry_raw: {
         Row: {
           created_at: string | null
@@ -2199,6 +2334,15 @@ export type Database = {
           itm: number
           score: number
         }[]
+      }
+      perform_game_action: {
+        Args: {
+          p_game_id: string
+          p_player_id: string
+          p_action: string
+          p_amount?: number
+        }
+        Returns: string
       }
       update_account_balances: {
         Args: {

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Card, GamePhase } from '@/types/lobby';
+import { Card, GamePhase } from '@/types/poker';
 import { PokerCard } from './PokerCard';
 
 interface CommunityCardsProps {
@@ -36,7 +36,7 @@ export const CommunityCards: React.FC<CommunityCardsProps> = ({ cards, phase }) 
   return (
     <div className="flex justify-center space-x-2 my-4">
       {cards.slice(0, visibleCards).map((card, index) => (
-        <PokerCard key={`${card.value}-${card.suit}-${index}`} card={card} />
+        <PokerCard key={`${card.code}-${index}`} card={card} />
       ))}
       
       {/* Placeholder cards for future streets */}
@@ -45,4 +45,4 @@ export const CommunityCards: React.FC<CommunityCardsProps> = ({ cards, phase }) 
       ))}
     </div>
   );
-};
+}
