@@ -1,159 +1,242 @@
 
-import { useState, useCallback } from 'react';
-import { supabase } from '@/lib/supabase';
-import { useToast } from '@/hooks/use-toast';
-import { useTranslation } from '@/hooks/useTranslation';
+import { useState, useEffect, useCallback } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAdmin } from './useAdmin';
+import { useToast } from './use-toast';
 
-interface Transaction {
+export interface VerifiableTransaction {
   id: string;
-  userId: string;
   userName: string;
+  userId: string;
   type: 'deposit' | 'withdrawal';
   amount: number;
-  status: 'pending' | 'completed' | 'rejected';
   createdAt: string;
-  verificationStatus: 'unverified' | 'in_progress' | 'verified' | 'flagged';
+  status: 'pending' | 'completed' | 'failed';
+  verificationStatus: 'unverified' | 'verified' | 'flagged';
 }
 
 export function useTransactionVerification() {
+  const [transactions, setTransactions] = useState<VerifiableTransaction[]>([]);
   const [loading, setLoading] = useState(false);
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const { isAdmin, createAuditLog } = useAdmin();
   const { toast } = useToast();
-  const { t } = useTranslation();
-  
-  // Fetch pending transactions
+
+  // Mock data for demonstration purposes
+  const mockTransactions: VerifiableTransaction[] = [
+    {
+      id: '1',
+      userName: 'player123',
+      userId: '123',
+      type: 'deposit',
+      amount: 500,
+      createdAt: new Date().toISOString(),
+      status: 'pending',
+      verificationStatus: 'unverified'
+    },
+    {
+      id: '2',
+      userName: 'highroller42',
+      userId: '456',
+      type: 'withdrawal',
+      amount: 1200,
+      createdAt: new Date(Date.now() - 3600000).toISOString(),
+      status: 'pending',
+      verificationStatus: 'flagged'
+    },
+    {
+      id: '3',
+      userName: 'pokerface99',
+      userId: '789',
+      type: 'deposit',
+      amount: 750,
+      createdAt: new Date(Date.now() - 7200000).toISOString(),
+      status: 'pending',
+      verificationStatus: 'unverified'
+    }
+  ];
+
   const fetchPendingTransactions = useCallback(async () => {
-    setLoading(true);
+    if (!isAdmin) return;
     
-    // In a real implementation, this would fetch from the database
-    // This is mock data
-    setTimeout(() => {
-      setTransactions([
-        {
-          id: '1',
-          userId: 'user1',
-          userName: 'JohnDoe',
-          type: 'deposit',
-          amount: 1000,
-          status: 'pending',
-          createdAt: new Date().toISOString(),
-          verificationStatus: 'unverified'
-        },
-        {
-          id: '2',
-          userId: 'user2',
-          userName: 'PokerMaster',
-          type: 'withdrawal',
-          amount: 5000,
-          status: 'pending',
-          createdAt: new Date().toISOString(),
-          verificationStatus: 'unverified'
-        },
-        {
-          id: '3',
-          userId: 'user3',
-          userName: 'RoyalFlush',
-          type: 'deposit',
-          amount: 2000,
-          status: 'pending',
-          createdAt: new Date().toISOString(),
-          verificationStatus: 'flagged'
-        }
-      ]);
-      setLoading(false);
-    }, 500);
-  }, []);
-  
-  // Approve transaction
-  const approveTransaction = useCallback(async (transactionId: string) => {
+    setLoading(true);
     try {
-      // In a real implementation, this would update the database
-      setTransactions(prevTransactions => 
-        prevTransactions.map(transaction => 
-          transaction.id === transactionId 
-            ? { ...transaction, status: 'completed', verificationStatus: 'verified' } 
-            : transaction
+      // In a real implementation, we would fetch from Supabase
+      // const { data, error } = await supabase
+      //   .from('transactions')
+      //   .select('*, profiles(alias)')
+      //   .eq('status', 'pending')
+      //   .order('created_at', { ascending: false });
+      
+      // if (error) throw error;
+      
+      // Format the data for our component
+      // const formattedTx = data.map(tx => ({
+      //   id: tx.id,
+      //   userName: tx.profiles.alias,
+      //   userId: tx.user_id,
+      //   type: tx.type,
+      //   amount: tx.amount,
+      //   createdAt: tx.created_at,
+      //   status: tx.status,
+      //   verificationStatus: tx.metadata?.verification_status || 'unverified'
+      // }));
+      
+      // setTransactions(formattedTx);
+      
+      // For demo purposes, we'll use mock data
+      setTransactions(mockTransactions);
+    } catch (error) {
+      console.error('Error fetching transactions:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load pending transactions',
+        variant: 'destructive'
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [isAdmin, toast]);
+
+  const approveTransaction = useCallback(async (txId: string) => {
+    if (!isAdmin) return;
+    
+    try {
+      // Update local state immediately for responsive UI
+      setTransactions(prev => 
+        prev.map(tx => 
+          tx.id === txId 
+            ? { ...tx, verificationStatus: 'verified', status: 'completed' } 
+            : tx
         )
       );
       
+      // In a real implementation, we would update in Supabase
+      // Find the transaction we're approving
+      const tx = transactions.find(t => t.id === txId);
+      if (!tx) return;
+      
+      // Log this action
+      await createAuditLog(
+        'transaction_approved',
+        `Approved ${tx.type} transaction for ${tx.amount}`,
+        { transactionId: tx.id, userId: tx.userId, amount: tx.amount }
+      );
+      
       toast({
-        title: t('admin.transactionApproved'),
-        description: t('admin.transactionApprovalSuccess'),
-        variant: "default",
+        title: 'Transaction Approved',
+        description: `${tx.type.charAt(0).toUpperCase() + tx.type.slice(1)} for ${tx.amount} has been approved`,
       });
     } catch (error) {
       console.error('Error approving transaction:', error);
-      
       toast({
-        title: t('admin.error'),
-        description: t('admin.transactionApprovalError'),
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to approve transaction',
+        variant: 'destructive'
       });
+      
+      // Revert the local state change on error
+      fetchPendingTransactions();
     }
-  }, [toast, t]);
-  
-  // Reject transaction
-  const rejectTransaction = useCallback(async (transactionId: string) => {
+  }, [isAdmin, transactions, createAuditLog, fetchPendingTransactions, toast]);
+
+  const rejectTransaction = useCallback(async (txId: string) => {
+    if (!isAdmin) return;
+    
     try {
-      // In a real implementation, this would update the database
-      setTransactions(prevTransactions => 
-        prevTransactions.map(transaction => 
-          transaction.id === transactionId 
-            ? { ...transaction, status: 'rejected', verificationStatus: 'flagged' } 
-            : transaction
+      // Update local state immediately for responsive UI
+      setTransactions(prev => 
+        prev.map(tx => 
+          tx.id === txId 
+            ? { ...tx, status: 'failed' } 
+            : tx
         )
       );
       
+      // In a real implementation, we would update in Supabase
+      // Find the transaction we're rejecting
+      const tx = transactions.find(t => t.id === txId);
+      if (!tx) return;
+      
+      // Log this action
+      await createAuditLog(
+        'transaction_rejected',
+        `Rejected ${tx.type} transaction for ${tx.amount}`,
+        { transactionId: tx.id, userId: tx.userId, amount: tx.amount }
+      );
+      
       toast({
-        title: t('admin.transactionRejected'),
-        description: t('admin.transactionRejectionSuccess'),
-        variant: "default",
+        title: 'Transaction Rejected',
+        description: `${tx.type.charAt(0).toUpperCase() + tx.type.slice(1)} for ${tx.amount} has been rejected`,
+        variant: 'destructive'
       });
     } catch (error) {
       console.error('Error rejecting transaction:', error);
-      
       toast({
-        title: t('admin.error'),
-        description: t('admin.transactionRejectionError'),
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to reject transaction',
+        variant: 'destructive'
       });
+      
+      // Revert the local state change on error
+      fetchPendingTransactions();
     }
-  }, [toast, t]);
-  
-  // Flag transaction for review
-  const flagTransaction = useCallback(async (transactionId: string) => {
+  }, [isAdmin, transactions, createAuditLog, fetchPendingTransactions, toast]);
+
+  const flagTransaction = useCallback(async (txId: string) => {
+    if (!isAdmin) return;
+    
     try {
-      // In a real implementation, this would update the database
-      setTransactions(prevTransactions => 
-        prevTransactions.map(transaction => 
-          transaction.id === transactionId 
-            ? { ...transaction, verificationStatus: 'flagged' } 
-            : transaction
+      // Update local state immediately for responsive UI
+      setTransactions(prev => 
+        prev.map(tx => 
+          tx.id === txId 
+            ? { ...tx, verificationStatus: 'flagged' } 
+            : tx
         )
       );
       
+      // In a real implementation, we would update in Supabase
+      // Find the transaction we're flagging
+      const tx = transactions.find(t => t.id === txId);
+      if (!tx) return;
+      
+      // Log this action
+      await createAuditLog(
+        'transaction_flagged',
+        `Flagged ${tx.type} transaction for ${tx.amount} for review`,
+        { transactionId: tx.id, userId: tx.userId, amount: tx.amount }
+      );
+      
       toast({
-        title: t('admin.transactionFlagged'),
-        description: t('admin.transactionFlagSuccess'),
-        variant: "default",
+        title: 'Transaction Flagged',
+        description: `${tx.type.charAt(0).toUpperCase() + tx.type.slice(1)} has been flagged for review`,
+        variant: 'warning'
       });
     } catch (error) {
       console.error('Error flagging transaction:', error);
-      
       toast({
-        title: t('admin.error'),
-        description: t('admin.transactionFlagError'),
-        variant: "destructive", 
+        title: 'Error',
+        description: 'Failed to flag transaction',
+        variant: 'destructive'
       });
+      
+      // Revert the local state change on error
+      fetchPendingTransactions();
     }
-  }, [toast, t]);
-  
-  return {
-    transactions,
-    loading,
-    fetchPendingTransactions,
-    approveTransaction,
-    rejectTransaction,
+  }, [isAdmin, transactions, createAuditLog, fetchPendingTransactions, toast]);
+
+  useEffect(() => {
+    if (isAdmin) {
+      fetchPendingTransactions();
+    }
+  }, [isAdmin, fetchPendingTransactions]);
+
+  return { 
+    transactions, 
+    loading, 
+    fetchPendingTransactions, 
+    approveTransaction, 
+    rejectTransaction, 
     flagTransaction
   };
 }

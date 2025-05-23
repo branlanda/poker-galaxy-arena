@@ -11,14 +11,33 @@ export const loadTransactions = async (set: any, get: () => WalletState) => {
     const address = get().address;
     if (!address) return;
     
-    // Instead of fetching from Supabase, we'll use client-side data only
-    // This is a temporary solution until a transactions table is created
+    // Fetch transactions from Supabase
+    const { data: transactions, error } = await supabase
+      .from('transactions')
+      .select('*')
+      .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
+      .order('created_at', { ascending: false })
+      .limit(50);
     
-    // We'll use the existing transactions from the state
-    // In a real implementation, you'd query from your database
-    const transactions = get().transactions;
+    if (error) {
+      console.error('Error fetching transactions:', error);
+      return;
+    }
     
-    set({ transactions });
+    if (!transactions) return;
+    
+    // Transform the data into our store format
+    const mappedTransactions: Transaction[] = transactions.map(tx => ({
+      id: tx.id,
+      hash: tx.blockchain_tx_hash || '',
+      amount: tx.amount,
+      type: tx.type.toLowerCase() as TransactionType,
+      status: tx.status.toLowerCase() as TransactionStatus,
+      timestamp: new Date(tx.created_at),
+      description: tx.description || ''
+    }));
+    
+    set({ transactions: mappedTransactions });
   } catch (error) {
     console.error('Failed to load transactions:', error);
   }
@@ -83,15 +102,14 @@ export const depositFunds = async (amount: number, set: any, get: () => WalletSt
         balance: get().balance + amount
       });
       
-      // In a real implementation, we would save to Supabase here
-      // Since the transactions table doesn't exist, we'll just log
-      console.log("Transaction confirmed, would save to database:", {
+      // Save transaction to Supabase
+      const user = await supabase.auth.getUser();
+      await supabase.from('transactions').insert({
         id: txId,
-        user_id: (await supabase.auth.getUser()).data.user?.id,
-        user_wallet_address: get().address?.toLowerCase(),
-        type: 'DEPOSIT',
+        user_id: user.data.user?.id,
+        type: 'deposit',
         amount: amount,
-        status: 'CONFIRMED',
+        status: 'confirmed',
         blockchain_tx_hash: tx.hash,
         description: 'Deposit via Web3 wallet'
       });
@@ -165,15 +183,14 @@ export const withdrawFunds = async (address: string, amount: number, set: any, g
         balance: get().balance - amount
       });
       
-      // In a real implementation, we would save to Supabase here
-      // Since the transactions table doesn't exist, we'll just log
-      console.log("Withdrawal confirmed, would save to database:", {
+      // Save transaction to Supabase
+      const user = await supabase.auth.getUser();
+      await supabase.from('transactions').insert({
         id: txId,
-        user_id: (await supabase.auth.getUser()).data.user?.id,
-        user_wallet_address: get().address?.toLowerCase(),
-        type: 'WITHDRAW',
+        user_id: user.data.user?.id,
+        type: 'withdrawal',
         amount: amount,
-        status: 'CONFIRMED',
+        status: 'confirmed',
         blockchain_tx_hash: tx.hash,
         description: 'Withdrawal to external wallet'
       });

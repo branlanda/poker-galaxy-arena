@@ -3,33 +3,38 @@ import { create } from 'zustand';
 
 export interface LedgerEntry {
   id: string;
-  date: string;        // ISO string
   userAlias: string;
-  type: 'DEPOSIT'|'WITHDRAW'|'RAKE'|'PAYOUT'|'REFERRAL';
+  type: string; // 'DEPOSIT', 'WITHDRAW', 'RAKE', 'PAYOUT', 'REFERRAL'
   amount: number;
-  status: 'COMPLETED'|'PENDING'|'FAILED';
+  status: string; // 'PENDING', 'COMPLETED', 'FAILED'
+  date: string;
 }
 
-export const useLedgerStore = create<{
+interface LedgerStore {
   entries: LedgerEntry[];
-  filters: { type?: string; from?: string; to?: string };
+  filters: {
+    type?: string;
+    from?: string;
+    to?: string;
+  };
   page: number;
   loading: boolean;
-  setEntries: (e: LedgerEntry[]) => void;
-  setFilters: (f: Partial<{ type?: string; from?: string; to?: string }>) => void;
-  setLoading: (loading: boolean) => void;
+  setEntries: (entries: LedgerEntry[]) => void;
+  setFilters: (filters: Partial<LedgerStore['filters']>) => void;
   loadMore: () => void;
-}>((set, get) => ({
+  setLoading: (loading: boolean) => void;
+}
+
+export const useLedgerStore = create<LedgerStore>((set) => ({
   entries: [],
   filters: {},
   page: 1,
   loading: false,
-  setEntries: (e) => set({ entries: e }),
-  setFilters: (f) => set(state => ({ filters: { ...state.filters, ...f }, page: 1 })),
-  setLoading: (loading) => set({ loading }),
-  loadMore: () => {
-    const next = get().page + 1;
-    set({ page: next });
-    // In UI mock, loadMore appends more mocks
-  },
+  setEntries: (entries) => set({ entries }),
+  setFilters: (filters) => set((state) => ({
+    filters: { ...state.filters, ...filters },
+    page: 1 // Reset pagination when filters change
+  })),
+  loadMore: () => set((state) => ({ page: state.page + 1 })),
+  setLoading: (loading) => set({ loading })
 }));

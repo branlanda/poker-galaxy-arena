@@ -3,12 +3,13 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/stores/auth';
 import { useEffect, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 
 export const AdminGuard = ({ children }: { children: JSX.Element }) => {
-  const { user, isAdmin, setAdmin } = useAuth();
+  const { user } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
   
   useEffect(() => {
     const checkAdminRole = async () => {
@@ -18,20 +19,19 @@ export const AdminGuard = ({ children }: { children: JSX.Element }) => {
       }
       
       try {
-        // Check if the user has an admin role in the players table
+        // Check if the user has an admin role in the admin_users table
         const { data, error } = await supabase
-          .from('players')
+          .from('admin_users')
           .select('role')
-          .eq('user_id', user.id)
+          .eq('id', user.id)
           .single();
         
         if (error) throw error;
         
-        // Set admin status based on role
-        const hasAdminRole = data?.role === 'ADMIN';
-        setAdmin(hasAdminRole);
+        // Set admin status if user has any admin role
+        setIsAdmin(!!data);
         
-        if (!hasAdminRole) {
+        if (!data) {
           toast({
             title: "Access Denied",
             description: "You do not have permission to access the admin panel",
@@ -40,14 +40,14 @@ export const AdminGuard = ({ children }: { children: JSX.Element }) => {
         }
       } catch (error) {
         console.error('Error checking admin role:', error);
-        setAdmin(false);
+        setIsAdmin(false);
       } finally {
         setLoading(false);
       }
     };
     
     checkAdminRole();
-  }, [user, toast, setAdmin]);
+  }, [user, toast]);
   
   if (loading) {
     return (

@@ -42,6 +42,87 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_users: {
+        Row: {
+          created_at: string | null
+          id: string
+          role: string
+        }
+        Insert: {
+          created_at?: string | null
+          id: string
+          role: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          role?: string
+        }
+        Relationships: []
+      }
+      alerts: {
+        Row: {
+          created_at: string | null
+          description: string
+          id: string
+          metadata: Json | null
+          resolved: boolean | null
+          resolved_at: string | null
+          resolved_by: string | null
+          severity: string
+          type: string
+        }
+        Insert: {
+          created_at?: string | null
+          description: string
+          id?: string
+          metadata?: Json | null
+          resolved?: boolean | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          type: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string
+          id?: string
+          metadata?: Json | null
+          resolved?: boolean | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          type?: string
+        }
+        Relationships: []
+      }
+      audit_logs: {
+        Row: {
+          action: string
+          created_at: string | null
+          description: string | null
+          id: string
+          metadata: Json | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          metadata?: Json | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          metadata?: Json | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       cash_tables: {
         Row: {
           big_blind: number
@@ -1598,6 +1679,7 @@ export type Database = {
           id: string
           show_public_stats: boolean | null
           updated_at: string | null
+          wallet_address: string | null
         }
         Insert: {
           alias?: string | null
@@ -1606,6 +1688,7 @@ export type Database = {
           id: string
           show_public_stats?: boolean | null
           updated_at?: string | null
+          wallet_address?: string | null
         }
         Update: {
           alias?: string | null
@@ -1614,6 +1697,7 @@ export type Database = {
           id?: string
           show_public_stats?: boolean | null
           updated_at?: string | null
+          wallet_address?: string | null
         }
         Relationships: []
       }
@@ -2262,6 +2346,42 @@ export type Database = {
           status?: Database["public"]["Enums"]["tournament_status"]
           tournament_type?: Database["public"]["Enums"]["tournament_type"]
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      transactions: {
+        Row: {
+          amount: number
+          blockchain_tx_hash: string | null
+          created_at: string | null
+          description: string | null
+          id: string
+          metadata: Json | null
+          status: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          blockchain_tx_hash?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          metadata?: Json | null
+          status: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          blockchain_tx_hash?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          metadata?: Json | null
+          status?: string
+          type?: string
+          user_id?: string
         }
         Relationships: []
       }

@@ -1,6 +1,6 @@
 
 export type TransactionStatus = 'pending' | 'confirmed' | 'failed';
-export type TransactionType = 'deposit' | 'withdraw';
+export type TransactionType = 'deposit' | 'withdraw' | 'game_win' | 'game_loss' | 'refund' | 'bonus';
 
 export interface Transaction {
   id: string;
