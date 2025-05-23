@@ -3,7 +3,8 @@ import { createBrowserRouter } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { AuthLayout } from "@/components/layout/AuthLayout";
 import GameRoom from "@/pages/Game/GameRoom";
-import { TournamentLobby } from "@/pages/Tournaments";
+import { TournamentLobby, TournamentDetail } from "@/pages/Tournaments";
+import { AchievementsPage, LeaderboardsPage } from "@/pages/Gamification";
 import LobbyPage from "@/pages/Lobby/LobbyPage";
 import { NotFound } from "@/pages/NotFound";
 import Login from "@/pages/auth/Login";
@@ -12,6 +13,7 @@ import ForgotPassword from "@/pages/auth/ForgotPassword";
 import ResetPassword from "@/pages/auth/ResetPassword";
 import ProfilePage from "@/pages/profile/ProfilePage";
 import Settings from "@/pages/settings/Settings";
+import AdminRoutes from "@/router/AdminRoutes";
 
 // Create routes configuration
 const routes = createBrowserRouter([
@@ -48,7 +50,19 @@ const routes = createBrowserRouter([
   {
     path: "/tournaments/:id", 
     element: <AppLayout>
-      <div>Tournament Details</div>
+      <TournamentDetail />
+    </AppLayout>,
+  },
+  {
+    path: "/achievements",
+    element: <AppLayout>
+      <AchievementsPage />
+    </AppLayout>,
+  },
+  {
+    path: "/leaderboards",
+    element: <AppLayout>
+      <LeaderboardsPage />
     </AppLayout>,
   },
   {
@@ -58,6 +72,10 @@ const routes = createBrowserRouter([
   {
     path: "/game-room/:tableId",
     element: <GameRoom />,
+  },
+  {
+    path: "/admin/*",
+    element: <AdminRoutes />,
   },
   {
     path: "/auth/login",

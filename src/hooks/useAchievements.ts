@@ -1,169 +1,155 @@
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/stores/auth';
+import { Achievement, PlayerAchievement } from '@/types/gamification';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from '@/hooks/useTranslation';
 
-export interface Achievement {
-  id: string;
-  name: string;
-  description: string;
-  icon_url?: string;
-  category: string;
-  points: number;
-  requirements: Record<string, any>;
-  created_at: string;
-}
-
-export interface PlayerAchievement {
-  id: string;
-  player_id: string;
-  achievement_id: string;
-  unlocked_at: string;
-  progress: number;
-  completed: boolean;
-  achievement?: Achievement;
-}
-
-export const useAchievements = () => {
+export function useAchievements() {
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [playerAchievements, setPlayerAchievements] = useState<PlayerAchievement[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
   const { toast } = useToast();
   const { t } = useTranslation();
-
+  
+  // Fetch achievements and player's progress
   const fetchAchievements = async () => {
+    if (!user) return;
+    
+    setLoading(true);
+    
     try {
-      setLoading(true);
-      setError(null);
-      
       // Fetch all achievements
       const { data: achievementsData, error: achievementsError } = await supabase
         .from('achievements')
         .select('*')
         .order('category');
       
-      if (achievementsError) throw achievementsError;
-      
-      // Parse JSON fields
-      const parsedAchievements = achievementsData?.map(achievement => ({
-        ...achievement,
-        requirements: typeof achievement.requirements === 'string'
-          ? JSON.parse(achievement.requirements)
-          : achievement.requirements
-      })) as Achievement[];
-      
-      setAchievements(parsedAchievements || []);
-      
-      // If user is logged in, fetch their achievements
-      if (user) {
-        const { data: playerAchievementsData, error: playerAchievementsError } = await supabase
-          .from('player_achievements')
-          .select('*, achievement:achievements(*)')
-          .eq('player_id', user.id);
-        
-        if (playerAchievementsError) throw playerAchievementsError;
-        
-        // Parse JSON fields
-        const parsedPlayerAchievements = playerAchievementsData?.map(pa => ({
-          ...pa,
-          achievement: pa.achievement ? {
-            ...pa.achievement,
-            requirements: typeof pa.achievement.requirements === 'string'
-              ? JSON.parse(pa.achievement.requirements)
-              : pa.achievement.requirements
-          } : undefined
-        })) as PlayerAchievement[];
-        
-        setPlayerAchievements(parsedPlayerAchievements || []);
+      if (achievementsError) {
+        throw achievementsError;
       }
-    } catch (err: any) {
-      console.error('Error fetching achievements:', err);
-      setError(err.message);
+      
+      // Fetch player's achievements progress
+      const { data: playerData, error: playerError } = await supabase
+        .from('player_achievements')
+        .select(`
+          *,
+          achievement:achievement_id (*)
+        `)
+        .eq('player_id', user.id);
+      
+      if (playerError) {
+        throw playerError;
+      }
+      
+      // Process and merge data
+      setAchievements(achievementsData || []);
+      
+      // If player doesn't have records for all achievements, create them with default values
+      const playerAchievementsMap = new Map((playerData || []).map(pa => [pa.achievement_id, pa]));
+      
+      const mergedAchievements = (achievementsData || []).map(achievement => {
+        const playerAchievement = playerAchievementsMap.get(achievement.id);
+        
+        if (playerAchievement) {
+          return {
+            ...playerAchievement,
+            achievement
+          };
+        } else {
+          // Create default player achievement if it doesn't exist
+          return {
+            id: `temp-${achievement.id}`,
+            player_id: user.id,
+            achievement_id: achievement.id,
+            progress: 0,
+            completed: false,
+            created_at: new Date().toISOString(),
+            achievement
+          };
+        }
+      });
+      
+      setPlayerAchievements(mergedAchievements);
+      
+    } catch (error: any) {
+      console.error('Error fetching achievements:', error);
       toast({
-        title: t('errors.fetchFailed'),
-        description: err.message,
+        title: t('errors.failedToLoad'),
+        description: error.message || t('errors.tryAgain'),
         variant: 'destructive',
       });
     } finally {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    fetchAchievements();
+  
+  // Claim an achievement reward
+  const claimAchievementReward = async (achievementId: string) => {
+    if (!user) return;
     
-    // Set up real-time subscription for achievement changes
-    if (user) {
-      const channel = supabase
-        .channel('player_achievements_changes')
-        .on('postgres_changes', 
-            { 
-              event: '*', 
-              schema: 'public', 
-              table: 'player_achievements',
-              filter: `player_id=eq.${user.id}` 
-            },
-            async (payload) => {
-              if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
-                // Fetch the full achievement details
-                const { data } = await supabase
-                  .from('player_achievements')
-                  .select('*, achievement:achievements(*)')
-                  .eq('id', payload.new.id)
-                  .single();
-                
-                if (data) {
-                  // Parse JSON fields for the achievement
-                  const parsedData = {
-                    ...data,
-                    achievement: data.achievement ? {
-                      ...data.achievement,
-                      requirements: typeof data.achievement.requirements === 'string'
-                        ? JSON.parse(data.achievement.requirements)
-                        : data.achievement.requirements
-                    } : undefined
-                  } as PlayerAchievement;
-                  
-                  // Update achievement in state
-                  setPlayerAchievements(prev => {
-                    const exists = prev.some(pa => pa.id === parsedData.id);
-                    if (exists) {
-                      return prev.map(pa => pa.id === parsedData.id ? parsedData : pa);
-                    } else {
-                      return [...prev, parsedData];
-                    }
-                  });
-                  
-                  // Show notification for newly completed achievements
-                  if (payload.eventType === 'UPDATE' && 
-                      payload.new.completed && 
-                      !payload.old.completed) {
-                    const achievementName = parsedData.achievement?.name || 'Achievement';
-                    toast({
-                      title: t('achievements.unlocked'),
-                      description: achievementName,
-                    });
-                  }
-                }
-              }
-            })
-        .subscribe();
-        
-      return () => {
-        supabase.removeChannel(channel);
-      };
+    try {
+      // Check if achievement is completed and unclaimed
+      const achievement = playerAchievements.find(
+        a => a.achievement_id === achievementId && a.completed && !a.achievement?.claimed_at
+      );
+      
+      if (!achievement) {
+        toast({
+          title: t('errors.cannotClaim'),
+          description: t('errors.achievementNotCompleted'),
+          variant: 'destructive',
+        });
+        return;
+      }
+      
+      // Claim the reward on the server (this would typically be handled by a secure RPC function or edge function)
+      const { error } = await supabase.rpc('claim_achievement_reward', {
+        p_achievement_id: achievementId,
+        p_player_id: user.id
+      });
+      
+      if (error) {
+        throw error;
+      }
+      
+      // Refresh achievements to show updated state
+      fetchAchievements();
+      
+      toast({
+        title: t('achievements.rewardClaimed'),
+        description: t('achievements.rewardCreditedToAccount'),
+      });
+      
+    } catch (error: any) {
+      console.error('Error claiming achievement reward:', error);
+      toast({
+        title: t('errors.failedToClaim'),
+        description: error.message || t('errors.tryAgain'),
+        variant: 'destructive',
+      });
     }
-  }, [user?.id]);
-
-  return { 
+  };
+  
+  // Fetch achievements on mount and when user changes
+  useEffect(() => {
+    if (user) {
+      fetchAchievements();
+    }
+  }, [user]);
+  
+  // Function to manually refresh achievements
+  const refreshAchievements = () => {
+    fetchAchievements();
+  };
+  
+  return {
     achievements,
     playerAchievements,
     loading,
-    error,
-    refreshAchievements: fetchAchievements,
+    refreshAchievements,
+    claimAchievementReward
   };
-};
+}

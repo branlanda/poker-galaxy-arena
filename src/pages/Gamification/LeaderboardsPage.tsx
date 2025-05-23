@@ -1,327 +1,269 @@
-import { useState, useEffect } from 'react';
-import { useAuth } from '@/stores/auth';
-import { supabase } from '@/lib/supabase';
-import { useToast } from '@/hooks/use-toast';
+
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
-import { Leaderboard, LeaderboardEntry } from '@/types/gamification';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { useLeaderboards } from '@/hooks/useLeaderboards';
+import { useAuth } from '@/stores/auth';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/Button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Medal, Trophy, Award } from 'lucide-react';
+import { Leaderboard, LeaderboardEntry } from '@/types/gamification';
+import { Medal, MedalFirst, MedalSecond, Trophy, Users } from 'lucide-react';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 export function LeaderboardsPage() {
-  const { user } = useAuth();
   const { t } = useTranslation();
-  const { toast } = useToast();
-  
-  const [leaderboards, setLeaderboards] = useState<Leaderboard[]>([]);
+  const { user } = useAuth();
+  const { leaderboards, leaderboardEntries, loading, fetchLeaderboardEntries } = useLeaderboards();
   const [selectedLeaderboard, setSelectedLeaderboard] = useState<string | null>(null);
-  const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
-  const [userRank, setUserRank] = useState<LeaderboardEntry | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [activeCategory, setActiveCategory] = useState('all');
-  
+  const [period, setPeriod] = useState<string>('weekly');
+
   useEffect(() => {
-    const fetchLeaderboards = async () => {
-      setLoading(true);
-      try {
-        const { data, error } = await supabase
-          .from('leaderboards')
-          .select('*')
-          .eq('is_active', true)
-          .order('created_at', { ascending: false });
-          
-        if (error) throw error;
-        
-        setLeaderboards(data || []);
-        
-        if (data && data.length > 0) {
-          setSelectedLeaderboard(data[0].id);
-        }
-      } catch (err) {
-        console.error('Error fetching leaderboards:', err);
-        toast({
-          title: t('errors.fetchFailed'),
-          description: t('leaderboards.fetchError'),
-          variant: 'destructive',
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchLeaderboards();
-  }, []);
-  
+    // Select the first leaderboard by default once loaded
+    if (leaderboards && leaderboards.length > 0 && !selectedLeaderboard) {
+      setSelectedLeaderboard(leaderboards[0].id);
+    }
+  }, [leaderboards]);
+
   useEffect(() => {
-    if (!selectedLeaderboard) return;
+    if (selectedLeaderboard) {
+      fetchLeaderboardEntries(selectedLeaderboard);
+    }
+  }, [selectedLeaderboard, period]);
+
+  const handleLeaderboardSelect = (id: string) => {
+    setSelectedLeaderboard(id);
+  };
+
+  const handlePeriodChange = (value: string) => {
+    setPeriod(value);
+  };
+
+  const getLeaderboardById = (id: string): Leaderboard | undefined => {
+    return leaderboards?.find(lb => lb.id === id);
+  };
+
+  const renderLeaderboardTabs = () => {
+    if (!leaderboards || leaderboards.length === 0) {
+      return (
+        <div className="text-center py-12 text-muted-foreground">
+          <Trophy className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+          <h3 className="text-xl font-medium mb-2">{t('leaderboards.noLeaderboards')}</h3>
+          <p>{t('leaderboards.checkBackSoon')}</p>
+        </div>
+      );
+    }
+
+    const groupedLeaderboards: Record<string, Leaderboard[]> = {};
     
-    const fetchEntries = async () => {
-      try {
-        // Fetch leaderboard entries with player information
-        const { data, error } = await supabase
-          .from('leaderboard_entries')
-          .select(`
-            *,
-            players (
-              alias,
-              avatar_url
-            )
-          `)
-          .eq('leaderboard_id', selectedLeaderboard)
-          .order('rank', { ascending: true });
-          
-        if (error) throw error;
-        
-        const formattedEntries = data.map(entry => {
-          // Safely handle the join results
-          const playerData = entry.players || {};
-          return {
-            ...entry,
-            player_name: playerData.alias || 'Unknown Player',
-            player_avatar: playerData.avatar_url || null
-          };
-        });
-        
-        setEntries(formattedEntries);
-        
-        // Find user's rank if they are authenticated
-        if (user) {
-          const userEntry = formattedEntries.find(entry => entry.player_id === user.id);
-          setUserRank(userEntry || null);
-        }
-      } catch (err) {
-        console.error('Error fetching leaderboard entries:', err);
-        toast({
-          title: t('errors.fetchFailed'),
-          description: t('leaderboards.entriesFetchError'),
-          variant: 'destructive',
-        });
+    leaderboards.forEach(leaderboard => {
+      if (!groupedLeaderboards[leaderboard.category]) {
+        groupedLeaderboards[leaderboard.category] = [];
       }
-    };
+      groupedLeaderboards[leaderboard.category].push(leaderboard);
+    });
+
+    return (
+      <Tabs defaultValue={Object.keys(groupedLeaderboards)[0]} className="mt-6">
+        <TabsList className="mb-4">
+          {Object.keys(groupedLeaderboards).map(category => (
+            <TabsTrigger key={category} value={category}>
+              {category}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+        
+        {Object.entries(groupedLeaderboards).map(([category, boards]) => (
+          <TabsContent key={category} value={category}>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {boards.map(leaderboard => (
+                <Card 
+                  key={leaderboard.id}
+                  className={`hover:border-emerald/50 transition-all cursor-pointer ${
+                    selectedLeaderboard === leaderboard.id ? 'bg-emerald/5 border-emerald/50' : ''
+                  }`}
+                  onClick={() => handleLeaderboardSelect(leaderboard.id)}
+                >
+                  <CardHeader className="pb-2">
+                    <CardTitle>{leaderboard.name}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground">
+                      {leaderboard.description}
+                    </p>
+                    <div className="flex items-center mt-4 text-sm">
+                      <Users className="h-4 w-4 mr-2 text-muted-foreground" />
+                      <span>{leaderboardEntries.filter(e => e.leaderboard_id === leaderboard.id).length} {t('leaderboards.players')}</span>
+                      
+                      {leaderboard.prize_pool > 0 && (
+                        <div className="ml-4 flex items-center">
+                          <Trophy className="h-4 w-4 mr-2 text-amber-400" />
+                          <span>{leaderboard.prize_pool} {t('common.chips')}</span>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+        ))}
+      </Tabs>
+    );
+  };
+
+  const renderLeaderboardEntries = () => {
+    if (!selectedLeaderboard) return null;
     
-    fetchEntries();
-  }, [selectedLeaderboard, user]);
-  
-  // Filter leaderboards by category
-  const filteredLeaderboards = leaderboards.filter(leaderboard => {
-    if (activeCategory === 'all') return true;
-    return leaderboard.category === activeCategory;
-  });
-  
-  // Get unique categories from leaderboards
-  const categories = [...new Set(leaderboards.map(l => l.category))];
-  
-  // Get the currently selected leaderboard details
-  const currentLeaderboard = leaderboards.find(l => l.id === selectedLeaderboard);
-  
-  const getMedalComponent = (rank: number) => {
-    if (rank === 1) return <Trophy className="h-5 w-5 text-amber-500" />;
-    if (rank === 2) return <Medal className="h-5 w-5 text-slate-300" />;
-    if (rank === 3) return <Medal className="h-5 w-5 text-amber-700" />;
-    return null;
-  };
-  
-  const getInitials = (name: string) => {
-    if (!name) return '??';
-    return name
-      .split(' ')
-      .map(part => part[0])
-      .join('')
-      .toUpperCase()
-      .substring(0, 2);
-  };
-  
-  // Replace the user_metadata usage
-  const getUserDisplayName = () => {
-    if (!user) return 'You';
-    // Use user.user_metadata if it exists, otherwise use a default or email
-    return user.email?.split('@')[0] || 'Player';
-  };
-  
-  // Modify the user rank display to use our new helper function
-  const renderUserRank = () => {
-    if (!userRank) return null;
+    const currentLeaderboard = getLeaderboardById(selectedLeaderboard);
+    if (!currentLeaderboard) return null;
+    
+    const filteredEntries = leaderboardEntries
+      .filter(entry => entry.leaderboard_id === selectedLeaderboard)
+      .sort((a, b) => a.rank! - b.rank!);
+    
+    // Find user's entry
+    const userEntry = user ? filteredEntries.find(entry => entry.player_id === user.id) : null;
     
     return (
-      <div className="mt-6 p-3 border rounded bg-muted/30">
-        <p className="text-sm font-medium mb-2">{t('leaderboards.yourRank')}</p>
-        <div className="flex items-center">
-          <div className="w-8 h-8 rounded-full bg-emerald/20 flex items-center justify-center mr-2">
-            <span className="text-sm font-bold">#{userRank.rank || '?'}</span>
-          </div>
+      <div className="mt-8">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
           <div>
-            <p className="font-medium">{getUserDisplayName()}</p>
-            <p className="text-xs text-muted-foreground">
-              {t('leaderboards.points', { count: Math.round(userRank.score) })}
-            </p>
+            <h2 className="text-2xl font-bold">{currentLeaderboard.name}</h2>
+            <p className="text-muted-foreground">{currentLeaderboard.description}</p>
           </div>
+          
+          <Select value={period} onValueChange={handlePeriodChange}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder={t('leaderboards.selectPeriod')} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="daily">{t('leaderboards.daily')}</SelectItem>
+              <SelectItem value="weekly">{t('leaderboards.weekly')}</SelectItem>
+              <SelectItem value="monthly">{t('leaderboards.monthly')}</SelectItem>
+              <SelectItem value="allTime">{t('leaderboards.allTime')}</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
+
+        {loading ? (
+          <div className="space-y-3">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="h-16 bg-navy/30 animate-pulse rounded-md" />
+            ))}
+          </div>
+        ) : filteredEntries.length > 0 ? (
+          <div className="space-y-1">
+            <div className="top-three flex flex-col md:flex-row gap-2 mb-6">
+              {filteredEntries.slice(0, 3).map((entry, index) => {
+                const position = index + 1;
+                return (
+                  <Card key={entry.id} className={`flex-1 ${position === 1 ? 'bg-amber-500/10' : position === 2 ? 'bg-slate-300/10' : 'bg-amber-700/10'}`}>
+                    <CardContent className="pt-6 flex items-center">
+                      <div className="p-2 rounded-full bg-navy/30 mr-4">
+                        {position === 1 ? (
+                          <Trophy className="h-8 w-8 text-amber-400" />
+                        ) : position === 2 ? (
+                          <MedalFirst className="h-8 w-8 text-slate-300" />
+                        ) : (
+                          <MedalSecond className="h-8 w-8 text-amber-700" />
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center">
+                          <Avatar className="h-8 w-8 mr-2">
+                            <AvatarFallback>{entry.player_name?.substring(0, 2) || '??'}</AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <div className="font-medium">{entry.player_name || 'Unknown Player'}</div>
+                            <div className="text-sm text-muted-foreground">
+                              {t('leaderboards.score')}: {entry.score}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+            
+            {filteredEntries.slice(3).map((entry) => (
+              <div 
+                key={entry.id} 
+                className={`flex items-center p-3 rounded-md ${
+                  entry.player_id === user?.id ? 'bg-emerald/10 border border-emerald/30' : 'bg-navy/20'
+                }`}
+              >
+                <div className="w-8 text-center font-medium mr-2">
+                  #{entry.rank}
+                </div>
+                <Avatar className="h-8 w-8 mr-4">
+                  <AvatarFallback>{entry.player_name?.substring(0, 2) || '??'}</AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                  <div className="font-medium">{entry.player_name || 'Unknown Player'}</div>
+                </div>
+                <div className="text-right">
+                  <div className="font-medium">{entry.score}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {t('leaderboards.points')}
+                  </div>
+                </div>
+              </div>
+            ))}
+            
+            {userEntry && userEntry.rank! > 10 && (
+              <>
+                <div className="my-2 text-center text-muted-foreground text-sm">
+                  • • •
+                </div>
+                
+                <div className="flex items-center p-3 rounded-md bg-emerald/10 border border-emerald/30">
+                  <div className="w-8 text-center font-medium mr-2">
+                    #{userEntry.rank}
+                  </div>
+                  <Avatar className="h-8 w-8 mr-4">
+                    <AvatarFallback>{userEntry.player_name?.substring(0, 2) || '??'}</AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1">
+                    <div className="font-medium">{userEntry.player_name || 'You'}</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-medium">{userEntry.score}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {t('leaderboards.points')}
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        ) : (
+          <div className="text-center py-12 border border-dashed rounded-md">
+            <Trophy className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+            <h3 className="text-xl font-medium mb-2">{t('leaderboards.noEntries')}</h3>
+            <p className="text-muted-foreground mb-4">{t('leaderboards.beTheFirst')}</p>
+            <Button variant="outline">{t('leaderboards.participate')}</Button>
+          </div>
+        )}
       </div>
     );
   };
-  
+
   return (
-    <div className="container py-8">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+    <div className="container py-6 max-w-5xl">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <div>
           <h1 className="text-3xl font-bold">{t('leaderboards.title')}</h1>
           <p className="text-muted-foreground">{t('leaderboards.description')}</p>
         </div>
       </div>
       
-      {loading && leaderboards.length === 0 ? (
-        <div className="space-y-4">
-          <div className="h-12 bg-navy/70 rounded-md animate-pulse"></div>
-          <div className="h-64 bg-navy/70 rounded-md animate-pulse"></div>
-        </div>
-      ) : (
-        <>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-            <div className="md:col-span-1">
-              <Card>
-                <CardHeader>
-                  <CardTitle>{t('leaderboards.categories')}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Tabs 
-                    orientation="vertical" 
-                    value={activeCategory} 
-                    onValueChange={setActiveCategory}
-                    className="space-y-1"
-                  >
-                    <TabsList className="flex flex-col h-auto space-y-1">
-                      <TabsTrigger value="all" className="justify-start">
-                        {t('all')}
-                      </TabsTrigger>
-                      {categories.map(category => (
-                        <TabsTrigger key={category} value={category} className="justify-start">
-                          {category}
-                        </TabsTrigger>
-                      ))}
-                    </TabsList>
-                  </Tabs>
-                  
-                  {renderUserRank()}
-                </CardContent>
-              </Card>
-            </div>
-            
-            <div className="md:col-span-3">
-              {filteredLeaderboards.length > 0 ? (
-                <Card>
-                  <CardHeader className="space-y-0 pb-2">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
-                      <div>
-                        <CardTitle>{t('leaderboards.rankings')}</CardTitle>
-                        <CardDescription>
-                          {currentLeaderboard?.description || t('leaderboards.competitionDesc')}
-                        </CardDescription>
-                      </div>
-                      
-                      {filteredLeaderboards.length > 1 && (
-                        <div className="w-full md:w-64">
-                          <Select 
-                            value={selectedLeaderboard || undefined}
-                            onValueChange={(value) => setSelectedLeaderboard(value)}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder={t('leaderboards.selectLeaderboard')} />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {filteredLeaderboards.map(leaderboard => (
-                                <SelectItem key={leaderboard.id} value={leaderboard.id}>
-                                  {leaderboard.name} - {leaderboard.period}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      )}
-                    </div>
-                    
-                    {currentLeaderboard?.prize_pool && currentLeaderboard.prize_pool > 0 && (
-                      <div className="mt-2 flex items-center text-sm">
-                        <Trophy className="h-4 w-4 mr-1 text-emerald" />
-                        <span>
-                          {t('leaderboards.prizePool')}: {currentLeaderboard.prize_pool} USDT
-                        </span>
-                      </div>
-                    )}
-                  </CardHeader>
-                  
-                  <CardContent>
-                    {entries.length > 0 ? (
-                      <div className="overflow-x-auto">
-                        <Table>
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead className="w-16">{t('leaderboards.rank')}</TableHead>
-                              <TableHead>{t('player')}</TableHead>
-                              <TableHead className="text-right">{t('leaderboards.score')}</TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {entries.map(entry => (
-                              <TableRow key={entry.id}>
-                                <TableCell className="font-medium">
-                                  <div className="flex items-center">
-                                    <span className="w-6 text-right">{entry.rank}</span>
-                                    <div className="ml-2">
-                                      {getMedalComponent(entry.rank || 0)}
-                                    </div>
-                                  </div>
-                                </TableCell>
-                                <TableCell>
-                                  <div className="flex items-center">
-                                    <Avatar className="h-8 w-8 mr-2">
-                                      {entry.player_avatar ? (
-                                        <AvatarImage src={entry.player_avatar} alt={entry.player_name || ''} />
-                                      ) : null}
-                                      <AvatarFallback>
-                                        {getInitials(entry.player_name || '')}
-                                      </AvatarFallback>
-                                    </Avatar>
-                                    <span className={entry.player_id === user?.id ? 'font-bold text-emerald' : ''}>
-                                      {entry.player_name || 'Unknown Player'}
-                                      {entry.player_id === user?.id && ` (${t('you')})`}
-                                    </span>
-                                  </div>
-                                </TableCell>
-                                <TableCell className="text-right font-medium">
-                                  {Math.round(entry.score).toLocaleString()}
-                                </TableCell>
-                              </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
-                      </div>
-                    ) : (
-                      <div className="text-center py-8">
-                        <Award className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-                        <p className="text-lg font-medium">{t('leaderboards.noEntriesYet')}</p>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          {t('leaderboards.playToCompete')}
-                        </p>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              ) : (
-                <div className="flex flex-col items-center justify-center h-64 border rounded-lg bg-muted/10 p-6">
-                  <Trophy className="h-12 w-12 text-muted-foreground mb-4" />
-                  <h3 className="text-xl font-medium mb-2">{t('leaderboards.noLeaderboardsFound')}</h3>
-                  <p className="text-center text-muted-foreground">
-                    {t('leaderboards.checkBackSoon')}
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-        </>
-      )}
+      {renderLeaderboardTabs()}
+      {renderLeaderboardEntries()}
     </div>
   );
 }
+
+export default LeaderboardsPage;
