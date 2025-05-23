@@ -1,33 +1,53 @@
 
-import { TransactionType } from './types';
-
-// Helper functions for fraud prevention
-export async function checkDepositSafety(amount: number): Promise<{safe: boolean, reason?: string}> {
-  // Implement basic deposit safety checks
+// Simple utility to check if a deposit transaction is safe
+export const checkDepositSafety = async (amount: number) => {
+  // In a real app, this would include checks for:
+  // 1. Rate limiting (preventing spam)
+  // 2. AML checks
+  // 3. Unusual activity patterns
+  // 4. Verification of user KYC status for large amounts
+  
   if (amount <= 0) {
-    return { safe: false, reason: 'Invalid deposit amount' };
+    return { 
+      safe: false, 
+      reason: 'Amount must be greater than 0' 
+    };
   }
   
-  if (amount > 10000) {
-    return { safe: false, reason: 'Deposit amount exceeds maximum limit' };
+  if (amount > 100000) {
+    return { 
+      safe: false, 
+      reason: 'Amount exceeds maximum deposit limit' 
+    };
   }
   
   return { safe: true };
-}
+};
 
-export async function checkWithdrawSafety(address: string, amount: number): Promise<{safe: boolean, reason?: string}> {
-  // Validate TRC20 address for withdrawals
-  if (!/^T[A-Za-z0-9]{33}$/.test(address)) {
-    return { safe: false, reason: 'Invalid TRC20 address' };
+// Check if a withdrawal transaction is safe
+export const checkWithdrawSafety = async (address: string, amount: number) => {
+  // In a real app, this would include checks for:
+  // 1. Address validity and checksums
+  // 2. Smart contract safety (not a malicious contract)
+  // 3. Rate limiting and withdrawal patterns
+  // 4. Balance verification
+  // 5. Whitelist/blacklist checking
+  
+  if (!address || !address.startsWith('0x') || address.length !== 42) {
+    return { 
+      safe: false, 
+      reason: 'Invalid Ethereum address' 
+    };
   }
   
   if (amount <= 0) {
-    return { safe: false, reason: 'Invalid withdrawal amount' };
+    return { 
+      safe: false, 
+      reason: 'Amount must be greater than 0' 
+    };
   }
   
-  if (amount > 10000) {
-    return { safe: false, reason: 'Withdrawal amount exceeds maximum limit' };
-  }
+  // Add more sophisticated checks here
   
   return { safe: true };
-}
+};
