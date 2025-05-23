@@ -10,6 +10,7 @@ import { Tournament } from '@/types/tournaments';
 import { useTournamentRegistration } from '@/hooks/useTournamentRegistration';
 import { useTranslation } from '@/hooks/useTranslation';
 import { TournamentRegistrationsList } from './TournamentRegistrationsList';
+import { supabase } from '@/integrations/supabase/client';
 
 interface TournamentRegistrationProps {
   tournament: Tournament;
@@ -204,10 +205,10 @@ export function TournamentRegistration({ tournament, onRegistrationChange }: Tou
         {registrationStatus === 'open' && (
           registered ? (
             <Button 
-              variant="destructive" 
+              variant="outline"
               onClick={handleUnregister} 
               disabled={loading}
-              className="w-full"
+              className="w-full text-red-500 hover:bg-red-500/10"
             >
               {t('tournaments.unregister')}
             </Button>

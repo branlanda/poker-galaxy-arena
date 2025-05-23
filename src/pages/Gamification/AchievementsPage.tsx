@@ -37,7 +37,7 @@ export function AchievementsPage() {
           .select(`
             *,
             achievement:achievement_id (
-              id, name, description, icon_url, category, points
+              id, name, description, icon_url, category, points, requirements, created_at
             )
           `)
           .eq('player_id', user.id);
@@ -60,8 +60,9 @@ export function AchievementsPage() {
           throw levelError;
         }
         
-        setAchievements(achievementsData || []);
-        setPlayerLevel(levelData || null);
+        // Type assertion to ensure compatibility
+        setAchievements(achievementsData as PlayerAchievement[] || []);
+        setPlayerLevel(levelData as PlayerLevel | null || null);
       } catch (err) {
         console.error('Error fetching achievements:', err);
         toast({

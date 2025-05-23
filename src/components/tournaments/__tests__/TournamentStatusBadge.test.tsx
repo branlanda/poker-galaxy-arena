@@ -5,7 +5,7 @@ import { TournamentStatusBadge } from '../TournamentStatusBadge';
 import { TournamentStatus } from '@/types/tournaments';
 
 // Mock the useTranslation hook
-jest.mock('@/hooks/useTranslation', () => ({
+vi.mock('@/hooks/useTranslation', () => ({
   useTranslation: () => ({
     t: (key: string) => {
       const translations: Record<string, string> = {

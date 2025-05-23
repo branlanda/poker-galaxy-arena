@@ -17,6 +17,7 @@ interface ChatMessage {
   player_id: string;
   message: string;
   created_at: string;
+  channel_id: string;
   player_name?: string;
   player_avatar?: string;
 }
@@ -58,11 +59,12 @@ export function GlobalChat({
     const fetchMessages = async () => {
       setLoading(true);
       try {
+        // Use type assertion to handle the table not being in the types yet
         const { data, error } = await supabase
-          .from('chat_messages')
+          .from('chat_messages' as any)
           .select(`
             *,
-            profiles:player_id (
+            profiles (
               alias,
               avatar_url
             )
@@ -75,14 +77,14 @@ export function GlobalChat({
         
         // Format and reverse to show newest at the bottom
         const formattedMessages = data
-          .map(msg => ({
+          .map((msg: any) => ({
             ...msg,
             player_name: msg.profiles?.alias,
             player_avatar: msg.profiles?.avatar_url
           }))
           .reverse();
           
-        setMessages(formattedMessages);
+        setMessages(formattedMessages as ChatMessage[]);
       } catch (err) {
         console.error('Error fetching messages:', err);
       } finally {
@@ -140,7 +142,7 @@ export function GlobalChat({
     
     try {
       const { error } = await supabase
-        .from('chat_messages')
+        .from('chat_messages' as any)
         .insert({
           player_id: user.id,
           message: message.trim(),

@@ -4,12 +4,12 @@ import { render, screen } from '@/test/utils';
 import DepositConnectionPrompt from '../DepositConnectionPrompt';
 
 // Mock the wallet connect component
-jest.mock('@/components/wallet/WalletConnect', () => ({
+vi.mock('@/components/wallet/WalletConnect', () => ({
   WalletConnect: () => <button data-testid="wallet-connect">Connect Wallet</button>
 }));
 
 // Mock the useTranslation hook
-jest.mock('@/hooks/useTranslation', () => ({
+vi.mock('@/hooks/useTranslation', () => ({
   useTranslation: () => ({
     t: (key: string, defaultValue: string) => defaultValue || key
   })

@@ -20,7 +20,7 @@ const DepositConnectionPrompt: React.FC = () => {
       
       <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
         <WalletConnect />
-        <Button variant="outline" asChild>
+        <Button variant="outline">
           <a href="/funds" className="inline-flex items-center">
             {t('funds.learnMore', 'Aprender más')}
           </a>
