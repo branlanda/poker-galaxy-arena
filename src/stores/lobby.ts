@@ -6,7 +6,7 @@ interface LobbyState {
   tables: LobbyTable[];
   loading: boolean;
   error: string | null;
-  setTables: (tables: LobbyTable[]) => void;
+  setTables: (tables: LobbyTable[] | ((prevTables: LobbyTable[]) => LobbyTable[])) => void;
   updateTable: (table: LobbyTable) => void;
   removeTable: (tableId: string) => void;
 }
@@ -16,7 +16,9 @@ export const useLobby = create<LobbyState>((set) => ({
   loading: false,
   error: null,
   
-  setTables: (tables) => set({ tables }),
+  setTables: (tables) => set((state) => ({
+    tables: typeof tables === 'function' ? tables(state.tables) : tables
+  })),
   
   updateTable: (updatedTable) => set((state) => ({
     tables: state.tables.map(table => 

@@ -31,7 +31,7 @@ export const useWalletStore = create<WalletState & WalletActions>((set, get) => 
   loadTransactions: async () => await loadTransactions(set, get),
   depositFunds: async (amount) => await depositFunds(amount, set, get),
   withdrawFunds: async (address, amount) => await withdrawFunds(address, amount, set, get),
-  verifyTransactionHash
+  verifyTransactionHash: async (txHash) => await verifyTransactionHash(txHash, set, get)
 }));
 
 // Re-export types for convenience
