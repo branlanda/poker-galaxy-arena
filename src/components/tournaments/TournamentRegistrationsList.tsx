@@ -104,7 +104,7 @@ export function TournamentRegistrationsList({ registrations }: TournamentRegistr
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
                       <span className="inline-flex items-center rounded-full bg-green-100/10 px-2 py-1 text-xs font-medium text-green-500 ring-1 ring-inset ring-green-500/20">
-                        {reg.status || 'Registered'}
+                        {reg.is_active ? 'Active' : 'Inactive'}
                       </span>
                     </TableCell>
                   </TableRow>

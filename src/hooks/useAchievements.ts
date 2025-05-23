@@ -93,7 +93,7 @@ export function useAchievements() {
     try {
       // Check if achievement is completed and unclaimed
       const achievement = playerAchievements.find(
-        a => a.achievement_id === achievementId && a.completed && !a.achievement?.reward_claimed
+        a => a.achievement_id === achievementId && a.completed && !a.completed_at // Using completed_at to check if reward is claimed
       );
       
       if (!achievement) {
