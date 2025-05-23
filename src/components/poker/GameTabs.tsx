@@ -6,6 +6,7 @@ import { PlayerList } from './PlayerList';
 import { HandHistory } from './HandHistory';
 import { PlayerAtTable } from '@/types/lobby';
 import { GameState } from '@/types/game';
+import { Badge } from '@/components/ui/badge';
 
 interface GameTabsProps {
   tableId: string;
@@ -22,6 +23,9 @@ export function GameTabs({ tableId, players, gameState, userId }: GameTabsProps)
       <TabsList className="w-full grid grid-cols-3 h-12">
         <TabsTrigger value="chat" className="text-sm">
           Chat
+          <Badge variant="outline" className="ml-2 bg-primary/20 h-5 w-5 p-0 flex items-center justify-center rounded-full text-xs">
+            {/* This would show unread count if implemented */}
+          </Badge>
         </TabsTrigger>
         <TabsTrigger value="players" className="text-sm">
           Players ({players.length})

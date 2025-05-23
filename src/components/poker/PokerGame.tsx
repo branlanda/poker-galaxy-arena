@@ -15,9 +15,19 @@ import { toast } from '@/hooks/use-toast';
 
 interface PokerGameProps {
   tableId: string;
+  isPlayerTurn: boolean;
+  isPlayerSeated: boolean;
+  onAction: (action: PlayerAction, amount?: number) => void;
+  onSitDown: (seatNumber: number, buyIn?: number) => void;
 }
 
-export function PokerGame({ tableId }: PokerGameProps) {
+export function PokerGame({ 
+  tableId,
+  isPlayerTurn,
+  isPlayerSeated,
+  onAction,
+  onSitDown
+}: PokerGameProps) {
   const {
     game,
     players,
@@ -26,15 +36,10 @@ export function PokerGame({ tableId }: PokerGameProps) {
     error,
     isJoining,
     playerHandVisible,
-    isPlayerSeated,
-    isPlayerTurn,
-    playerSeatIndex,
     playerState,
     userId,
-    handleSitDown,
-    handleAction,
+    togglePlayerHandVisibility,
     handleLeaveTable,
-    togglePlayerHandVisibility
   } = usePokerGame(tableId);
 
   const [selectedSeat, setSelectedSeat] = useState<number | null>(null);
@@ -86,7 +91,7 @@ export function PokerGame({ tableId }: PokerGameProps) {
 
   const handleConfirmBuyIn = async (amount: number) => {
     if (selectedSeat !== null) {
-      await handleSitDown(selectedSeat, amount);
+      await onSitDown(selectedSeat, amount);
       setBuyInDialogOpen(false);
       setSelectedSeat(null);
     }
@@ -189,7 +194,7 @@ export function PokerGame({ tableId }: PokerGameProps) {
           <ActionControls
             playerState={playerState}
             currentBet={game.currentBet}
-            onAction={handleAction}
+            onAction={onAction}
           />
         </div>
       )}

@@ -1,6 +1,7 @@
 
 import { createBrowserRouter } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
+import { AuthLayout } from "@/components/layout/AuthLayout";
 import GameRoom from "@/pages/Game/GameRoom";
 import { TournamentLobby } from "@/pages/Tournaments";
 import LobbyPage from "@/pages/Lobby/LobbyPage";
@@ -55,20 +56,32 @@ const routes = createBrowserRouter([
     element: <GameRoom />,
   },
   {
+    path: "/game-room/:tableId",
+    element: <GameRoom />,
+  },
+  {
     path: "/auth/login",
-    element: <Login />,
+    element: <AuthLayout>
+      <Login />
+    </AuthLayout>,
   },
   {
     path: "/auth/register",
-    element: <SignUp />,
+    element: <AuthLayout>
+      <SignUp />
+    </AuthLayout>,
   },
   {
     path: "/auth/forgot-password",
-    element: <ForgotPassword />,
+    element: <AuthLayout>
+      <ForgotPassword />
+    </AuthLayout>,
   },
   {
     path: "/auth/reset-password",
-    element: <ResetPassword />,
+    element: <AuthLayout>
+      <ResetPassword />
+    </AuthLayout>,
   },
   {
     path: "*",

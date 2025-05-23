@@ -1,16 +1,23 @@
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from '@/hooks/use-toast';
 import { LobbyTable, PlayerAtTable } from '@/types/lobby';
+import { PlayerAction } from '@/types/poker';
 import { useAuth } from '@/stores/auth';
 import { useGameStore } from '@/stores/game';
+
+// Timeout configuration (30 seconds for each turn)
+const TURN_TIMEOUT_MS = 30000;
 
 export function useGameRoom(tableId: string | undefined) {
   const [table, setTable] = useState<LobbyTable | null>(null);
   const [players, setPlayers] = useState<PlayerAtTable[]>([]);
   const [loading, setLoading] = useState(true);
+  const [turnTimeRemaining, setTurnTimeRemaining] = useState(TURN_TIMEOUT_MS);
+  const [turnStartTime, setTurnStartTime] = useState<number | null>(null);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -23,18 +30,55 @@ export function useGameRoom(tableId: string | undefined) {
     initializeGame,
     disconnectGame,
     takeSeat,
-    leaveSeat
+    leaveSeat,
+    performAction
   } = useGameStore();
   
   // Find player's seat if they are at the table
-  const playerSeatIndex = user && gameState?.seats.findIndex(
+  const playerSeatIndex = user && gameState?.seats?.findIndex(
     seat => seat !== null && seat.playerId === user.id
-  );
+  ) ?? -1;
   
-  const isPlayerSeated = playerSeatIndex !== undefined && playerSeatIndex !== -1;
+  const isPlayerSeated = playerSeatIndex !== -1;
   
   // Is it the player's turn
-  const isPlayerTurn = user && gameState?.activePlayerId === user.id;
+  const isPlayerTurn = user?.id && gameState?.activePlayerId === user.id;
+  
+  // Reset turn timer when active player changes
+  useEffect(() => {
+    if (isPlayerTurn) {
+      setTurnStartTime(Date.now());
+      setTurnTimeRemaining(TURN_TIMEOUT_MS);
+      
+      // Clear any existing timer
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+      
+      // Start the countdown timer
+      timerRef.current = setInterval(() => {
+        const elapsed = Date.now() - (turnStartTime || Date.now());
+        const remaining = Math.max(0, TURN_TIMEOUT_MS - elapsed);
+        setTurnTimeRemaining(remaining);
+        
+        if (remaining <= 0 && timerRef.current) {
+          clearInterval(timerRef.current);
+        }
+      }, 100);
+    } else {
+      // Not player's turn, clear timer
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    }
+    
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, [isPlayerTurn, turnStartTime]);
   
   // Function to fetch all necessary data
   const fetchGameData = useCallback(async () => {
@@ -56,7 +100,7 @@ export function useGameRoom(tableId: string | undefined) {
           description: 'Table not found',
           variant: 'destructive',
         });
-        navigate('/lobby');
+        navigate('/tables');
         return;
       }
       
@@ -103,6 +147,16 @@ export function useGameRoom(tableId: string | undefined) {
         }, 
         (payload) => {
           setTable(payload.new as LobbyTable);
+          
+          // Check if table was closed
+          if (payload.new.status === 'CLOSED') {
+            toast({
+              title: 'Table Closed',
+              description: 'This table has been closed',
+              variant: 'destructive',
+            });
+            navigate('/tables');
+          }
         }
       )
       .subscribe();
@@ -119,6 +173,15 @@ export function useGameRoom(tableId: string | undefined) {
         (payload) => {
           if (payload.eventType === 'INSERT') {
             setPlayers(current => [...current, payload.new as PlayerAtTable]);
+            
+            // Notify that a new player joined
+            if (payload.new.player_id !== user.id) {
+              toast({
+                title: 'Player Joined',
+                description: `A new player has joined the table`,
+                variant: 'default',
+              });
+            }
           } 
           else if (payload.eventType === 'UPDATE') {
             setPlayers(current => 
@@ -131,6 +194,15 @@ export function useGameRoom(tableId: string | undefined) {
             setPlayers(current => 
               current.filter(player => player.id !== payload.old.id)
             );
+            
+            // Notify that a player left
+            if (payload.old.player_id !== user.id) {
+              toast({
+                title: 'Player Left',
+                description: `A player has left the table`,
+                variant: 'default',
+              });
+            }
           }
         }
       )
@@ -146,28 +218,36 @@ export function useGameRoom(tableId: string | undefined) {
     });
 
     // Track online users
-    if (user) {
-      gamePresenceChannel
-        .on('presence', { event: 'sync' }, () => {
-          const state = gamePresenceChannel.presenceState();
-          console.log('Online users:', state);
-        })
-        .on('presence', { event: 'join' }, ({ key, newPresences }) => {
+    gamePresenceChannel
+      .on('presence', { event: 'sync' }, () => {
+        const state = gamePresenceChannel.presenceState();
+        console.log('Online users:', state);
+      })
+      .on('presence', { event: 'join' }, ({ key, newPresences }) => {
+        if (key !== user.id) {
           toast({
             title: 'Player joined',
             description: `Player ${newPresences[0]?.user_alias || key} joined the table`,
           });
-        })
-        .subscribe(async (status) => {
-          if (status === 'SUBSCRIBED') {
-            await gamePresenceChannel.track({
-              user_id: user.id,
-              user_alias: user.alias || user.email || 'Anonymous',
-              online_at: new Date().toISOString(),
-            });
-          }
-        });
-    }
+        }
+      })
+      .on('presence', { event: 'leave' }, ({ key }) => {
+        if (key !== user.id) {
+          toast({
+            title: 'Player disconnected',
+            description: `A player disconnected from the table`,
+          });
+        }
+      })
+      .subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          await gamePresenceChannel.track({
+            user_id: user.id,
+            user_alias: user.email || 'Anonymous',
+            online_at: new Date().toISOString(),
+          });
+        }
+      });
       
     return () => {
       supabase.removeChannel(tableChannel);
@@ -175,14 +255,14 @@ export function useGameRoom(tableId: string | undefined) {
       supabase.removeChannel(gamePresenceChannel);
       disconnectGame();
     };
-  }, [tableId, user, disconnectGame, fetchGameData]);
+  }, [tableId, user, disconnectGame, fetchGameData, navigate]);
   
-  const handleSitDown = async (seatNumber: number) => {
+  const handleSitDown = async (seatNumber: number, buyIn?: number) => {
     if (!user || !tableId || !table) return;
     
     try {
-      // Default buy-in at minimum
-      const buyIn = table.min_buy_in;
+      // Default buy-in at minimum if not provided
+      const amount = buyIn || table.min_buy_in;
       
       // Create player at table entry
       const { error } = await supabase
@@ -191,14 +271,14 @@ export function useGameRoom(tableId: string | undefined) {
           player_id: user.id,
           table_id: tableId,
           seat_number: seatNumber,
-          stack: buyIn,
+          stack: amount,
           status: 'SITTING'
         }, { onConflict: 'player_id, table_id' });
         
       if (error) throw error;
       
       // Update the game state
-      await takeSeat(seatNumber, user.id, user.alias || user.email || 'Player', buyIn);
+      await takeSeat(seatNumber, user.id, user.email || 'Player', amount);
       
       // Broadcast to all players that someone took a seat
       await supabase.channel(`game:${tableId}`).send({
@@ -207,7 +287,7 @@ export function useGameRoom(tableId: string | undefined) {
         payload: {
           seatNumber,
           playerId: user.id,
-          playerName: user.alias || user.email || 'Player',
+          playerName: user.email || 'Player',
         },
       });
       
@@ -219,6 +299,29 @@ export function useGameRoom(tableId: string | undefined) {
       toast({
         title: 'Error',
         description: `Failed to take seat: ${error.message}`,
+        variant: 'destructive',
+      });
+    }
+  };
+  
+  const handleAction = async (action: PlayerAction, amount?: number) => {
+    if (!user || !isPlayerTurn) return;
+    
+    try {
+      await performAction(user.id, action, amount);
+      
+      // Reset turn timer
+      setTurnTimeRemaining(TURN_TIMEOUT_MS);
+      setTurnStartTime(null);
+      
+      toast({
+        title: 'Action performed',
+        description: `You ${action.toLowerCase()}${amount ? ` ${amount}` : ''}`,
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: `Failed to perform action: ${error.message}`,
         variant: 'destructive',
       });
     }
@@ -248,7 +351,7 @@ export function useGameRoom(tableId: string | undefined) {
         event: 'player_left',
         payload: {
           playerId: user.id,
-          playerName: user.alias || user.email || 'Player',
+          playerName: user.email || 'Player',
         },
       });
       
@@ -257,7 +360,7 @@ export function useGameRoom(tableId: string | undefined) {
         description: 'You have left the table',
       });
       
-      navigate('/lobby');
+      navigate('/tables');
     } catch (error: any) {
       toast({
         title: 'Error',
@@ -277,8 +380,10 @@ export function useGameRoom(tableId: string | undefined) {
     isPlayerSeated,
     isPlayerTurn,
     playerSeatIndex,
+    turnTimeRemaining,
     userId: user?.id,
     handleSitDown,
+    handleAction,
     leaveTable
   };
 }
