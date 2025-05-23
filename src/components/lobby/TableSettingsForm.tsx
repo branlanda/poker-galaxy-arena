@@ -78,18 +78,18 @@ export function TableSettingsForm({
   return (
     <div className="space-y-4 py-2 pb-4">
       <div className="space-y-2">
-        <Label htmlFor="name">{t('tableName', 'Nombre de la mesa')}</Label>
+        <Label htmlFor="name">{t('tableName')}</Label>
         <Input
           id="name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder={t('enterTableName', 'Ingresa un nombre para tu mesa')}
+          placeholder={t('enterTableName')}
         />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="smallBlind">{t('smallBlind', 'Small Blind')}</Label>
+          <Label htmlFor="smallBlind">{t('smallBlind')}</Label>
           <div className="relative">
             <span className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
             <Input
@@ -104,7 +104,7 @@ export function TableSettingsForm({
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="bigBlind">{t('bigBlind', 'Big Blind')}</Label>
+          <Label htmlFor="bigBlind">{t('bigBlind')}</Label>
           <div className="relative">
             <span className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
             <Input
@@ -121,7 +121,7 @@ export function TableSettingsForm({
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="minBuyIn">{t('minBuyIn', 'Buy-in mínimo')}</Label>
+          <Label htmlFor="minBuyIn">{t('minBuyIn')}</Label>
           <div className="relative">
             <span className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
             <Input
@@ -134,14 +134,14 @@ export function TableSettingsForm({
             />
           </div>
           <p className="text-xs text-gray-500">
-            {t('suggestedMinBuyIn', 'Sugerido: 20x Big Blind ({value})', {
+            {t('suggestedMinBuyIn', {
               value: bigBlind * 20
             })}
           </p>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="maxBuyIn">{t('maxBuyIn', 'Buy-in máximo')}</Label>
+          <Label htmlFor="maxBuyIn">{t('maxBuyIn')}</Label>
           <div className="relative">
             <span className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
             <Input
@@ -154,7 +154,7 @@ export function TableSettingsForm({
             />
           </div>
           <p className="text-xs text-gray-500">
-            {t('suggestedMaxBuyIn', 'Sugerido: 100x Big Blind ({value})', {
+            {t('suggestedMaxBuyIn', {
               value: bigBlind * 100
             })}
           </p>
@@ -163,13 +163,13 @@ export function TableSettingsForm({
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="maxPlayers">{t('maxPlayers', 'Jugadores máximos')}</Label>
+          <Label htmlFor="maxPlayers">{t('maxPlayers')}</Label>
           <Select
             value={String(maxPlayers)}
             onValueChange={(value) => setMaxPlayers(Number(value))}
           >
             <SelectTrigger id="maxPlayers">
-              <SelectValue placeholder={t('selectMaxPlayers', 'Selecciona el máximo de jugadores')} />
+              <SelectValue placeholder={t('selectMaxPlayers')} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="2">2</SelectItem>
@@ -180,17 +180,17 @@ export function TableSettingsForm({
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="tableType">{t('tableType', 'Tipo de mesa')}</Label>
+          <Label htmlFor="tableType">{t('tableType')}</Label>
           <Select
             value={tableType}
             onValueChange={(value) => setTableType(value as TableType)}
           >
             <SelectTrigger id="tableType">
-              <SelectValue placeholder={t('selectTableType', 'Selecciona el tipo de mesa')} />
+              <SelectValue placeholder={t('selectTableType')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="CASH">{t('cashGame', 'Partida de Efectivo')}</SelectItem>
-              <SelectItem value="TOURNAMENT">{t('tournament', 'Torneo')}</SelectItem>
+              <SelectItem value="CASH">{t('cashGame')}</SelectItem>
+              <SelectItem value="TOURNAMENT">{t('tournament')}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -198,21 +198,21 @@ export function TableSettingsForm({
 
       <div className="flex items-center justify-between">
         <div className="space-y-0.5">
-          <Label>{t('privateTable', 'Mesa privada')}</Label>
-          <p className="text-xs text-gray-500">{t('privateTableDescription', 'Requiere contraseña para unirse')}</p>
+          <Label>{t('privateTable')}</Label>
+          <p className="text-xs text-gray-500">{t('privateTableDescription')}</p>
         </div>
         <Switch checked={isPrivate} onCheckedChange={setIsPrivate} />
       </div>
 
       {isPrivate && (
         <div className="space-y-2">
-          <Label htmlFor="password">{t('tablePassword', 'Contraseña de la mesa')}</Label>
+          <Label htmlFor="password">{t('tablePassword')}</Label>
           <Input
             id="password"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder={t('enterTablePassword', 'Ingresa una contraseña')}
+            placeholder={t('enterTablePassword')}
           />
         </div>
       )}

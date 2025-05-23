@@ -1,11 +1,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/stores/auth';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from '@/hooks/useTranslation';
-import { Tournament } from '@/types/tournaments';
+import { Tournament, BlindLevel } from '@/types/tournaments';
 import { Button } from '@/components/ui/Button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -40,21 +40,24 @@ export default function TournamentDetail() {
           
         if (error) throw error;
         
-        // Parse blind structure and payout structure
+        // Parse and convert blind structure and payout structure
         const blindStructure = typeof data.blind_structure === 'string' 
           ? JSON.parse(data.blind_structure) 
-          : data.blind_structure;
+          : (data.blind_structure || []);
           
         const payoutStructure = typeof data.payout_structure === 'string'
           ? JSON.parse(data.payout_structure)
-          : data.payout_structure;
+          : (data.payout_structure || []);
         
-        setTournament({
+        // Create properly typed Tournament object
+        const tournamentData: Tournament = {
           ...data,
-          blind_structure: blindStructure,
-          payout_structure: payoutStructure,
+          blind_structure: blindStructure as BlindLevel[],
+          payout_structure: payoutStructure as any[],
           registered_players_count: data.tournament_registrations?.[0]?.count || 0
-        });
+        };
+        
+        setTournament(tournamentData);
       } catch (err) {
         console.error('Error fetching tournament:', err);
         toast({
@@ -78,20 +81,27 @@ export default function TournamentDetail() {
         (payload) => {
           if (payload.eventType === 'UPDATE' || payload.eventType === 'INSERT') {
             const updatedData = payload.new as any;
+            
+            // Parse and convert structures for type safety
             const blindStructure = typeof updatedData.blind_structure === 'string' 
               ? JSON.parse(updatedData.blind_structure) 
-              : updatedData.blind_structure;
+              : (updatedData.blind_structure || []);
               
             const payoutStructure = typeof updatedData.payout_structure === 'string'
               ? JSON.parse(updatedData.payout_structure)
-              : updatedData.payout_structure;
+              : (updatedData.payout_structure || []);
             
-            setTournament(prev => prev ? {
-              ...prev,
-              ...updatedData,
-              blind_structure: blindStructure,
-              payout_structure: payoutStructure
-            } : null);
+            // Update tournament with proper typing
+            setTournament(prev => {
+              if (!prev) return null;
+              
+              return {
+                ...prev,
+                ...updatedData,
+                blind_structure: blindStructure as BlindLevel[],
+                payout_structure: payoutStructure as any[]
+              };
+            });
           } else if (payload.eventType === 'DELETE') {
             toast({
               title: t('tournaments.deleted'),

@@ -1,7 +1,6 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/stores/auth';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Leaderboard, LeaderboardEntry } from '@/types/gamification';
@@ -66,7 +65,7 @@ export function LeaderboardsPage() {
           .from('leaderboard_entries')
           .select(`
             *,
-            players:player_id (
+            players (
               alias,
               avatar_url
             )
@@ -76,11 +75,15 @@ export function LeaderboardsPage() {
           
         if (error) throw error;
         
-        const formattedEntries = data.map(entry => ({
-          ...entry,
-          player_name: entry.players?.alias,
-          player_avatar: entry.players?.avatar_url
-        }));
+        const formattedEntries = data.map(entry => {
+          // Safely handle the join results
+          const playerData = entry.players || {};
+          return {
+            ...entry,
+            player_name: playerData.alias || 'Unknown Player',
+            player_avatar: playerData.avatar_url || null
+          };
+        });
         
         setEntries(formattedEntries);
         
@@ -131,6 +134,35 @@ export function LeaderboardsPage() {
       .substring(0, 2);
   };
   
+  // Replace the user_metadata usage
+  const getUserDisplayName = () => {
+    if (!user) return 'You';
+    // Use user.user_metadata if it exists, otherwise use a default or email
+    return user.email?.split('@')[0] || 'Player';
+  };
+  
+  // Modify the user rank display to use our new helper function
+  const renderUserRank = () => {
+    if (!userRank) return null;
+    
+    return (
+      <div className="mt-6 p-3 border rounded bg-muted/30">
+        <p className="text-sm font-medium mb-2">{t('leaderboards.yourRank')}</p>
+        <div className="flex items-center">
+          <div className="w-8 h-8 rounded-full bg-emerald/20 flex items-center justify-center mr-2">
+            <span className="text-sm font-bold">#{userRank.rank || '?'}</span>
+          </div>
+          <div>
+            <p className="font-medium">{getUserDisplayName()}</p>
+            <p className="text-xs text-muted-foreground">
+              {t('leaderboards.points', { count: Math.round(userRank.score) })}
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  };
+  
   return (
     <div className="container py-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
@@ -172,22 +204,7 @@ export function LeaderboardsPage() {
                     </TabsList>
                   </Tabs>
                   
-                  {userRank && (
-                    <div className="mt-6 p-3 border rounded bg-muted/30">
-                      <p className="text-sm font-medium mb-2">{t('leaderboards.yourRank')}</p>
-                      <div className="flex items-center">
-                        <div className="w-8 h-8 rounded-full bg-emerald/20 flex items-center justify-center mr-2">
-                          <span className="text-sm font-bold">#{userRank.rank || '?'}</span>
-                        </div>
-                        <div>
-                          <p className="font-medium">{user?.user_metadata?.name || 'You'}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {t('leaderboards.points', { count: Math.round(userRank.score) })}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
+                  {renderUserRank()}
                 </CardContent>
               </Card>
             </div>

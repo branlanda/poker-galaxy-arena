@@ -35,7 +35,8 @@ export function GameChat({ tableId, userId }: GameChatProps) {
           filter: `table_id=eq.${tableId}`
         },
         (payload) => {
-          setMessages((prev) => [...prev, payload.new as RoomMessageType]);
+          const newMessage = payload.new as RoomMessageType;
+          setMessages((prev) => [...prev, newMessage]);
         }
       )
       .subscribe();
@@ -77,7 +78,7 @@ export function GameChat({ tableId, userId }: GameChatProps) {
     
     setIsLoading(true);
     try {
-      const playerName = (user as any).user_metadata?.name || user.email || 'Player';
+      const playerName = user.email?.split('@')[0] || 'Player';
       
       const { error } = await supabase
         .rpc('insert_chat_message', {

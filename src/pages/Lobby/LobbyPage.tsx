@@ -23,6 +23,11 @@ export default function LobbyPage() {
     sortBy: 'activity'
   });
   
+  // Handler for partial filter updates
+  const handleFilterChange = (partialFilters: Partial<TableFilters>) => {
+    setFilters(current => ({ ...current, ...partialFilters }));
+  };
+  
   const { 
     tables, 
     loading, 
@@ -112,7 +117,7 @@ export default function LobbyPage() {
       <motion.div variants={itemAnimation} className="mt-4">
         <LobbyFilters
           filters={filters}
-          onFilterChange={setFilters}
+          onFilterChange={handleFilterChange}
         />
       </motion.div>
       
@@ -156,7 +161,7 @@ export default function LobbyPage() {
           transition={{ delay: 1, duration: 0.5 }}
         >
           <div className="bg-navy/80 backdrop-blur-sm text-white px-4 py-2 rounded-full shadow-lg text-sm border border-emerald/20">
-            {t('lobby.swipeToNavigate', 'Desliza para navegar')} ↔️
+            {t('lobby.swipeToNavigate')} ↔️
           </div>
         </motion.div>
       )}

@@ -1,13 +1,13 @@
-
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/stores/auth';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from '@/hooks/useTranslation';
 import { 
   Achievement, 
   PlayerAchievement, 
-  PlayerLevel
+  PlayerLevel,
+  LevelDefinition
 } from '@/types/gamification';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -62,7 +62,22 @@ export function AchievementsPage() {
         
         // Type assertion to ensure compatibility
         setAchievements(achievementsData as PlayerAchievement[] || []);
-        setPlayerLevel(levelData as PlayerLevel | null || null);
+        
+        // Handle level data with type safety
+        if (levelData) {
+          const levelDefinition = levelData.level_definition as unknown as LevelDefinition | null;
+          
+          const formattedLevelData: PlayerLevel = {
+            ...levelData,
+            level_definition: levelDefinition || {
+              level: levelData.current_level,
+              xp_required: 1000, // Default value if missing
+              title: 'Level ' + levelData.current_level
+            }
+          };
+          
+          setPlayerLevel(formattedLevelData);
+        }
       } catch (err) {
         console.error('Error fetching achievements:', err);
         toast({
