@@ -22,13 +22,12 @@ interface JoinTableDialogProps {
 
 export function JoinTableDialog({ table }: JoinTableDialogProps) {
   const [isJoining, setIsJoining] = useState(false);
-  const [buyIn, setBuyIn] = useState(table.min_buy_in);
   const [password, setPassword] = useState('');
   const { joinTable, loading } = useJoinTable();
   const { t } = useTranslation();
   
   const handleJoin = async () => {
-    const success = await joinTable(table.id, buyIn, password);
+    const success = await joinTable(table, password);
     if (!success) {
       setIsJoining(false);
     }
@@ -79,8 +78,7 @@ export function JoinTableDialog({ table }: JoinTableDialogProps) {
             <div className="relative">
               <Input
                 type="number"
-                value={buyIn}
-                onChange={(e) => setBuyIn(Number(e.target.value))}
+                defaultValue={table.min_buy_in}
                 min={table.min_buy_in}
                 max={table.max_buy_in}
                 className="pl-6"

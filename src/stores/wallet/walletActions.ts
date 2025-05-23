@@ -1,71 +1,103 @@
-import { create } from 'zustand';
+
 import { supabase } from '@/lib/supabase';
+import { Transaction, TransactionStatus } from './types';
 
-interface WalletState {
-  balance: number;
-  setBalance: (balance: number) => void;
-  fetchBalance: (userId: string) => Promise<void>;
-  deposit: (userId: string, amount: number) => Promise<void>;
-  withdraw: (userId: string, amount: number) => Promise<void>;
-}
-
-export const useWalletStore = create<WalletState>((set, get) => ({
-  balance: 0,
-  setBalance: (balance) => set({ balance }),
-  fetchBalance: async (userId) => {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('wallet_balance')
-        .eq('id', userId)
-        .single();
-
-      if (error) {
-        console.error('Error fetching balance:', error);
-        return;
-      }
-
-      set({ balance: data?.wallet_balance || 0 });
-    } catch (error) {
-      console.error('Error fetching balance:', error);
+export const loadTransactions = async (set: any, get: any) => {
+  try {
+    const { data, error } = await supabase
+      .from('wallet_transactions')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (error) {
+      console.error('Error loading transactions:', error);
+      return;
     }
-  },
-  deposit: async (userId, amount) => {
-    try {
-      const { data, error } = await supabase.rpc('deposit', {
-        user_id: userId,
-        amount: amount,
-      });
-
-      if (error) {
-        console.error('Error depositing funds:', error);
-        throw error;
-      }
-
-      // Optimistically update the balance
-      set((state) => ({ balance: state.balance + amount }));
-    } catch (error) {
-      console.error('Error in deposit action:', error);
-      throw error;
+    
+    if (data) {
+      set({ transactions: data });
     }
-  },
-  withdraw: async (userId, amount) => {
-    try {
-      const { data, error } = await supabase.rpc('withdraw', {
-        user_id: userId,
-        amount: amount,
-      });
+  } catch (error) {
+    console.error('Error in loadTransactions action:', error);
+  }
+};
 
-      if (error) {
-        console.error('Error withdrawing funds:', error);
-        throw error;
-      }
+export const depositFunds = async (amount: number, set: any, get: any) => {
+  try {
+    const { address } = get();
+    if (!address) throw new Error('No wallet connected');
+    
+    const { data, error } = await supabase.functions.invoke('deposit-funds', {
+      body: { amount, address }
+    });
+    
+    if (error) throw error;
+    
+    // Add transaction to local state
+    const transaction: Transaction = {
+      id: data.transaction_id,
+      type: 'DEPOSIT',
+      amount,
+      status: TransactionStatus.PENDING,
+      hash: data.txHash || null,
+      created_at: new Date().toISOString()
+    };
+    
+    get().addTransaction(transaction);
+    return transaction;
+  } catch (error: any) {
+    console.error('Error in deposit action:', error);
+    throw error;
+  }
+};
 
-      // Optimistically update the balance
-      set((state) => ({ balance: state.balance - amount }));
-    } catch (error) {
-      console.error('Error in withdraw action:', error);
-      throw error;
+export const withdrawFunds = async (address: string, amount: number, set: any, get: any) => {
+  try {
+    if (!address) throw new Error('No withdrawal address provided');
+    
+    const { data, error } = await supabase.functions.invoke('withdraw-funds', {
+      body: { amount, address }
+    });
+    
+    if (error) throw error;
+    
+    // Add transaction to local state
+    const transaction: Transaction = {
+      id: data.transaction_id,
+      type: 'WITHDRAW',
+      amount,
+      status: TransactionStatus.PENDING,
+      hash: data.txHash || null,
+      created_at: new Date().toISOString()
+    };
+    
+    get().addTransaction(transaction);
+    return transaction;
+  } catch (error: any) {
+    console.error('Error in withdraw action:', error);
+    throw error;
+  }
+};
+
+export const verifyTransactionHash = async (txHash: string, set: any, get: any) => {
+  try {
+    const { data, error } = await supabase.functions.invoke('verify-transaction', {
+      body: { transactionHash: txHash }
+    });
+    
+    if (error) throw error;
+    
+    // If transaction exists in local state, update it
+    const txId = data.transaction_id;
+    const status = data.verified ? TransactionStatus.COMPLETED : TransactionStatus.FAILED;
+    
+    if (txId) {
+      get().updateTransaction(txId, status);
     }
-  },
-}));
+    
+    return data;
+  } catch (error) {
+    console.error('Error verifying transaction:', error);
+    throw error;
+  }
+};

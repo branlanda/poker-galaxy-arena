@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
@@ -81,7 +80,7 @@ export function useJoinTable() {
       if (error) throw error;
 
       // Optimistically update the lobby tables
-      setTables((prevTables) =>
+      setTables((prevTables: LobbyTable[]) =>
         prevTables.map((t) =>
           t.id === table.id ? { ...t, current_players: (t.current_players || 0) + 1 } : t
         )
