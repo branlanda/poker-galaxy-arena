@@ -1,24 +1,29 @@
 
 import { useState, useEffect } from 'react';
 
-type Theme = 'dark' | 'light';
+type Theme = 'light' | 'dark';
 
 export function useTheme() {
   const [theme, setTheme] = useState<Theme>(() => {
-    // Check for saved theme in localStorage
-    const savedTheme = localStorage.getItem('theme');
-    // Check for system preference
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    // Check for stored preference
+    const savedTheme = localStorage.getItem('theme') as Theme;
+    if (savedTheme) {
+      return savedTheme;
+    }
     
-    // Return saved theme, or system preference, or default to 'dark'
-    return (savedTheme as Theme) || (prefersDark ? 'dark' : 'light');
+    // Check for system preference
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      return 'dark';
+    }
+    
+    return 'light';
   });
 
   useEffect(() => {
     // Update localStorage when theme changes
     localStorage.setItem('theme', theme);
     
-    // Update document class for tailwind
+    // Update document class
     if (theme === 'dark') {
       document.documentElement.classList.add('dark');
     } else {
@@ -26,5 +31,10 @@ export function useTheme() {
     }
   }, [theme]);
 
-  return { theme, setTheme };
+  return {
+    theme,
+    setTheme,
+    isDark: theme === 'dark',
+    isLight: theme === 'light',
+  };
 }

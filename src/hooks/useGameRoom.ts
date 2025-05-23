@@ -18,7 +18,6 @@ export function useGameRoom(tableId: string | undefined) {
   const [turnTimeRemaining, setTurnTimeRemaining] = useState(TURN_TIMEOUT_MS);
   const [turnStartTime, setTurnStartTime] = useState<number | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const { toast } = useToast();
   const navigate = useNavigate();
   const { user } = useAuth();
   
@@ -31,13 +30,14 @@ export function useGameRoom(tableId: string | undefined) {
     disconnectGame,
     takeSeat,
     leaveSeat,
-    performAction
+    placeBet
   } = useGameStore();
   
   // Find player's seat if they are at the table
-  const playerSeatIndex = user && gameState?.seats?.findIndex(
-    seat => seat !== null && seat.playerId === user.id
-  ) ?? -1;
+  const playerSeatIndex = user && gameState?.seats ? 
+    gameState.seats.findIndex(
+      seat => seat !== null && seat.playerId === user.id
+    ) : -1;
   
   const isPlayerSeated = playerSeatIndex !== -1;
   
@@ -308,7 +308,7 @@ export function useGameRoom(tableId: string | undefined) {
     if (!user || !isPlayerTurn) return;
     
     try {
-      await performAction(user.id, action, amount);
+      await placeBet(user.id, action, amount);
       
       // Reset turn timer
       setTurnTimeRemaining(TURN_TIMEOUT_MS);

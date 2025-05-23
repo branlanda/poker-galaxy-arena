@@ -87,7 +87,7 @@ export const GameRoomContent: React.FC<GameRoomContentProps> = ({
         <div className="md:hidden fixed bottom-4 left-0 right-0 px-4">
           <Button 
             onClick={onLeaveTable}
-            variant="destructive"
+            variant="outline"
             className="w-full"
           >
             Leave Table

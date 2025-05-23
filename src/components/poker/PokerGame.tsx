@@ -89,9 +89,9 @@ export function PokerGame({
     setBuyInDialogOpen(true);
   };
 
-  const handleConfirmBuyIn = async (amount: number) => {
+  const handleConfirmBuyIn = (amount: number) => {
     if (selectedSeat !== null) {
-      await onSitDown(selectedSeat, amount);
+      onSitDown(selectedSeat, amount);
       setBuyInDialogOpen(false);
       setSelectedSeat(null);
     }
