@@ -43,10 +43,10 @@ export function BetActions({
       {!isRaising ? (
         <div className="flex flex-wrap gap-2 justify-center">
           <Button 
-            variant="destructive" 
+            variant="outline" 
             size="sm" 
             onClick={() => handleAction('FOLD')}
-            className="font-medium"
+            className="font-medium text-red-500 hover:bg-red-500/10 hover:text-red-400"
           >
             Fold
           </Button>
