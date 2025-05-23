@@ -1,10 +1,8 @@
 
 import { createBrowserRouter } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
-import { AuthLayout } from "@/components/layout/AuthLayout";
-import { GameRoom } from "@/pages/Game/GameRoom";
-import Tournaments from "@/pages/Tournaments";
-import { TournamentLobby } from "@/pages/Tournaments/TournamentLobby";
+import GameRoom from "@/pages/Game/GameRoom";
+import { TournamentLobby } from "@/pages/Tournaments";
 import LobbyPage from "@/pages/Lobby/LobbyPage";
 import { NotFound } from "@/pages/NotFound";
 import Login from "@/pages/auth/Login";
@@ -18,31 +16,63 @@ import Settings from "@/pages/settings/Settings";
 const routes = createBrowserRouter([
   {
     path: "/",
-    element: <AppLayout />,
-    children: [
-      { path: "/", element: <div>Home Page</div> },
-      { path: "/tables", element: <LobbyPage /> },
-      { path: "/profile", element: <ProfilePage /> },
-      { path: "/settings", element: <Settings /> },
-      { path: "/tournaments", element: <Tournaments /> },
-      { path: "/tournaments/lobby", element: <TournamentLobby /> },
-      { path: "/tournaments/:id", element: <div>Tournament Details</div> },
-      { path: "*", element: <NotFound /> },
-    ],
+    element: <AppLayout>
+      <div>Home Page</div>
+    </AppLayout>,
+  },
+  {
+    path: "/tables",
+    element: <AppLayout>
+      <LobbyPage />
+    </AppLayout>,
+  },
+  {
+    path: "/profile",
+    element: <AppLayout>
+      <ProfilePage />
+    </AppLayout>,
+  },
+  {
+    path: "/settings",
+    element: <AppLayout>
+      <Settings />
+    </AppLayout>,
+  },
+  {
+    path: "/tournaments",
+    element: <AppLayout>
+      <TournamentLobby />
+    </AppLayout>,
+  },
+  {
+    path: "/tournaments/:id", 
+    element: <AppLayout>
+      <div>Tournament Details</div>
+    </AppLayout>,
   },
   {
     path: "/game/:tableId",
     element: <GameRoom />,
   },
   {
-    path: "/auth",
-    element: <AuthLayout />,
-    children: [
-      { path: "/auth/login", element: <Login /> },
-      { path: "/auth/register", element: <SignUp /> },
-      { path: "/auth/forgot-password", element: <ForgotPassword /> },
-      { path: "/auth/reset-password", element: <ResetPassword /> },
-    ],
+    path: "/auth/login",
+    element: <Login />,
+  },
+  {
+    path: "/auth/register",
+    element: <SignUp />,
+  },
+  {
+    path: "/auth/forgot-password",
+    element: <ForgotPassword />,
+  },
+  {
+    path: "/auth/reset-password",
+    element: <ResetPassword />,
+  },
+  {
+    path: "*",
+    element: <NotFound />,
   },
 ]);
 
