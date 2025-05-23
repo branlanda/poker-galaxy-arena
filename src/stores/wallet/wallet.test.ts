@@ -1,7 +1,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { act } from '@testing-library/react';
-import { useWalletStore } from './wallet';
+import { useWalletStore } from './index';
 
 // Setup fetch mock
 global.fetch = vi.fn();
@@ -29,6 +29,7 @@ describe('Wallet Store', () => {
         loadTransactions: async () => {},
         depositFunds: async () => null,
         withdrawFunds: async () => null,
+        verifyTransactionHash: async () => false,
       });
     });
   });
