@@ -30,13 +30,13 @@ const Sidebar = () => {
   };
 
   const navItems = [
-    { path: '/admin', icon: <LayoutDashboard size={20} />, label: t('admin.sidebar.dashboard') },
-    { path: '/admin/users', icon: <Users size={20} />, label: t('admin.sidebar.users') },
-    { path: '/admin/tables', icon: <Table size={20} />, label: t('admin.sidebar.tables') },
-    { path: '/admin/ledger', icon: <CreditCard size={20} />, label: t('admin.sidebar.ledger') },
-    { path: '/admin/security', icon: <Shield size={20} />, label: t('admin.sidebar.security') },
-    { path: '/admin/export', icon: <BarChart4 size={20} />, label: t('admin.sidebar.export') },
-    { path: '/admin/settings', icon: <Settings size={20} />, label: t('admin.sidebar.settings') }
+    { to: '/admin', icon: <LayoutDashboard size={20} />, label: t('admin.sidebar.dashboard') },
+    { to: '/admin/users', icon: <Users size={20} />, label: t('admin.sidebar.users') },
+    { to: '/admin/tables', icon: <Table size={20} />, label: t('admin.sidebar.tables') },
+    { to: '/admin/ledger', icon: <CreditCard size={20} />, label: t('admin.sidebar.ledger') },
+    { to: '/admin/security', icon: <Shield size={20} />, label: t('admin.sidebar.security') },
+    { to: '/admin/export', icon: <BarChart4 size={20} />, label: t('admin.sidebar.export') },
+    { to: '/admin/settings', icon: <Settings size={20} />, label: t('admin.sidebar.settings') }
   ];
 
   return (
@@ -61,12 +61,12 @@ const Sidebar = () => {
       <div className="py-4">
         {navItems.map((item) => (
           <NavItem
-            key={item.path}
-            path={item.path}
+            key={item.to}
+            to={item.to}
             icon={item.icon}
             label={item.label}
-            active={location.pathname === item.path || 
-                    (item.path !== '/admin' && location.pathname.startsWith(item.path))}
+            active={location.pathname === item.to || 
+                    (item.to !== '/admin' && location.pathname.startsWith(item.to))}
             collapsed={collapsed}
           />
         ))}

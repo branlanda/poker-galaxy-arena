@@ -1,244 +1,210 @@
 
-import { useState } from 'react';
-import { useWalletStore } from '@/stores/wallet';
-import { ethers } from 'ethers';
-import { useToast } from '@/hooks/use-toast';
+import { useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
+import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from '@/hooks/useTranslation';
 
-interface FraudCheckResult {
-  safe: boolean;
-  reason?: string;
-  riskScore?: number;
+interface FraudDetectionRule {
+  id: string;
+  name: string;
+  description: string;
+  severity: 'low' | 'medium' | 'high';
+  active: boolean;
+}
+
+interface FraudAlert {
+  id: string;
+  userId: string;
+  userName: string;
+  alertType: string;
+  description: string;
+  severity: 'low' | 'medium' | 'high';
+  timestamp: string;
+  status: 'new' | 'investigating' | 'resolved' | 'false_positive';
 }
 
 export function useAntiFraud() {
-  const [isChecking, setIsChecking] = useState<boolean>(false);
-  const { address } = useWalletStore();
+  const [loading, setLoading] = useState(false);
+  const [rules, setRules] = useState<FraudDetectionRule[]>([]);
+  const [alerts, setAlerts] = useState<FraudAlert[]>([]);
   const { toast } = useToast();
+  const { t } = useTranslation();
 
-  /**
-   * Check if the transaction amount is within reasonable limits
-   */
-  const checkTransactionLimits = (amount: number): FraudCheckResult => {
-    // Set reasonable transaction limits
-    const MIN_TRANSACTION = 1;
-    const MAX_DEPOSIT = 5000; 
-    const MAX_WITHDRAWAL = 5000;
+  // Fetch fraud detection rules
+  const fetchRules = useCallback(async () => {
+    setLoading(true);
     
-    if (amount < MIN_TRANSACTION) {
-      return { 
-        safe: false, 
-        reason: `Transaction amount too small. Minimum is ${MIN_TRANSACTION} USDT.`,
-        riskScore: 0.3
-      };
-    }
-    
-    if (amount > MAX_DEPOSIT && amount > MAX_WITHDRAWAL) {
-      return { 
-        safe: false, 
-        reason: `Transaction amount exceeds maximum limits.`,
-        riskScore: 0.8
-      };
-    }
-    
-    // Calculate risk score based on amount
-    let riskScore = 0.1;
-    if (amount > 1000) riskScore = 0.4;
-    if (amount > 2000) riskScore = 0.6;
-    
-    return { safe: true, riskScore };
-  };
+    // In a real implementation, this would fetch from the database
+    // This is mock data
+    setTimeout(() => {
+      setRules([
+        {
+          id: '1',
+          name: 'Multiple accounts from same IP',
+          description: 'Detects when multiple accounts are created from the same IP address within a short time period',
+          severity: 'medium',
+          active: true
+        },
+        {
+          id: '2',
+          name: 'Unusual deposit patterns',
+          description: 'Identifies unusual deposit patterns that may indicate money laundering',
+          severity: 'high',
+          active: true
+        },
+        {
+          id: '3',
+          name: 'Bot detection',
+          description: 'Detects potential bot usage based on play patterns and timing',
+          severity: 'high',
+          active: true
+        },
+        {
+          id: '4',
+          name: 'Collusion detection',
+          description: 'Analyzes play patterns across tables to identify potential collusion between players',
+          severity: 'high',
+          active: true
+        },
+        {
+          id: '5',
+          name: 'Multiple account policy violation',
+          description: 'Identifies players who may be using multiple accounts in the same game',
+          severity: 'medium',
+          active: true
+        }
+      ]);
+      setLoading(false);
+    }, 500);
+  }, []);
 
-  /**
-   * Log suspicious activity to the database for admin review
-   */
-  const logSuspiciousActivity = async (
-    userId: string | undefined,
-    activityType: string,
-    details: Record<string, any>,
-    riskScore: number
-  ) => {
-    if (!userId) return;
+  // Fetch fraud alerts
+  const fetchAlerts = useCallback(async () => {
+    setLoading(true);
     
+    // In a real implementation, this would fetch from the database
+    // This is mock data
+    setTimeout(() => {
+      setAlerts([
+        {
+          id: '1',
+          userId: 'user1',
+          userName: 'JohnDoe',
+          alertType: 'Multiple accounts from same IP',
+          description: '3 accounts created from IP 192.168.1.1 within 1 hour',
+          severity: 'medium',
+          timestamp: new Date().toISOString(),
+          status: 'new'
+        },
+        {
+          id: '2',
+          userId: 'user2',
+          userName: 'PokerMaster',
+          alertType: 'Unusual deposit patterns',
+          description: 'Multiple small deposits followed by large withdrawal',
+          severity: 'high',
+          timestamp: new Date().toISOString(),
+          status: 'investigating'
+        },
+        {
+          id: '3',
+          userId: 'user3',
+          userName: 'RoyalFlush',
+          alertType: 'Potential collusion',
+          description: 'Suspicious play patterns with user JackAce',
+          severity: 'high',
+          timestamp: new Date().toISOString(),
+          status: 'new'
+        }
+      ]);
+      setLoading(false);
+    }, 500);
+  }, []);
+
+  // Toggle rule status
+  const toggleRule = useCallback(async (ruleId: string) => {
+    setRules(prevRules => 
+      prevRules.map(rule => 
+        rule.id === ruleId ? { ...rule, active: !rule.active } : rule
+      )
+    );
+    
+    toast({
+      title: t('admin.ruleStatusUpdated'),
+      description: t('admin.ruleStatusUpdateSuccess'),
+      variant: "default",
+    });
+  }, [toast, t]);
+
+  // Update alert status
+  const updateAlertStatus = useCallback(async (alertId: string, status: 'new' | 'investigating' | 'resolved' | 'false_positive') => {
+    setAlerts(prevAlerts => 
+      prevAlerts.map(alert => 
+        alert.id === alertId ? { ...alert, status } : alert
+      )
+    );
+    
+    toast({
+      title: t('admin.alertStatusUpdated'),
+      description: t('admin.alertStatusUpdateSuccess'),
+      variant: "default",
+    });
+  }, [toast, t]);
+
+  // Ban user
+  const banUser = useCallback(async (userId: string) => {
     try {
-      // Add to the telemetry or suspicious activity table
-      await supabase
-        .from('telemetry_raw')
-        .insert({
-          player_id: userId,
-          payload: {
-            activity_type: activityType,
-            risk_score: riskScore,
-            details,
-            timestamp: new Date().toISOString()
-          }
-        });
+      // In a real implementation, this would update the database
+      console.log(`Banning user: ${userId}`);
       
-      // For high-risk activities, send notification to admin
-      if (riskScore > 0.7) {
-        toast({
-          title: "Security Alert",
-          description: `High-risk activity detected: ${activityType}`,
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      console.error("Failed to log suspicious activity:", error);
-    }
-  };
-
-  /**
-   * Verify wallet address against known fraud databases
-   * This would connect to external APIs in a production environment
-   */
-  const checkWalletReputation = async (walletAddress: string): Promise<FraudCheckResult> => {
-    // Mock implementation - in production this would call APIs
-    // like Chainalysis, TRM Labs, Elliptic, or CipherTrace
-    
-    // For demonstration purposes, flag some addresses as suspicious
-    const knownSuspiciousAddresses = [
-      '0x000000000000000000000000000000000000dEaD',
-      '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045', // Vitalik's address for example
-    ];
-    
-    if (knownSuspiciousAddresses.includes(walletAddress)) {
-      return {
-        safe: false,
-        reason: 'Wallet address found in suspicious address database',
-        riskScore: 0.9
-      };
-    }
-    
-    return { safe: true, riskScore: 0.1 };
-  };
-
-  /**
-   * Check for suspicious activity patterns
-   */
-  const checkForSuspiciousActivity = async (
-    txType: 'deposit' | 'withdraw',
-    amount: number,
-    userId?: string
-  ): Promise<FraudCheckResult> => {
-    try {
-      setIsChecking(true);
-      
-      // Check transaction limits
-      const limitsCheck = checkTransactionLimits(amount);
-      if (!limitsCheck.safe) {
-        if (userId) {
-          await logSuspiciousActivity(
-            userId, 
-            'TRANSACTION_LIMIT_EXCEEDED',
-            { txType, amount, limit_type: amount < 1 ? 'minimum' : 'maximum' },
-            limitsCheck.riskScore || 0.7
-          );
-        }
-        return limitsCheck;
-      }
-      
-      // Get recent transactions to check for unusual patterns
-      const { transactions } = useWalletStore.getState();
-      const lastHourTransactions = transactions.filter(tx => 
-        new Date().getTime() - new Date(tx.timestamp).getTime() < 60 * 60 * 1000
-      );
-      
-      // Check for rapid succession of transactions (potential attack)
-      if (lastHourTransactions.length >= 10) {
-        if (userId) {
-          await logSuspiciousActivity(
-            userId,
-            'RAPID_TRANSACTIONS',
-            { txType, amount, count: lastHourTransactions.length },
-            0.8
-          );
-        }
-        
-        return {
-          safe: false,
-          reason: 'Too many transactions in a short period. Please try again later.',
-          riskScore: 0.8
-        };
-      }
-      
-      // For withdrawals, check if address has sufficient history
-      if (txType === 'withdraw' && address) {
-        // Check wallet reputation
-        const reputationCheck = await checkWalletReputation(address);
-        if (!reputationCheck.safe) {
-          if (userId) {
-            await logSuspiciousActivity(
-              userId,
-              'SUSPICIOUS_WALLET',
-              { txType, amount, wallet: address },
-              reputationCheck.riskScore || 0.8
-            );
-          }
-          return reputationCheck;
-        }
-        
-        if (window.ethereum) {
-          const provider = new ethers.BrowserProvider(window.ethereum);
-          const txCount = await provider.getTransactionCount(address);
-          
-          // New addresses with no history attempting large withdrawals is suspicious
-          if (txCount < 5 && amount > 1000) {
-            if (userId) {
-              await logSuspiciousActivity(
-                userId,
-                'NEW_WALLET_LARGE_WITHDRAWAL',
-                { txType, amount, wallet: address, txCount },
-                0.75
-              );
-            }
-            
-            return {
-              safe: false,
-              reason: 'New wallet attempting large withdrawal. Please contact support.',
-              riskScore: 0.75
-            };
-          }
-        }
-      }
-      
-      // Check for deposit/withdrawal pattern (money laundering pattern)
-      const hasRecentOppositeTransaction = lastHourTransactions.some(tx => {
-        const isOppositeType = (txType === 'deposit' && tx.type === 'withdraw') || 
-                              (txType === 'withdraw' && tx.type === 'deposit');
-        const isSignificantAmount = tx.amount > amount * 0.8; // 80% or more of current amount
-        return isOppositeType && isSignificantAmount;
+      toast({
+        title: t('admin.userBanned'),
+        description: t('admin.userBanSuccess'),
+        variant: "destructive",
       });
-      
-      if (hasRecentOppositeTransaction) {
-        if (userId) {
-          await logSuspiciousActivity(
-            userId,
-            'POSSIBLE_LAUNDERING_PATTERN',
-            { txType, amount, recent_transactions: lastHourTransactions.length },
-            0.65
-          );
-        }
-        // We'll allow it but with a warning
-        toast({
-          title: "Transaction Monitoring",
-          description: "Unusual transaction pattern detected. This will be reviewed.",
-          variant: "warning",
-        });
-      }
-      
-      return { safe: true, riskScore: hasRecentOppositeTransaction ? 0.65 : 0.2 };
     } catch (error) {
-      console.error("Fraud check error:", error);
-      return { safe: true, riskScore: 0.5 }; // Default to allowing the tx if checks fail
-    } finally {
-      setIsChecking(false);
+      console.error('Error banning user:', error);
+      
+      toast({
+        title: t('admin.error'),
+        description: t('admin.userBanError'),
+        variant: "destructive",
+      });
     }
-  };
+  }, [toast, t]);
+
+  // Reset rules to default
+  const resetRulesToDefault = useCallback(async () => {
+    try {
+      // In a real implementation, this would reset rules in the database
+      console.log('Resetting rules to default');
+      await fetchRules();
+      
+      toast({
+        title: t('admin.rulesReset'),
+        description: t('admin.rulesResetSuccess'),
+        variant: "default",
+      });
+    } catch (error) {
+      console.error('Error resetting rules:', error);
+      
+      toast({
+        title: t('admin.error'),
+        description: t('admin.rulesResetError'),
+        variant: "destructive",
+      });
+    }
+  }, [fetchRules, toast, t]);
 
   return {
-    checkForSuspiciousActivity,
-    logSuspiciousActivity,
-    checkWalletReputation,
-    isChecking
+    rules,
+    alerts,
+    loading,
+    fetchRules,
+    fetchAlerts,
+    toggleRule,
+    updateAlertStatus,
+    banUser,
+    resetRulesToDefault
   };
 }

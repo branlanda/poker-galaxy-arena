@@ -1,210 +1,289 @@
 
-import React, { useState } from 'react';
-import { useTranslation } from '@/hooks/useTranslation';
-import { Card } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { AlertTriangle, Shield, Download } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/Button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAntiFraud } from '@/hooks/useAntiFraud';
+import { useTransactionVerification } from '@/hooks/useTransactionVerification';
+import { Shield, AlertTriangle, Check, X, Search, Ban } from 'lucide-react';
 
-const SecurityCenter = () => {
-  const { t } = useTranslation();
-  const [selectedTab, setSelectedTab] = useState('alerts');
+export default function SecurityCenter() {
+  const [activeTab, setActiveTab] = useState('alerts');
+  const { 
+    alerts, 
+    rules, 
+    loading: fraudLoading, 
+    fetchAlerts, 
+    fetchRules, 
+    toggleRule, 
+    updateAlertStatus, 
+    banUser 
+  } = useAntiFraud();
   
-  // Mock data for security alerts - would be fetched from Supabase in production
-  const securityAlerts = [
-    { 
-      id: 1, 
-      type: 'SUSPICIOUS_LOGIN', 
-      userId: 'user123',
-      username: 'player123',
-      ip: '192.168.1.100', 
-      timestamp: new Date(Date.now() - 25 * 60000),
-      details: 'Multiple failed login attempts followed by successful login from new location'
-    },
-    { 
-      id: 2, 
-      type: 'LARGE_WITHDRAWAL', 
-      userId: 'user456',
-      username: 'highroller77',
-      amount: 2500,
-      timestamp: new Date(Date.now() - 120 * 60000),
-      details: 'Unusually large withdrawal shortly after deposit'
-    },
-    { 
-      id: 3, 
-      type: 'UNUSUAL_ACTIVITY', 
-      userId: 'user789',
-      username: 'pokerface22',
-      timestamp: new Date(Date.now() - 240 * 60000),
-      details: 'Player folded multiple strong hands in succession'
-    }
-  ];
-  
-  // Mock data for blocked IPs - would be fetched from Supabase in production
-  const blockedIPs = [
-    { ip: '45.227.253.98', reason: 'Multiple failed login attempts', blocked_at: new Date(Date.now() - 2 * 24 * 60 * 60000) },
-    { ip: '103.15.62.177', reason: 'Suspected bot activity', blocked_at: new Date(Date.now() - 5 * 24 * 60 * 60000) },
-    { ip: '91.134.25.200', reason: 'Fraud attempt', blocked_at: new Date(Date.now() - 14 * 24 * 60 * 60000) }
-  ];
-  
-  // Function to format date
-  const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    }).format(date);
-  };
-  
-  // Function to download logs as CSV
-  const downloadLogs = () => {
-    // Implementation would connect to Supabase to fetch and format logs
-    console.log('Downloading security logs...');
-    
-    // Mock alert to show this worked
-    alert('Security logs downloaded successfully');
-  };
+  const {
+    transactions,
+    loading: txLoading,
+    fetchPendingTransactions,
+    approveTransaction,
+    rejectTransaction,
+    flagTransaction
+  } = useTransactionVerification();
+
+  useEffect(() => {
+    fetchAlerts();
+    fetchRules();
+    fetchPendingTransactions();
+  }, [fetchAlerts, fetchRules, fetchPendingTransactions]);
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">{t('admin.securityCenter.title', 'Security Center')}</h2>
-        
-        <Button 
-          onClick={downloadLogs}
-          variant="outline"
-          className="flex items-center gap-2"
-        >
-          <Download className="h-4 w-4" />
-          {t('admin.securityCenter.downloadLogs', 'Download Logs')}
-        </Button>
+    <div className="p-6">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold">Security Center</h1>
+          <p className="text-gray-500">Monitor and manage security alerts and fraud detection</p>
+        </div>
+        <Button>Generate Security Report</Button>
       </div>
-      
-      <Card className="p-4">
-        <div className="flex items-center gap-3 mb-4">
-          <Shield className="h-5 w-5 text-emerald" />
-          <div>
-            <h3 className="font-medium text-lg">
-              {t('admin.securityCenter.securityStatus', 'Security Status')}
-            </h3>
-            <p className="text-sm text-gray-400">
-              {t('admin.securityCenter.activeThreats', 'Active threats: 3')}
-            </p>
-          </div>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-          <div className="bg-[#0e2337]/70 p-4 rounded-lg border border-emerald/10">
-            <p className="text-gray-400 text-sm">{t('admin.securityCenter.failedLogins', 'Failed Logins (24h)')}</p>
-            <p className="text-xl font-bold">37</p>
-          </div>
-          <div className="bg-[#0e2337]/70 p-4 rounded-lg border border-emerald/10">
-            <p className="text-gray-400 text-sm">{t('admin.securityCenter.suspiciousTx', 'Suspicious Transactions')}</p>
-            <p className="text-xl font-bold">5</p>
-          </div>
-          <div className="bg-[#0e2337]/70 p-4 rounded-lg border border-emerald/10">
-            <p className="text-gray-400 text-sm">{t('admin.securityCenter.blockedIPs', 'Blocked IPs')}</p>
-            <p className="text-xl font-bold">12</p>
-          </div>
-        </div>
-      </Card>
-      
-      <Tabs defaultValue="alerts" className="w-full">
-        <TabsList>
-          <TabsTrigger value="alerts">{t('admin.securityCenter.alerts', 'Alerts')}</TabsTrigger>
-          <TabsTrigger value="blockedIPs">{t('admin.securityCenter.blockedIPs', 'Blocked IPs')}</TabsTrigger>
-          <TabsTrigger value="auditLog">{t('admin.securityCenter.auditLog', 'Audit Log')}</TabsTrigger>
+
+      <Tabs defaultValue="alerts" value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="mb-4">
+          <TabsTrigger value="alerts">
+            <AlertTriangle className="mr-2 h-4 w-4" />
+            Alerts
+            {alerts.filter(a => a.status === 'new').length > 0 && (
+              <Badge className="ml-2 bg-red-500">{alerts.filter(a => a.status === 'new').length}</Badge>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="rules">
+            <Shield className="mr-2 h-4 w-4" />
+            Detection Rules
+          </TabsTrigger>
+          <TabsTrigger value="transactions">
+            <Search className="mr-2 h-4 w-4" />
+            Transaction Verification
+            {transactions.filter(t => t.verificationStatus === 'unverified').length > 0 && (
+              <Badge className="ml-2 bg-yellow-500">{transactions.filter(t => t.verificationStatus === 'unverified').length}</Badge>
+            )}
+          </TabsTrigger>
         </TabsList>
-        
-        <TabsContent value="alerts" className="mt-4">
-          <Card className="p-4">
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-[#081624]">
-                  <TableHead>{t('admin.securityCenter.alertType', 'Alert Type')}</TableHead>
-                  <TableHead>{t('admin.securityCenter.user', 'User')}</TableHead>
-                  <TableHead>{t('admin.securityCenter.time', 'Time')}</TableHead>
-                  <TableHead>{t('admin.securityCenter.details', 'Details')}</TableHead>
-                  <TableHead>{t('admin.securityCenter.actions', 'Actions')}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {securityAlerts.map((alert) => (
-                  <TableRow key={alert.id} className="hover:bg-[#0e2337]">
-                    <TableCell className="font-medium">
-                      <div className="flex items-center gap-2">
-                        <AlertTriangle className="h-4 w-4 text-amber-500" />
-                        {alert.type}
-                      </div>
-                    </TableCell>
-                    <TableCell>{alert.username}</TableCell>
-                    <TableCell>{formatDate(alert.timestamp)}</TableCell>
-                    <TableCell>{alert.details}</TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Button variant="outline" size="sm">
-                          {t('admin.securityCenter.investigate', 'Investigate')}
-                        </Button>
-                        <Button variant="destructive" size="sm">
-                          {t('admin.securityCenter.block', 'Block')}
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+
+        <TabsContent value="alerts">
+          <Card>
+            <CardHeader>
+              <CardTitle>Security Alerts</CardTitle>
+              <CardDescription>Review and manage security alerts</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {fraudLoading ? (
+                  <div className="flex justify-center p-4">
+                    <div className="animate-spin h-8 w-8 border-4 border-emerald border-t-transparent rounded-full"></div>
+                  </div>
+                ) : alerts.length > 0 ? (
+                  alerts.map(alert => (
+                    <Card key={alert.id} className="overflow-hidden">
+                      <div className={`h-1 ${
+                        alert.severity === 'high' ? 'bg-red-500' : 
+                        alert.severity === 'medium' ? 'bg-amber-500' : 'bg-blue-500'
+                      }`}></div>
+                      <CardContent className="p-4">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between">
+                          <div>
+                            <h3 className="font-semibold">{alert.alertType}</h3>
+                            <p className="text-sm text-gray-500">{alert.description}</p>
+                            <div className="flex items-center mt-1">
+                              <Badge className="mr-2">User: {alert.userName}</Badge>
+                              <Badge variant="outline">{new Date(alert.timestamp).toLocaleString()}</Badge>
+                            </div>
+                          </div>
+                          <div className="flex mt-3 sm:mt-0">
+                            <Button 
+                              variant="outline"
+                              size="sm" 
+                              className="mr-2"
+                              onClick={() => updateAlertStatus(alert.id, 'investigating')}
+                            >
+                              Investigate
+                            </Button>
+                            <Button 
+                              variant="outline"
+                              size="sm" 
+                              className="mr-2"
+                              onClick={() => updateAlertStatus(alert.id, 'resolved')}
+                            >
+                              <Check className="h-4 w-4 mr-1" />
+                              Resolve
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => banUser(alert.userId)}
+                            >
+                              <Ban className="h-4 w-4 mr-1" />
+                              Ban User
+                            </Button>
+                          </div>
+                        </div>
+                        <div className="mt-2">
+                          <Badge className={`
+                            ${alert.status === 'new' ? 'bg-red-500' : 
+                              alert.status === 'investigating' ? 'bg-amber-500' : 
+                              alert.status === 'resolved' ? 'bg-green-500' : 'bg-gray-500'}
+                          `}>
+                            {alert.status.charAt(0).toUpperCase() + alert.status.slice(1).replace('_', ' ')}
+                          </Badge>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))
+                ) : (
+                  <div className="text-center p-4 border rounded-md">
+                    <p className="text-gray-500">No alerts found</p>
+                  </div>
+                )}
+              </div>
+            </CardContent>
           </Card>
         </TabsContent>
-        
-        <TabsContent value="blockedIPs" className="mt-4">
-          <Card className="p-4">
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-[#081624]">
-                  <TableHead>{t('admin.securityCenter.ipAddress', 'IP Address')}</TableHead>
-                  <TableHead>{t('admin.securityCenter.reason', 'Reason')}</TableHead>
-                  <TableHead>{t('admin.securityCenter.blockedAt', 'Blocked At')}</TableHead>
-                  <TableHead>{t('admin.securityCenter.actions', 'Actions')}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {blockedIPs.map((ip, index) => (
-                  <TableRow key={index} className="hover:bg-[#0e2337]">
-                    <TableCell className="font-mono">{ip.ip}</TableCell>
-                    <TableCell>{ip.reason}</TableCell>
-                    <TableCell>{formatDate(ip.blocked_at)}</TableCell>
-                    <TableCell>
-                      <Button variant="outline" size="sm">
-                        {t('admin.securityCenter.unblock', 'Unblock')}
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+
+        <TabsContent value="rules">
+          <Card>
+            <CardHeader>
+              <CardTitle>Fraud Detection Rules</CardTitle>
+              <CardDescription>Configure and manage fraud detection rules</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {fraudLoading ? (
+                  <div className="flex justify-center p-4">
+                    <div className="animate-spin h-8 w-8 border-4 border-emerald border-t-transparent rounded-full"></div>
+                  </div>
+                ) : rules.length > 0 ? (
+                  rules.map(rule => (
+                    <Card key={rule.id} className="overflow-hidden">
+                      <div className={`h-1 ${
+                        rule.severity === 'high' ? 'bg-red-500' : 
+                        rule.severity === 'medium' ? 'bg-amber-500' : 'bg-blue-500'
+                      }`}></div>
+                      <CardContent className="p-4">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between">
+                          <div>
+                            <h3 className="font-semibold">{rule.name}</h3>
+                            <p className="text-sm text-gray-500">{rule.description}</p>
+                            <div className="flex items-center mt-1">
+                              <Badge className={`
+                                ${rule.severity === 'high' ? 'bg-red-500' : 
+                                  rule.severity === 'medium' ? 'bg-amber-500' : 'bg-blue-500'}
+                              `}>
+                                {rule.severity.charAt(0).toUpperCase() + rule.severity.slice(1)} Severity
+                              </Badge>
+                            </div>
+                          </div>
+                          <div className="flex items-center mt-3 sm:mt-0">
+                            <Badge className={rule.active ? 'bg-green-500' : 'bg-gray-500'}>
+                              {rule.active ? 'Active' : 'Inactive'}
+                            </Badge>
+                            <Button 
+                              variant="outline"
+                              size="sm" 
+                              className="ml-4"
+                              onClick={() => toggleRule(rule.id)}
+                            >
+                              {rule.active ? 'Disable' : 'Enable'}
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))
+                ) : (
+                  <div className="text-center p-4 border rounded-md">
+                    <p className="text-gray-500">No rules found</p>
+                  </div>
+                )}
+              </div>
+            </CardContent>
           </Card>
         </TabsContent>
-        
-        <TabsContent value="auditLog" className="mt-4">
-          <Card className="p-4">
-            <p className="text-gray-400 mb-4">
-              {t('admin.securityCenter.auditLogDescription', 'View detailed logs of admin actions and system events.')}
-            </p>
-            {/* Audit log would be implemented here with filtering and pagination */}
-            <div className="bg-[#0e2337]/70 p-4 rounded-lg border border-emerald/10 text-center">
-              <p className="text-gray-400">
-                {t('admin.securityCenter.auditLogEmpty', 'Loading audit log data...')}
-              </p>
-            </div>
+
+        <TabsContent value="transactions">
+          <Card>
+            <CardHeader>
+              <CardTitle>Transaction Verification</CardTitle>
+              <CardDescription>Verify and approve pending transactions</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {txLoading ? (
+                  <div className="flex justify-center p-4">
+                    <div className="animate-spin h-8 w-8 border-4 border-emerald border-t-transparent rounded-full"></div>
+                  </div>
+                ) : transactions.length > 0 ? (
+                  transactions.map(tx => (
+                    <Card key={tx.id} className="overflow-hidden">
+                      <div className={`h-1 ${
+                        tx.verificationStatus === 'flagged' ? 'bg-red-500' : 
+                        tx.verificationStatus === 'unverified' ? 'bg-amber-500' : 'bg-green-500'
+                      }`}></div>
+                      <CardContent className="p-4">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between">
+                          <div>
+                            <h3 className="font-semibold">
+                              {tx.type === 'deposit' ? 'Deposit' : 'Withdrawal'}: ${tx.amount.toLocaleString()}
+                            </h3>
+                            <p className="text-sm text-gray-500">User: {tx.userName}</p>
+                            <div className="flex items-center mt-1">
+                              <Badge className={`mr-2 ${
+                                tx.status === 'pending' ? 'bg-amber-500' : 
+                                tx.status === 'completed' ? 'bg-green-500' : 'bg-red-500'
+                              }`}>
+                                {tx.status.charAt(0).toUpperCase() + tx.status.slice(1)}
+                              </Badge>
+                              <Badge variant="outline">{new Date(tx.createdAt).toLocaleString()}</Badge>
+                            </div>
+                          </div>
+                          <div className="flex mt-3 sm:mt-0">
+                            <Button 
+                              variant="outline"
+                              size="sm" 
+                              className="mr-2"
+                              onClick={() => approveTransaction(tx.id)}
+                            >
+                              <Check className="h-4 w-4 mr-1" />
+                              Approve
+                            </Button>
+                            <Button 
+                              variant="outline"
+                              size="sm" 
+                              className="mr-2"
+                              onClick={() => rejectTransaction(tx.id)}
+                            >
+                              <X className="h-4 w-4 mr-1" />
+                              Reject
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => flagTransaction(tx.id)}
+                            >
+                              Flag
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))
+                ) : (
+                  <div className="text-center p-4 border rounded-md">
+                    <p className="text-gray-500">No pending transactions</p>
+                  </div>
+                )}
+              </div>
+            </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
     </div>
   );
-};
-
-export default SecurityCenter;
+}
