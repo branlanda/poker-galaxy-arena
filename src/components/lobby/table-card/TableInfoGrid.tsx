@@ -1,6 +1,10 @@
 
+import { Users, Clock, Activity } from 'lucide-react';
 import { LobbyTable } from '@/types/lobby';
-import { DollarSign, Clock, Activity, Users } from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
+import { es } from 'date-fns/locale';
+import { TableStatusBadge } from './TableStatusBadge';
+import { TableTypeBadge } from './TableTypeBadge';
 import { useTranslation } from '@/hooks/useTranslation';
 
 interface TableInfoGridProps {
@@ -12,66 +16,71 @@ interface TableInfoGridProps {
 
 export function TableInfoGrid({ 
   table, 
-  lastActivityTime,
+  lastActivityTime, 
   activityStatus,
-  activePlayerCount
+  activePlayerCount 
 }: TableInfoGridProps) {
-  const { t } = useTranslation();
-  
-  const activityStatusColors = {
-    active: "text-emerald-400",
-    idle: "text-amber-400",
-    inactive: "text-gray-500"
-  };
+  const { t, i18n } = useTranslation();
   
   return (
-    <div className="grid grid-cols-2 p-5 gap-4">
-      <div>
-        <div className="text-gray-400 text-xs flex items-center">
-          <DollarSign className="h-3 w-3 mr-1" /> {t('blinds', 'Blinds')}
+    <div className="p-4 space-y-4">
+      <div className="grid grid-cols-2 gap-y-2">
+        <div className="text-xs text-gray-400">{t('blinds', 'Blinds')}</div>
+        <div className="text-xs font-semibold text-right">
+          ${table.small_blind}/{table.big_blind}
         </div>
-        <div className="font-medium">
-          ${table.small_blind} / ${table.big_blind}
+        
+        <div className="text-xs text-gray-400">{t('buyIn', 'Buy-in')}</div>
+        <div className="text-xs font-semibold text-right">
+          ${table.min_buy_in} - ${table.max_buy_in}
         </div>
-        <div className="text-xs text-gray-500 mt-1">
-          {t('buyIn', 'Buy-in')}: ${table.min_buy_in} - ${table.max_buy_in}
+        
+        <div className="text-xs text-gray-400">{t('tableType', 'Tipo')}</div>
+        <div className="text-xs text-right">
+          <TableTypeBadge tableType={table.table_type} />
         </div>
-      </div>
-      
-      <div>
-        <div className="text-gray-400 text-xs flex items-center">
-          <Activity className="h-3 w-3 mr-1" /> {t('activity', 'Actividad')}
-        </div>
-        <div className={`font-medium ${activityStatusColors[activityStatus]}`}>
-          {activityStatus === 'active' ? t('active', 'Activa') : 
-           activityStatus === 'idle' ? t('idle', 'Inactiva') : 
-           t('inactive', 'Sin actividad')}
-        </div>
-        <div className="text-xs text-gray-500 mt-1">
-          {lastActivityTime}
+        
+        <div className="text-xs text-gray-400">{t('status', 'Estado')}</div>
+        <div className="text-xs text-right">
+          <TableStatusBadge status={table.status} />
         </div>
       </div>
       
-      <div>
-        <div className="text-gray-400 text-xs flex items-center">
-          <Users className="h-3 w-3 mr-1" /> {t('activePlayers', 'Jugando')}
+      <div className="border-t border-emerald/10 pt-2 grid grid-cols-3">
+        <div className="flex flex-col items-center">
+          <div className="flex items-center gap-1 text-xs text-gray-400">
+            <Users className="h-3 w-3" />
+            <span>{t('players', 'Jugadores')}</span>
+          </div>
+          <div className="font-medium">
+            <span className={table.current_players === table.max_players ? "text-amber-500" : ""}>
+              {table.current_players}
+            </span>/{table.max_players}
+          </div>
         </div>
-        <div className="font-medium">
-          {activePlayerCount > 0 ? activePlayerCount : t('noActivePlayers', 'Ninguno')}
+        
+        <div className="flex flex-col items-center border-l border-r border-emerald/10">
+          <div className="flex items-center gap-1 text-xs text-gray-400">
+            <Clock className="h-3 w-3" />
+            <span>{t('activity', 'Actividad')}</span>
+          </div>
+          <div className="font-medium text-xs">
+            {t('timeAgo', lastActivityTime)}
+          </div>
         </div>
-        <div className="text-xs text-gray-500 mt-1">
-          {t('ofTotalPlayers', 'de {total} jugadores', {
-            total: table.current_players
-          })}
-        </div>
-      </div>
-      
-      <div>
-        <div className="text-gray-400 text-xs flex items-center">
-          <Clock className="h-3 w-3 mr-1" /> {t('handNumber', 'Hand #')}
-        </div>
-        <div className="font-medium">
-          {table.hand_number > 0 ? table.hand_number : t('notStarted', 'No iniciada')}
+        
+        <div className="flex flex-col items-center">
+          <div className="flex items-center gap-1 text-xs text-gray-400">
+            <Activity className="h-3 w-3" />
+            <span>{t('playing', 'Jugando')}</span>
+          </div>
+          <div 
+            className={`font-medium ${
+              activePlayerCount > 0 ? "text-emerald-500" : "text-gray-500"
+            }`}
+          >
+            {activePlayerCount}
+          </div>
         </div>
       </div>
     </div>

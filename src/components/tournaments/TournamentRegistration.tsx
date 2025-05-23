@@ -1,170 +1,178 @@
 
-import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useTranslation } from '@/hooks/useTranslation';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Badge } from '@/components/ui/badge';
+import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogTrigger,
+  DialogDescription,
+  DialogFooter
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Trophy, Calendar, Users } from "lucide-react";
 import { useTournamentRegistration } from '@/hooks/useTournamentRegistration';
+import { Tournament } from '@/types/tournaments';
+import { useTranslation } from '@/hooks/useTranslation';
+import { format } from 'date-fns';
 
 interface TournamentRegistrationProps {
-  tournamentId: string;
-  maxPlayers: number;
-  registrationInfo?: {
-    open: boolean;
-    startTime: string;
-    endTime?: string;
-  };
+  tournament: Tournament;
 }
 
-type RegistrationPlayer = {
-  id: string;
-  player_id: string;
-  registration_time: string;
-  player_name?: string;
-  avatar_url?: string;
-};
-
-export function TournamentRegistration({ 
-  tournamentId, 
-  maxPlayers,
-  registrationInfo 
-}: TournamentRegistrationProps) {
+export function TournamentRegistration({ tournament }: TournamentRegistrationProps) {
   const { t } = useTranslation();
-  const [registrations, setRegistrations] = useState<RegistrationPlayer[]>([]);
-  const [loading, setLoading] = useState(true);
-  const { registerForTournament, unregister, isRegistered, isRegistering } = useTournamentRegistration();
+  const [accessCode, setAccessCode] = useState('');
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const { 
+    loading, 
+    registered, 
+    registerForTournament, 
+    unregisterFromTournament 
+  } = useTournamentRegistration(tournament.id);
   
-  useEffect(() => {
-    const fetchRegistrations = async () => {
-      setLoading(true);
-      try {
-        const { data, error } = await supabase
-          .from('tournament_registrations')
-          .select(`
-            id, 
-            player_id,
-            registration_time
-          `)
-          .eq('tournament_id', tournamentId)
-          .eq('is_active', true);
-          
-        if (error) throw error;
-        
-        // Get player info for each registration
-        const enrichedData = await Promise.all((data || []).map(async (reg) => {
-          const { data: playerData } = await supabase
-            .from('profiles')
-            .select('alias, avatar_url')
-            .eq('id', reg.player_id)
-            .single();
-            
-          return {
-            ...reg,
-            player_name: playerData?.alias || 'Unknown Player',
-            avatar_url: playerData?.avatar_url || undefined
-          };
-        }));
-        
-        setRegistrations(enrichedData);
-      } catch (err) {
-        console.error('Error fetching registrations:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const handleRegister = async () => {
+    if (tournament.is_private && !accessCode) {
+      return;
+    }
     
-    fetchRegistrations();
-    
-    // Set up realtime subscription
-    const channel = supabase
-      .channel('tournament-registrations')
-      .on('postgres_changes', 
-        { event: 'INSERT', schema: 'public', table: 'tournament_registrations', filter: `tournament_id=eq.${tournamentId}` }, 
-        fetchRegistrations
-      )
-      .on('postgres_changes',
-        { event: 'DELETE', schema: 'public', table: 'tournament_registrations', filter: `tournament_id=eq.${tournamentId}` },
-        fetchRegistrations
-      )
-      .subscribe();
-    
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [tournamentId]);
+    const success = await registerForTournament(tournament.is_private ? accessCode : undefined);
+    if (success) {
+      setIsDialogOpen(false);
+      setAccessCode('');
+    }
+  };
   
-  const isRegistrationOpen = registrationInfo?.open ?? true;
+  const handleUnregister = async () => {
+    await unregisterFromTournament();
+  };
   
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold">
-          {t('registeredPlayers', 'Jugadores Registrados')}
-        </h3>
-        <Badge variant={isRegistrationOpen ? "outline" : "destructive"}>
-          {isRegistrationOpen 
-            ? t('registrationOpen', 'Registro Abierto') 
-            : t('registrationClosed', 'Registro Cerrado')}
-        </Badge>
-      </div>
-      
-      <div className="flex justify-between items-center">
-        <span className="text-sm text-gray-400">
-          {registrations.length} / {maxPlayers} {t('players', 'jugadores')}
-        </span>
-        {isRegistrationOpen && (
-          <Button 
-            onClick={() => isRegistered 
-              ? unregister(tournamentId) 
-              : registerForTournament(tournamentId)
-            }
-            disabled={isRegistering || (!isRegistered && registrations.length >= maxPlayers)}
-            variant={isRegistered ? "destructive" : "primary"}
-          >
-            {isRegistering 
-              ? t('processing', 'Procesando...') 
-              : isRegistered 
-                ? t('unregister', 'Cancelar Registro') 
-                : t('register', 'Registrarse')}
-          </Button>
-        )}
-      </div>
-      
-      <ScrollArea className="h-64 rounded-md border border-gray-700">
-        {loading ? (
-          <div className="flex justify-center items-center h-full">
-            <p className="text-gray-500">{t('loading', 'Cargando...')}</p>
-          </div>
-        ) : registrations.length > 0 ? (
-          <div className="p-4 space-y-2">
-            {registrations.map((registration) => (
-              <div 
-                key={registration.id}
-                className="flex items-center justify-between py-2"
-              >
-                <div className="flex items-center">
-                  <Avatar className="h-8 w-8 mr-2">
-                    <AvatarImage src={registration.avatar_url} />
-                    <AvatarFallback>{registration.player_name?.substring(0, 2) || 'P'}</AvatarFallback>
-                  </Avatar>
-                  <span>{registration.player_name}</span>
+    <Card className="mt-6">
+      <CardHeader>
+        <CardTitle>{t('tournaments.registration')}</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex flex-col lg:flex-row gap-4 lg:gap-8">
+          <div className="flex-1">
+            <div className="grid grid-cols-1 gap-3">
+              <div className="flex items-center gap-3">
+                <Trophy className="h-5 w-5 text-amber-500" />
+                <div>
+                  <div className="text-sm text-gray-500">{t('tournaments.prizePool')}</div>
+                  <div className="font-semibold">${tournament.prize_pool.toLocaleString()}</div>
                 </div>
-                <span className="text-xs text-gray-500">
-                  {new Date(registration.registration_time).toLocaleTimeString([], { 
-                    hour: '2-digit', minute: '2-digit' 
-                  })}
-                </span>
               </div>
-            ))}
+              
+              <div className="flex items-center gap-3">
+                <Calendar className="h-5 w-5 text-emerald-500" />
+                <div>
+                  <div className="text-sm text-gray-500">{t('tournaments.startTime')}</div>
+                  <div className="font-semibold">{format(new Date(tournament.start_time), 'PPpp')}</div>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-3">
+                <Users className="h-5 w-5 text-blue-500" />
+                <div>
+                  <div className="text-sm text-gray-500">{t('tournaments.players')}</div>
+                  <div className="font-semibold">
+                    {tournament.registrations?.length || 0} / {tournament.max_players}
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
+          
+          <div className="flex-1 flex flex-col">
+            <h3 className="text-sm font-medium mb-2">{t('tournaments.registeredPlayers')}</h3>
+            {tournament.registrations && tournament.registrations.length > 0 ? (
+              <div className="space-y-2 max-h-[200px] overflow-y-auto">
+                {tournament.registrations.map((reg) => (
+                  <div key={reg.id} className="flex items-center gap-2 p-2 rounded-md bg-navy/50">
+                    <Avatar className="h-6 w-6">
+                      <AvatarImage src={reg.player?.avatar_url || ''} />
+                      <AvatarFallback>
+                        {reg.player?.alias?.substring(0, 2) || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="text-sm">
+                      {reg.player?.alias || t('tournaments.unknownPlayer')}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="flex-1 flex items-center justify-center p-6 text-gray-500 text-sm">
+                {t('tournaments.noRegistrations')}
+              </div>
+            )}
+          </div>
+        </div>
+        
+        {registered ? (
+          <Button 
+            className="w-full" 
+            variant="outline"
+            onClick={handleUnregister} 
+            disabled={loading}
+          >
+            {loading ? t('tournaments.cancelingRegistration') : t('tournaments.cancelRegistration')}
+          </Button>
         ) : (
-          <div className="flex justify-center items-center h-full">
-            <p className="text-gray-500">{t('noRegistrations', 'No hay jugadores registrados')}</p>
-          </div>
+          tournament.is_private ? (
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <Button className="w-full">{t('tournaments.register')}</Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>{t('tournaments.privateAccess')}</DialogTitle>
+                  <DialogDescription>
+                    {t('tournaments.enterAccessCode')}
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="py-4">
+                  <Label htmlFor="accessCode">{t('tournaments.accessCode')}</Label>
+                  <Input 
+                    id="accessCode"
+                    value={accessCode}
+                    onChange={(e) => setAccessCode(e.target.value)}
+                    placeholder={t('tournaments.enterCode')}
+                  />
+                </div>
+                <DialogFooter>
+                  <Button 
+                    variant="outline"
+                    onClick={() => setIsDialogOpen(false)}
+                  >
+                    {t('cancel')}
+                  </Button>
+                  <Button 
+                    onClick={handleRegister}
+                    disabled={loading || !accessCode}
+                    variant="primary"
+                  >
+                    {loading ? t('tournaments.registering') : t('tournaments.register')}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          ) : (
+            <Button 
+              className="w-full" 
+              onClick={handleRegister} 
+              disabled={loading}
+            >
+              {loading ? t('tournaments.registering') : t('tournaments.register')}
+            </Button>
+          )
         )}
-      </ScrollArea>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

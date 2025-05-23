@@ -39,3 +39,4 @@ BEGIN
   RETURN v_message_id;
 END;
 $$ LANGUAGE plpgsql;
+

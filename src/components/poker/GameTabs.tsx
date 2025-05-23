@@ -1,62 +1,46 @@
 
 import { useState } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useTranslation } from '@/hooks/useTranslation';
-import { MessageSquare, Clock, Users } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { GameChat } from './GameChat';
+import { PlayerList } from './PlayerList';
+import { HandHistory } from './HandHistory';
 import { PlayerAtTable } from '@/types/lobby';
 import { GameState } from '@/types/game';
-import { PlayerList } from './PlayerList';
-import { GameChat } from './GameChat';
-import { HandHistory } from './HandHistory';
 
 interface GameTabsProps {
-  gameState: GameState | null;
   tableId: string;
   players: PlayerAtTable[];
-  maxPlayers: number;
-  userId?: string;
+  gameState?: GameState | null;
 }
 
-export function GameTabs({ gameState, tableId, players, maxPlayers, userId }: GameTabsProps) {
-  const { t } = useTranslation();
-  const [activeTab, setActiveTab] = useState("chat");
+export function GameTabs({ tableId, players, gameState }: GameTabsProps) {
+  const [tab, setTab] = useState<string>('chat');
   
   return (
-    <Tabs defaultValue="chat" value={activeTab} onValueChange={setActiveTab} className="w-full">
-      <TabsList className="grid grid-cols-3">
-        <TabsTrigger value="chat" className="flex items-center">
-          <MessageSquare className="h-4 w-4 mr-2" />
-          {t('chat', 'Chat')}
+    <Tabs value={tab} onValueChange={setTab} className="w-full">
+      <TabsList className="w-full grid grid-cols-3 h-12">
+        <TabsTrigger value="chat" className="text-sm">
+          Chat
         </TabsTrigger>
-        <TabsTrigger value="players" className="flex items-center">
-          <Users className="h-4 w-4 mr-2" />
-          {t('players', 'Jugadores')} ({players.length}/{maxPlayers})
+        <TabsTrigger value="players" className="text-sm">
+          Players ({players.length})
         </TabsTrigger>
-        <TabsTrigger value="history" className="flex items-center">
-          <Clock className="h-4 w-4 mr-2" />
-          {t('handHistory', 'Historial')}
+        <TabsTrigger value="history" className="text-sm">
+          History
         </TabsTrigger>
       </TabsList>
       
-      <div className="mt-4 border border-emerald/10 rounded-md bg-navy-800/60">
-        <TabsContent value="chat" className="m-0">
-          <div className="h-64 md:h-80">
-            <GameChat tableId={tableId} userId={userId} />
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="players" className="m-0">
-          <div className="h-64 md:h-80 overflow-y-auto p-4">
-            <PlayerList players={players} gameState={gameState} />
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="history" className="m-0">
-          <div className="h-64 md:h-80 overflow-y-auto p-4">
-            <HandHistory />
-          </div>
-        </TabsContent>
-      </div>
+      <TabsContent value="chat" className="p-0 mt-4">
+        <GameChat tableId={tableId} />
+      </TabsContent>
+      
+      <TabsContent value="players" className="p-0 mt-4">
+        <PlayerList players={players} gameState={gameState} />
+      </TabsContent>
+      
+      <TabsContent value="history" className="p-0 mt-4">
+        <HandHistory tableId={tableId} />
+      </TabsContent>
     </Tabs>
   );
 }

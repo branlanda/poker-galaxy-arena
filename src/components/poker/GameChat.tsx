@@ -1,88 +1,73 @@
 
 import { useState, useEffect, useRef } from 'react';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/input';
 import { Send } from 'lucide-react';
-import { useTranslation } from '@/hooks/useTranslation';
-import { supabase } from '@/integrations/supabase/client';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { RoomMessage } from '@/types/lobby';
-import { motion, AnimatePresence } from 'framer-motion';
+import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/stores/auth';
+import { format } from 'date-fns';
 
 interface GameChatProps {
   tableId: string;
-  userId?: string;
 }
 
-export function GameChat({ tableId, userId }: GameChatProps) {
-  const { t } = useTranslation();
-  const [message, setMessage] = useState('');
+export function GameChat({ tableId }: GameChatProps) {
   const [messages, setMessages] = useState<RoomMessage[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [newMessage, setNewMessage] = useState('');
+  const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const [playerName, setPlayerName] = useState<string>('');
+  const { user } = useAuth();
   
-  // Scroll to bottom of chat when new messages arrive
-  useEffect(() => {
+  // Scroll to bottom when messages change
+  const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+  
+  useEffect(() => {
+    scrollToBottom();
   }, [messages]);
-  
-  // Fetch player name
+
+  // Load initial messages
   useEffect(() => {
-    if (!userId) return;
-    
-    const fetchPlayerName = async () => {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('alias')
-        .eq('id', userId)
-        .single();
-        
-      if (!error && data) {
-        setPlayerName(data.alias || 'Player');
-      }
-    };
-    
-    fetchPlayerName();
-  }, [userId]);
-  
-  // Fetch initial messages
-  useEffect(() => {
-    const fetchMessages = async () => {
-      setLoading(true);
+    const loadMessages = async () => {
       try {
-        // Replace this with a direct query since table_chat_messages isn't recognized
+        setLoading(true);
+        
         const { data, error } = await supabase
-          .rpc('get_table_chat_messages', { p_table_id: tableId })
-          .limit(50);
+          .rpc('get_table_chat_messages', { p_table_id: tableId });
           
-        if (error) throw error;
-        if (data) {
-          setMessages(data as RoomMessage[]);
-        } else {
-          setMessages([]);
+        if (error) {
+          console.error('Error loading chat messages:', error);
+          return;
         }
+        
+        // Cast the data to RoomMessage[] type
+        setMessages(data as unknown as RoomMessage[]);
       } catch (err) {
-        console.error('Error fetching messages:', err);
-        setMessages([]);
+        console.error('Failed to load chat messages:', err);
       } finally {
         setLoading(false);
       }
     };
     
-    fetchMessages();
-  }, [tableId]);
-  
-  // Set up realtime subscription
-  useEffect(() => {
+    if (tableId) {
+      loadMessages();
+    }
+    
+    // Set up realtime subscription for new messages
     const channel = supabase
-      .channel('table-chat')
+      .channel(`table-chat-${tableId}`)
       .on('postgres_changes', 
-        { event: 'INSERT', schema: 'public', table: 'table_chat_messages', filter: `table_id=eq.${tableId}` }, 
-        payload => {
-          // Cast the payload to our expected type
-          const newMessage = payload.new as unknown as RoomMessage;
-          setMessages(prev => [...prev, newMessage]);
+        { 
+          event: 'INSERT', 
+          schema: 'public', 
+          table: 'table_chat_messages',
+          filter: `table_id=eq.${tableId}`
+        }, 
+        (payload) => {
+          const newMessage = payload.new as RoomMessage;
+          setMessages(current => [...current, newMessage]);
         }
       )
       .subscribe();
@@ -91,105 +76,91 @@ export function GameChat({ tableId, userId }: GameChatProps) {
       supabase.removeChannel(channel);
     };
   }, [tableId]);
-  
-  const handleSendMessage = async () => {
-    if (!message.trim() || !userId || !playerName) return;
+
+  // Send a new message
+  const sendMessage = async () => {
+    if (!user || !newMessage.trim() || !tableId) return;
     
     try {
-      // Replace this with an RPC function
-      await supabase.rpc('insert_chat_message', {
-        p_table_id: tableId,
-        p_player_id: userId,
-        p_player_name: playerName,
-        p_message: message.trim()
-      });
+      setLoading(true);
       
-      setMessage('');
+      const { data, error } = await supabase
+        .rpc('insert_chat_message', {
+          p_table_id: tableId,
+          p_player_id: user.id,
+          p_player_name: user.alias || user.email || 'Anonymous',
+          p_message: newMessage.trim()
+        });
+      
+      if (error) {
+        console.error('Error sending message:', error);
+        return;
+      }
+      
+      setNewMessage('');
     } catch (err) {
-      console.error('Error sending message:', err);
+      console.error('Failed to send message:', err);
+    } finally {
+      setLoading(false);
     }
   };
-  
+
+  // Handle enter key to send message
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleSendMessage();
+      sendMessage();
     }
-  };
-  
-  const formatTime = (timestamp: string) => {
-    const date = new Date(timestamp);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {loading ? (
+    <div className="flex flex-col h-[400px] bg-navy/50 border border-emerald/10 rounded-lg">
+      <div className="flex-1 p-4 overflow-y-auto space-y-3">
+        {loading && messages.length === 0 ? (
           <div className="flex justify-center items-center h-full">
-            <p className="text-gray-500">{t('loadingMessages', 'Cargando mensajes...')}</p>
+            <div className="animate-pulse text-gray-500">Loading messages...</div>
           </div>
         ) : messages.length === 0 ? (
           <div className="flex justify-center items-center h-full">
-            <p className="text-gray-500">{t('noMessages', 'No hay mensajes aún')}</p>
+            <div className="text-gray-500">No messages yet. Start the conversation!</div>
           </div>
         ) : (
-          <AnimatePresence initial={false}>
-            {messages.map((msg) => (
-              <motion.div
-                key={msg.id}
-                className={`flex items-start gap-3 ${msg.player_id === userId ? 'justify-end' : ''}`}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
-              >
-                {msg.player_id !== userId && (
-                  <Avatar className="h-6 w-6">
-                    <AvatarFallback>{msg.player_name.substring(0, 2)}</AvatarFallback>
-                  </Avatar>
-                )}
-                
-                <div className={`max-w-[70%] ${msg.player_id === userId ? 'bg-emerald-950/30 border-emerald/30' : 'bg-navy-700/50 border-navy-600/50'} border p-3 rounded-lg`}>
-                  <div className="flex justify-between items-center mb-1 gap-4">
-                    <span className={`text-xs font-medium ${msg.player_id === userId ? 'text-emerald-400' : 'text-blue-400'}`}>
-                      {msg.player_name}
-                    </span>
-                    <span className="text-xs text-gray-500">
-                      {formatTime(msg.created_at)}
-                    </span>
-                  </div>
-                  <p className="text-sm break-words">{msg.message}</p>
-                </div>
-                
-                {msg.player_id === userId && (
-                  <Avatar className="h-6 w-6">
-                    <AvatarFallback>{msg.player_name.substring(0, 2)}</AvatarFallback>
-                  </Avatar>
-                )}
-              </motion.div>
-            ))}
-          </AnimatePresence>
+          messages.map((msg) => (
+            <div
+              key={msg.id}
+              className={`max-w-[80%] ${
+                msg.player_id === user?.id
+                  ? 'ml-auto bg-emerald-900/30 rounded-tl-lg rounded-bl-lg rounded-tr-lg'
+                  : 'mr-auto bg-navy-700/50 rounded-tr-lg rounded-br-lg rounded-tl-lg'
+              } p-2 text-sm`}
+            >
+              <div className={`font-medium text-xs ${msg.player_id === user?.id ? 'text-emerald-300' : 'text-amber-300'}`}>
+                {msg.player_name}
+                <span className="ml-2 text-gray-400 text-xs">
+                  {format(new Date(msg.created_at), 'HH:mm')}
+                </span>
+              </div>
+              <div className="mt-1 break-words">{msg.message}</div>
+            </div>
+          ))
         )}
         <div ref={messagesEndRef} />
       </div>
       
-      <div className="p-3 border-t border-emerald/10 bg-navy-900/30">
-        <div className="flex gap-2">
+      <div className="border-t border-emerald/10 p-2">
+        <div className="flex items-center gap-2">
           <Input
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder={t('typeMessage', 'Escribe un mensaje...')}
-            disabled={!userId}
+            placeholder="Type your message..."
+            disabled={loading || !user}
             className="flex-1"
           />
-          <Button 
-            onClick={handleSendMessage} 
-            disabled={!message.trim() || !userId}
+          <Button
             size="icon"
-            variant="ghost"
-            className="bg-emerald/10"
+            onClick={sendMessage}
+            disabled={loading || !newMessage.trim() || !user}
           >
             <Send className="h-4 w-4" />
           </Button>
