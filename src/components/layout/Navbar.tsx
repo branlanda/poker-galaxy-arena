@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/Button";
@@ -18,7 +19,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { MobileNav } from "./MobileNav";
 
 export function Navbar() {
-  const { user, signOut } = useAuth();
+  const { user, logout } = useAuth();
   const { t } = useTranslation();
   const { theme, setTheme } = useTheme();
   const [open, setOpen] = useState(false);
@@ -86,11 +87,11 @@ export function Navbar() {
                 >
                   <Avatar className="h-10 w-10">
                     <AvatarImage
-                      src={user.user_metadata?.avatar_url}
-                      alt={user.user_metadata?.name || "User"}
+                      src={user.avatarUrl}
+                      alt={user.alias || "User"}
                     />
                     <AvatarFallback>
-                      {(user.user_metadata?.name || "User")
+                      {(user.alias || "User")
                         .charAt(0)
                         .toUpperCase()}
                     </AvatarFallback>
@@ -101,7 +102,7 @@ export function Navbar() {
                 <DropdownMenuLabel>
                   <div className="flex flex-col space-y-1">
                     <p className="text-sm font-medium leading-none">
-                      {user.user_metadata?.name || "User"}
+                      {user.alias || "User"}
                     </p>
                     <p className="text-xs leading-none text-muted-foreground">
                       {user.email}
@@ -124,7 +125,7 @@ export function Navbar() {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   className="cursor-pointer"
-                  onClick={() => signOut()}
+                  onClick={() => logout()}
                 >
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>{t("signOut")}</span>
@@ -132,8 +133,8 @@ export function Navbar() {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <Button asChild size="sm">
-              <Link to="/login">{t("signIn")}</Link>
+            <Button size="sm" onClick={() => window.location.href = '/auth/login'}>
+              {t("signIn")}
             </Button>
           )}
         </div>

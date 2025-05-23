@@ -11,7 +11,7 @@ type MobileNavProps = {
 };
 
 export function MobileNav({ setOpen }: MobileNavProps) {
-  const { user, signOut } = useAuth();
+  const { user, logout } = useAuth();
   const { t } = useTranslation();
 
   const handleLinkClick = () => {
@@ -85,7 +85,7 @@ export function MobileNav({ setOpen }: MobileNavProps) {
             variant="ghost" 
             className="w-full justify-start"
             onClick={() => {
-              signOut();
+              logout();
               setOpen(false);
             }}
           >
@@ -98,7 +98,7 @@ export function MobileNav({ setOpen }: MobileNavProps) {
               className="w-full" 
               onClick={() => {
                 setOpen(false);
-                window.location.href = '/login';
+                window.location.href = '/auth/login';
               }}
             >
               {t("signIn")}
@@ -108,7 +108,7 @@ export function MobileNav({ setOpen }: MobileNavProps) {
               className="w-full" 
               onClick={() => {
                 setOpen(false);
-                window.location.href = '/signup';
+                window.location.href = '/auth/register';
               }}
             >
               {t("signUp")}
