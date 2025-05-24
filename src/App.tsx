@@ -34,7 +34,7 @@ const queryClient = new QueryClient({
 
 function App() {
   const [loading, setLoading] = useState(true);
-  const setUser = useAuth((s) => s.setUser);
+  const { setUser } = useAuth();
 
   // Use the AuthSync hook to keep authentication state in sync
   useAuthSync();
