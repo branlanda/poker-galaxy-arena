@@ -2,11 +2,12 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { toast } from '@/hooks/use-toast';
+import { TableType } from '@/types/lobby';
 
 export interface LobbyTable {
   id: string;
   name: string;
-  table_type: string;
+  table_type: TableType;
   status: string;
   small_blind: number;
   big_blind: number;
@@ -39,7 +40,7 @@ export function useLobbyTables() {
       if (fetchError) throw fetchError;
       
       setTables(data || []);
-      setHasMore(false); // For now, we're not implementing pagination
+      setHasMore(false);
     } catch (err: any) {
       setError(err.message);
       toast({
@@ -53,7 +54,6 @@ export function useLobbyTables() {
   };
 
   const loadMore = async () => {
-    // Placeholder for pagination functionality
     console.log('Load more tables');
   };
 

@@ -1,291 +1,175 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '@/stores/auth';
-import { useNavigate } from 'react-router-dom';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { useToast } from '@/hooks/use-toast';
-import { useTranslation } from '@/hooks/useTranslation';
-import { supabase } from '@/lib/supabase';
-import { ReportUserDialog } from '@/components/profile/ReportUserDialog';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import { useUserProfile } from '@/hooks/useUserProfile';
+import { useAuth } from '@/stores/auth';
+import { Loader2, Upload, Settings, BarChart3, Trophy, Users, MessageSquare } from 'lucide-react';
+import { StatisticsSection } from '@/components/profile/StatisticsSection';
+import { AchievementsSection } from '@/components/profile/AchievementsSection';
 import { FriendsSection } from '@/components/profile/FriendsSection';
+import { RecentGamesSection } from '@/components/profile/RecentGamesSection';
 import { NotificationsPanel } from '@/components/profile/NotificationsPanel';
-import { Bell } from 'lucide-react';
 
-const ProfilePage = () => {
-  const { user, updateUserProfile, logout } = useAuth();
-  const navigate = useNavigate();
-  const { toast } = useToast();
-  const { t } = useTranslation();
-  const [alias, setAlias] = useState(user?.alias || '');
-  const [showInLeaderboard, setShowInLeaderboard] = useState(user?.showInLeaderboard || false);
-  const [avatarUrl, setAvatarUrl] = useState(user?.avatarUrl || '');
-  const [loading, setLoading] = useState(false);
-  const [isDirty, setIsDirty] = useState(false);
-  const [reportDialogOpen, setReportDialogOpen] = useState(false);
-  const [notificationsOpen, setNotificationsOpen] = useState(false);
-  const [friends, setFriends] = useState<any[]>([]);
-  const [friendsLoading, setFriendsLoading] = useState(false);
-  
-  const reportedUserId = user?.id || '';
-  const reportedUserAlias = user?.alias || '';
+export default function ProfilePage() {
+  const { user } = useAuth();
+  const { profile, loading, updateProfile } = useUserProfile();
+  const [editing, setEditing] = useState(false);
+  const [alias, setAlias] = useState(profile?.alias || '');
+  const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    if (user) {
-      setAlias(user.alias || '');
-      setShowInLeaderboard(user.showInLeaderboard || false);
-      setAvatarUrl(user.avatarUrl || '');
+  React.useEffect(() => {
+    if (profile?.alias) {
+      setAlias(profile.alias);
     }
-  }, [user]);
+  }, [profile]);
 
-  useEffect(() => {
-    setIsDirty(
-      alias !== user?.alias ||
-      showInLeaderboard !== user?.showInLeaderboard ||
-      avatarUrl !== user?.avatarUrl
+  const handleSave = async () => {
+    if (!alias.trim()) return;
+    
+    try {
+      setSaving(true);
+      await updateProfile({ alias: alias.trim() });
+      setEditing(false);
+    } catch (error) {
+      console.error('Error saving profile:', error);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleCancel = () => {
+    setAlias(profile?.alias || '');
+    setEditing(false);
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
     );
-  }, [alias, showInLeaderboard, avatarUrl, user]);
-  
-  useEffect(() => {
-    fetchFriends();
-  }, [user]);
-
-  const fetchFriends = async () => {
-    if (!user) return;
-    
-    try {
-      setFriendsLoading(true);
-      const { data, error } = await supabase
-        .from('friends')
-        .select(`
-          id,
-          status,
-          friend:friend_id (
-            user_id,
-            alias,
-            avatar_url
-          )
-        `)
-        .eq('user_id', user.id)
-        .eq('status', 'ACCEPTED');
-      
-      if (error) throw error;
-      
-      setFriends(data || []);
-    } catch (error: any) {
-      toast({
-        title: t('errors.failedToLoad'),
-        description: error.message,
-        variant: 'destructive',
-      });
-    } finally {
-      setFriendsLoading(false);
-    }
-  };
-
-  const handleUpdateProfile = async () => {
-    setLoading(true);
-    try {
-      await updateUserProfile({
-        alias,
-        showInLeaderboard,
-        avatarUrl
-      });
-      toast({
-        title: t('profile.profileUpdated'),
-        description: t('profile.profileUpdatedSuccess'),
-      });
-    } catch (error: any) {
-      toast({
-        title: t('errors.updateFailed'),
-        description: error.message,
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleLogout = async () => {
-    await logout();
-    navigate('/login');
-  };
-  
-  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || e.target.files.length === 0) {
-      return;
-    }
-    
-    const file = e.target.files[0];
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${user?.id}.${fileExt}`;
-    const filePath = `${fileName}`;
-    
-    uploadAvatar(file, filePath);
-  };
-  
-  const uploadAvatar = async (file: File, filePath: string) => {
-    try {
-      setLoading(true);
-      
-      // Upload the image to Supabase storage
-      const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: false
-        });
-      
-      if (uploadError) {
-        throw uploadError;
-      }
-      
-      // Get public URL of the image
-      const { data: urlData } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(filePath);
-      
-      if (!urlData?.publicUrl) {
-        throw new Error('Could not retrieve public URL for avatar.');
-      }
-      
-      // Update the user profile with the new avatar URL
-      await updateUserProfile({ avatarUrl: urlData.publicUrl });
-      setAvatarUrl(urlData.publicUrl);
-      
-      toast({
-        title: t('profile.avatarUpdated'),
-        description: t('profile.avatarUpdatedSuccess'),
-      });
-    } catch (error: any) {
-      toast({
-        title: t('errors.uploadFailed'),
-        description: error.message,
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-  
-  const getInitials = (name: string) => {
-    return name?.substring(0, 2).toUpperCase() || 'U';
-  };
+  }
 
   return (
-    <div className="container mx-auto p-8 flex flex-col md:flex-row gap-8">
-      {/* Profile Section */}
-      <div className="md:w-1/3 space-y-6">
-        <div className="text-center">
-          <Avatar className="h-32 w-32 mx-auto">
-            {avatarUrl ? (
-              <AvatarImage src={avatarUrl} alt={alias} />
-            ) : (
-              <AvatarFallback className="bg-navy/50 text-emerald">
-                {getInitials(alias)}
-              </AvatarFallback>
-            )}
-          </Avatar>
-          
-          <Label htmlFor="avatar-input" className="mt-4 block text-sm font-medium text-gray-200 cursor-pointer hover:text-emerald">
-            {t('profile.changeAvatar')}
-          </Label>
-          <Input
-            type="file"
-            id="avatar-input"
-            accept="image/*"
-            className="hidden"
-            onChange={handleAvatarChange}
-          />
-          
-          <h2 className="text-2xl font-bold text-emerald mt-4">{alias}</h2>
-          <p className="text-gray-400">{user?.email}</p>
-        </div>
-        
-        <div className="space-y-4">
-          <div>
-            <Label htmlFor="alias" className="block text-sm font-medium text-gray-200">
-              {t('profile.alias')}
-            </Label>
-            <Input
-              type="text"
-              id="alias"
-              value={alias}
-              onChange={(e) => setAlias(e.target.value)}
-              className="mt-1 w-full"
-            />
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <Label htmlFor="showInLeaderboard" className="text-sm font-medium text-gray-200">
-              {t('profile.showInLeaderboard')}
-            </Label>
-            <Switch
-              id="showInLeaderboard"
-              checked={showInLeaderboard}
-              onCheckedChange={(checked) => setShowInLeaderboard(checked)}
-            />
-          </div>
-          
-          <Button 
-            variant="primary" 
-            onClick={handleUpdateProfile} 
-            disabled={!isDirty || loading}
-            loading={loading}
-            className="w-full"
-          >
-            {t('profile.updateProfile')}
-          </Button>
-          
-          <Button 
-            variant="destructive" 
-            onClick={() => setReportDialogOpen(true)}
-            className="w-full"
-          >
-            {t('profile.reportUser')}
-          </Button>
-          
-          <Button 
-            variant="secondary" 
-            onClick={handleLogout} 
-            className="w-full"
-          >
-            {t('logout')}
-          </Button>
-        </div>
+    <div className="container mx-auto px-4 py-8">
+      <div className="max-w-6xl mx-auto">
+        {/* Profile Header */}
+        <Card className="mb-8">
+          <CardContent className="p-6">
+            <div className="flex flex-col md:flex-row gap-6">
+              <div className="flex-shrink-0">
+                <div className="w-32 h-32 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-3xl font-bold">
+                  {(profile?.alias || user?.alias || 'U').charAt(0).toUpperCase()}
+                </div>
+              </div>
+              
+              <div className="flex-grow">
+                <div className="flex items-center gap-4 mb-4">
+                  {editing ? (
+                    <div className="flex items-center gap-2">
+                      <Input
+                        value={alias}
+                        onChange={(e) => setAlias(e.target.value)}
+                        className="text-xl font-bold max-w-xs"
+                        placeholder="Enter alias"
+                      />
+                      <Button size="sm" onClick={handleSave} disabled={saving}>
+                        {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Save'}
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={handleCancel}>
+                        Cancel
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-3">
+                      <h1 className="text-3xl font-bold">{profile?.alias || user?.alias || 'Anonymous'}</h1>
+                      <Button size="sm" variant="outline" onClick={() => setEditing(true)}>
+                        <Settings className="h-4 w-4 mr-2" />
+                        Edit
+                      </Button>
+                    </div>
+                  )}
+                </div>
+                
+                <div className="flex flex-wrap gap-2 mb-4">
+                  <Badge variant="secondary">Level 1</Badge>
+                  <Badge variant="secondary">Rookie</Badge>
+                  <Badge variant="secondary">0 XP</Badge>
+                </div>
+                
+                <div className="text-sm text-muted-foreground">
+                  <p>Member since {new Date().toLocaleDateString()}</p>
+                  {profile?.wallet_address && (
+                    <p className="font-mono mt-1">
+                      Wallet: {profile.wallet_address.substring(0, 6)}...{profile.wallet_address.substring(38)}
+                    </p>
+                  )}
+                </div>
+              </div>
+              
+              <div className="flex flex-col gap-2">
+                <Button variant="outline" size="sm">
+                  <Upload className="h-4 w-4 mr-2" />
+                  Upload Avatar
+                </Button>
+                <Button variant="outline" size="sm">
+                  <MessageSquare className="h-4 w-4 mr-2" />
+                  Send Message
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Profile Tabs */}
+        <Tabs defaultValue="statistics" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="statistics">
+              <BarChart3 className="h-4 w-4 mr-2" />
+              Statistics
+            </TabsTrigger>
+            <TabsTrigger value="achievements">
+              <Trophy className="h-4 w-4 mr-2" />
+              Achievements
+            </TabsTrigger>
+            <TabsTrigger value="friends">
+              <Users className="h-4 w-4 mr-2" />
+              Friends
+            </TabsTrigger>
+            <TabsTrigger value="recent">
+              Recent Games
+            </TabsTrigger>
+            <TabsTrigger value="notifications">
+              Notifications
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="statistics">
+            <StatisticsSection />
+          </TabsContent>
+
+          <TabsContent value="achievements">
+            <AchievementsSection />
+          </TabsContent>
+
+          <TabsContent value="friends">
+            <FriendsSection />
+          </TabsContent>
+
+          <TabsContent value="recent">
+            <RecentGamesSection />
+          </TabsContent>
+
+          <TabsContent value="notifications">
+            <NotificationsPanel />
+          </TabsContent>
+        </Tabs>
       </div>
-      
-      {/* Community Section */}
-      <div className="md:w-2/3 space-y-6">
-        <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-bold text-emerald">{t('community.title')}</h2>
-          <Button variant="outline" size="icon" onClick={() => setNotificationsOpen(true)}>
-            <Bell className="h-5 w-5" />
-          </Button>
-        </div>
-        
-        <FriendsSection 
-          friends={friends}
-          loading={friendsLoading}
-          onRefresh={fetchFriends}
-        />
-      </div>
-      
-      <ReportUserDialog
-        isOpen={reportDialogOpen}
-        onClose={() => setReportDialogOpen(false)}
-        reportedUserId={reportedUserId}
-        reportedUserAlias={reportedUserAlias}
-      />
-      
-      <NotificationsPanel
-        open={notificationsOpen}
-        onClose={() => setNotificationsOpen(false)}
-      />
     </div>
   );
-};
-
-export default ProfilePage;
+}

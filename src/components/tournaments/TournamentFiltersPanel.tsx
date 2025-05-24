@@ -1,137 +1,189 @@
 
 import React from 'react';
-import { Button } from '@/components/ui/Button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Card, CardContent } from '@/components/ui/card';
-import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { TournamentFilters, DEFAULT_TOURNAMENT_FILTERS, TournamentType, TournamentStatus } from '@/types/tournaments';
-import { useTranslation } from '@/hooks/useTranslation';
+import { Button } from '@/components/ui/Button';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { TournamentFilters, TournamentStatus, TournamentType } from '@/types/tournaments';
+import { Search, Filter, X } from 'lucide-react';
 
 export interface TournamentFiltersPanelProps {
   filters: TournamentFilters;
-  onChange: (filters: TournamentFilters) => void;
+  onFiltersChange: (filters: TournamentFilters) => void;
 }
 
-export function TournamentFiltersPanel({ 
-  filters, 
-  onChange 
-}: TournamentFiltersPanelProps) {
-  const { t } = useTranslation();
-  
-  const handleReset = () => {
-    onChange(DEFAULT_TOURNAMENT_FILTERS);
+export function TournamentFiltersPanel({ filters, onFiltersChange }: TournamentFiltersPanelProps) {
+  const updateFilters = (updates: Partial<TournamentFilters>) => {
+    onFiltersChange({ ...filters, ...updates });
   };
-  
-  const handleTypeChange = (value: string) => {
-    onChange({
-      ...filters,
-      type: value as TournamentType | 'ALL'
+
+  const clearFilters = () => {
+    onFiltersChange({
+      searchQuery: '',
+      status: [],
+      buyInMin: null,
+      buyInMax: null,
+      type: [],
+      isPrivate: null,
+      isFeatured: null
     });
   };
-  
-  const handleStatusChange = (value: string) => {
-    onChange({
-      ...filters,
-      status: value as TournamentStatus | 'ALL'
-    });
+
+  const hasActiveFilters = () => {
+    return filters.searchQuery ||
+           filters.status.length > 0 ||
+           filters.buyInMin !== null ||
+           filters.buyInMax !== null ||
+           filters.type.length > 0 ||
+           filters.isPrivate !== null ||
+           filters.isFeatured !== null;
   };
-  
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onChange({
-      ...filters,
-      searchQuery: e.target.value
-    });
-  };
-  
-  const handleShowPrivateChange = (checked: boolean) => {
-    onChange({
-      ...filters,
-      showPrivate: checked
-    });
-  };
-  
+
   return (
-    <Card>
-      <CardContent className="pt-6">
-        <div className="space-y-4">
-          <div>
-            <Label htmlFor="search">{t('search', 'Search')}</Label>
+    <Card className="h-fit">
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-lg flex items-center">
+            <Filter className="h-5 w-5 mr-2" />
+            Filters
+          </CardTitle>
+          {hasActiveFilters() && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={clearFilters}
+              className="text-xs"
+            >
+              <X className="h-3 w-3 mr-1" />
+              Clear
+            </Button>
+          )}
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {/* Search */}
+        <div className="space-y-2">
+          <Label htmlFor="search">Search</Label>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
             <Input
               id="search"
-              placeholder={t('tournaments.searchPlaceholder', 'Search tournaments...')}
-              value={filters.searchQuery || ''}
-              onChange={handleSearchChange}
-              className="mt-1"
+              placeholder="Tournament name..."
+              value={filters.searchQuery}
+              onChange={(e) => updateFilters({ searchQuery: e.target.value })}
+              className="pl-10"
             />
           </div>
-          
-          <div>
-            <Label htmlFor="type">{t('tournaments.type', 'Tournament Type')}</Label>
-            <Select
-              value={filters.type || 'ALL'}
-              onValueChange={handleTypeChange}
+        </div>
+
+        <Separator />
+
+        {/* Status Filter */}
+        <div className="space-y-3">
+          <Label>Status</Label>
+          <div className="flex flex-wrap gap-2">
+            {Object.values(TournamentStatus).map((status) => (
+              <Badge
+                key={status}
+                variant={filters.status.includes(status) ? "default" : "outline"}
+                className="cursor-pointer"
+                onClick={() => {
+                  const newStatus = filters.status.includes(status)
+                    ? filters.status.filter(s => s !== status)
+                    : [...filters.status, status];
+                  updateFilters({ status: newStatus });
+                }}
+              >
+                {status.replace('_', ' ')}
+              </Badge>
+            ))}
+          </div>
+        </div>
+
+        <Separator />
+
+        {/* Buy-in Range */}
+        <div className="space-y-3">
+          <Label>Buy-in Range</Label>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label htmlFor="buyInMin" className="text-xs text-gray-500">Min</Label>
+              <Input
+                id="buyInMin"
+                type="number"
+                placeholder="0"
+                value={filters.buyInMin || ''}
+                onChange={(e) => updateFilters({ 
+                  buyInMin: e.target.value ? parseFloat(e.target.value) : null 
+                })}
+              />
+            </div>
+            <div>
+              <Label htmlFor="buyInMax" className="text-xs text-gray-500">Max</Label>
+              <Input
+                id="buyInMax"
+                type="number"
+                placeholder="∞"
+                value={filters.buyInMax || ''}
+                onChange={(e) => updateFilters({ 
+                  buyInMax: e.target.value ? parseFloat(e.target.value) : null 
+                })}
+              />
+            </div>
+          </div>
+        </div>
+
+        <Separator />
+
+        {/* Tournament Type */}
+        <div className="space-y-3">
+          <Label>Type</Label>
+          <div className="space-y-2">
+            {Object.values(TournamentType).map((type) => (
+              <Badge
+                key={type}
+                variant={filters.type.includes(type) ? "default" : "outline"}
+                className="cursor-pointer w-full justify-center"
+                onClick={() => {
+                  const newType = filters.type.includes(type)
+                    ? filters.type.filter(t => t !== type)
+                    : [...filters.type, type];
+                  updateFilters({ type: newType });
+                }}
+              >
+                {type.replace('_', ' ')}
+              </Badge>
+            ))}
+          </div>
+        </div>
+
+        <Separator />
+
+        {/* Additional Filters */}
+        <div className="space-y-3">
+          <Label>Additional</Label>
+          <div className="space-y-2">
+            <Badge
+              variant={filters.isPrivate === false ? "default" : "outline"}
+              className="cursor-pointer w-full justify-center"
+              onClick={() => updateFilters({ 
+                isPrivate: filters.isPrivate === false ? null : false 
+              })}
             >
-              <SelectTrigger id="type" className="mt-1">
-                <SelectValue placeholder={t('all', 'All')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ALL">{t('all', 'All')}</SelectItem>
-                <SelectItem value="SIT_N_GO">{t('tournaments.types.sitNGo', 'Sit & Go')}</SelectItem>
-                <SelectItem value="FREEROLL">{t('tournaments.types.freeroll', 'Freeroll')}</SelectItem>
-                <SelectItem value="MULTI_TABLE">{t('tournaments.types.multiTable', 'Multi-Table')}</SelectItem>
-                <SelectItem value="SPECIAL_EVENT">{t('tournaments.types.specialEvent', 'Special Event')}</SelectItem>
-                <SelectItem value="SATELLITE">{t('tournaments.types.satellite', 'Satellite')}</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div>
-            <Label htmlFor="status">{t('tournaments.status.label', 'Status')}</Label>
-            <Select
-              value={filters.status || 'ALL'}
-              onValueChange={handleStatusChange}
+              Public Only
+            </Badge>
+            <Badge
+              variant={filters.isFeatured === true ? "default" : "outline"}
+              className="cursor-pointer w-full justify-center"
+              onClick={() => updateFilters({ 
+                isFeatured: filters.isFeatured === true ? null : true 
+              })}
             >
-              <SelectTrigger id="status" className="mt-1">
-                <SelectValue placeholder={t('all', 'All')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ALL">{t('all', 'All')}</SelectItem>
-                <SelectItem value="SCHEDULED">{t('tournaments.status.scheduled', 'Scheduled')}</SelectItem>
-                <SelectItem value="REGISTERING">{t('tournaments.status.registering', 'Registering')}</SelectItem>
-                <SelectItem value="RUNNING">{t('tournaments.status.running', 'Running')}</SelectItem>
-                <SelectItem value="BREAK">{t('tournaments.status.break', 'Break')}</SelectItem>
-                <SelectItem value="FINAL_TABLE">{t('tournaments.status.finalTable', 'Final Table')}</SelectItem>
-                <SelectItem value="COMPLETED">{t('tournaments.status.completed', 'Completed')}</SelectItem>
-              </SelectContent>
-            </Select>
+              Featured Only
+            </Badge>
           </div>
-          
-          <div className="flex items-center justify-between">
-            <Label htmlFor="showPrivate" className="cursor-pointer">
-              {t('tournaments.showPrivate', 'Show private tournaments')}
-            </Label>
-            <Switch 
-              id="showPrivate" 
-              checked={filters.showPrivate || false}
-              onCheckedChange={handleShowPrivateChange}
-            />
-          </div>
-          
-          <Button 
-            variant="outline" 
-            className="w-full mt-2"
-            onClick={handleReset}
-          >
-            {t('resetFilters', 'Reset Filters')}
-          </Button>
         </div>
       </CardContent>
     </Card>

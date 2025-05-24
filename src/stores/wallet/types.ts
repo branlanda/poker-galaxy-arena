@@ -12,7 +12,10 @@ export interface Transaction {
 }
 
 export interface WalletState {
+  address: string | null;
   balance: number;
+  ethBalance: string | null;
+  connecting: boolean;
   transactions: Transaction[];
   loading: boolean;
   error: string | null;
@@ -21,8 +24,11 @@ export interface WalletState {
 }
 
 export interface WalletActions {
-  // Balance management
-  updateBalance: (newBalance: number) => void;
+  // Address and connection management
+  setAddress: (address: string | null) => void;
+  setBalance: (balance: number) => void;
+  setEthBalance: (ethBalance: string | null) => void;
+  setConnecting: (connecting: boolean) => void;
   
   // Transaction management
   addTransaction: (transaction: Transaction) => void;
@@ -38,6 +44,10 @@ export interface WalletActions {
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   clearError: () => void;
+  
+  // Legacy methods for compatibility
+  loadTransactions: () => Promise<void>;
+  verifyTransactionHash: (txHash: string) => Promise<void>;
 }
 
 export type WalletStore = WalletState & WalletActions;

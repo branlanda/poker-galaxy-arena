@@ -1,3 +1,4 @@
+
 import React, {
   createContext,
   useState,
@@ -5,16 +6,16 @@ import React, {
   useContext,
   ReactNode,
 } from 'react';
-import { ethers } from 'ethers';
+import { ethers, BrowserProvider, JsonRpcSigner } from 'ethers';
 import { useAuth } from '@/stores/auth';
 import { supabase } from '@/lib/supabase';
 
 interface Web3ContextType {
-  provider: ethers.providers.Web3Provider | null;
+  provider: BrowserProvider | null;
   account: string | null;
   connectWallet: () => Promise<void>;
   disconnectWallet: () => void;
-  signer: ethers.providers.JsonRpcSigner | null;
+  signer: JsonRpcSigner | null;
 }
 
 const Web3Context = createContext<Web3ContextType | undefined>(undefined);
@@ -24,9 +25,9 @@ interface Web3ProviderProps {
 }
 
 export const Web3Provider: React.FC<Web3ProviderProps> = ({ children }) => {
-  const [provider, setProvider] = useState<ethers.providers.Web3Provider | null>(null);
+  const [provider, setProvider] = useState<BrowserProvider | null>(null);
   const [account, setAccount] = useState<string | null>(null);
-  const [signer, setSigner] = useState<ethers.providers.JsonRpcSigner | null>(null);
+  const [signer, setSigner] = useState<JsonRpcSigner | null>(null);
   const { setUser } = useAuth();
 
   useEffect(() => {
@@ -34,14 +35,14 @@ export const Web3Provider: React.FC<Web3ProviderProps> = ({ children }) => {
     const checkExistingConnection = async () => {
       if (window.ethereum) {
         try {
-          const web3Provider = new ethers.providers.Web3Provider(window.ethereum as any);
+          const web3Provider = new BrowserProvider(window.ethereum as any);
           const accounts = await web3Provider.listAccounts();
 
           if (accounts.length > 0) {
-            const account = accounts[0];
+            const account = accounts[0].address;
             setProvider(web3Provider);
             setAccount(account);
-            setSigner(web3Provider.getSigner(account));
+            setSigner(await web3Provider.getSigner());
           }
         } catch (error) {
           console.error("Error checking existing connection:", error);
@@ -56,13 +57,13 @@ export const Web3Provider: React.FC<Web3ProviderProps> = ({ children }) => {
     if (window.ethereum) {
       try {
         await window.ethereum.request({ method: 'eth_requestAccounts' });
-        const web3Provider = new ethers.providers.Web3Provider(window.ethereum as any);
+        const web3Provider = new BrowserProvider(window.ethereum as any);
         const accounts = await web3Provider.listAccounts();
-        const account = accounts[0];
+        const account = accounts[0].address;
 
         setProvider(web3Provider);
         setAccount(account);
-        setSigner(web3Provider.getSigner(account));
+        setSigner(await web3Provider.getSigner());
 
         // Fetch or create user profile in Supabase
         const { data: existingUser, error: selectError } = await supabase

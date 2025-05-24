@@ -1,84 +1,54 @@
 
 import { useState, useEffect } from 'react';
-import { Tournament, TournamentDetail, TournamentFilters } from '@/types/tournaments';
 import { supabase } from '@/lib/supabase';
-import { useToast } from '@/hooks/use-toast';
-import { useTranslation } from '@/hooks/useTranslation';
+import { toast } from '@/hooks/use-toast';
+import { Tournament, TournamentFilters, DEFAULT_TOURNAMENT_FILTERS } from '@/types/tournaments';
 
-export function useTournaments(filters?: TournamentFilters) {
+export function useTournaments() {
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const { toast } = useToast();
-  const { t } = useTranslation();
-  
+  const [error, setError] = useState('');
+  const [filters, setFilters] = useState<TournamentFilters>(DEFAULT_TOURNAMENT_FILTERS);
+
   const fetchTournaments = async () => {
-    setLoading(true);
-    setError(null);
     try {
-      let query = supabase
-        .from('tournaments')
-        .select('*');
+      setLoading(true);
+      setError('');
       
-      // Apply filters if provided
-      if (filters) {
-        if (filters.searchQuery) {
-          query = query.ilike('name', `%${filters.searchQuery}%`);
-        }
+      const { data, error: fetchError } = await supabase
+        .from('tournaments_new')
+        .select('*')
+        .order('created_at', { ascending: false });
         
-        if (filters.type && filters.type !== 'ALL') {
-          query = query.eq('tournament_type', filters.type);
-        }
-        
-        if (filters.status && filters.status !== 'ALL') {
-          query = query.eq('status', filters.status);
-        }
-        
-        if (!filters.showPrivate) {
-          query = query.eq('is_private', false);
-        }
-        
-        if (filters.buyInRange) {
-          query = query
-            .gte('buy_in', filters.buyInRange[0])
-            .lte('buy_in', filters.buyInRange[1]);
-        }
-      }
-      
-      query = query.order('start_date', { ascending: true });
-      
-      const { data, error } = await query;
-      
-      if (error) {
-        throw error;
-      }
+      if (fetchError) throw fetchError;
       
       setTournaments(data || []);
-    } catch (error: any) {
-      console.error('Error fetching tournaments:', error);
-      setError(error.message || t('errors.tryAgain'));
+    } catch (err: any) {
+      setError(err.message);
       toast({
-        title: t('errors.failedToLoad'),
-        description: error.message || t('errors.tryAgain'),
+        title: 'Error',
+        description: 'Failed to fetch tournaments',
         variant: 'destructive',
       });
     } finally {
       setLoading(false);
     }
   };
-  
+
   const refreshTournaments = () => {
     fetchTournaments();
   };
-  
+
   useEffect(() => {
     fetchTournaments();
-  }, [filters?.searchQuery, filters?.type, filters?.status, filters?.showPrivate, filters?.buyInRange]);
-  
+  }, []);
+
   return {
     tournaments,
     loading,
     error,
+    filters,
+    setFilters,
     fetchTournaments,
     refreshTournaments
   };

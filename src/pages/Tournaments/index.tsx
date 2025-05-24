@@ -1,6 +1,7 @@
 
-import { TournamentLobby } from './TournamentLobby';
-import TournamentDetail from './TournamentDetail';
-import { TournamentCreateDialog } from './TournamentCreateDialog';
+import { lazy } from 'react';
 
-export { TournamentLobby, TournamentDetail, TournamentCreateDialog };
+const TournamentLobby = lazy(() => import('./TournamentLobby'));
+
+export { TournamentLobby };
+export default TournamentLobby;

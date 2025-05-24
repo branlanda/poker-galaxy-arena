@@ -11,6 +11,8 @@ export interface PendingTransaction {
   status: string;
   blockchain_tx_hash?: string;
   created_at: string;
+  verificationStatus?: 'unverified' | 'verified' | 'flagged';
+  userName?: string;
 }
 
 export function useTransactionVerification() {
@@ -23,13 +25,22 @@ export function useTransactionVerification() {
       setLoading(true);
       const { data, error } = await supabase
         .from('transactions')
-        .select('*')
+        .select(`
+          *,
+          profiles:user_id (alias)
+        `)
         .eq('status', 'pending')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
 
-      setTransactions(data || []);
+      const transformedData = data?.map(tx => ({
+        ...tx,
+        userName: tx.profiles?.alias || 'Unknown',
+        verificationStatus: 'unverified' as const
+      })) || [];
+
+      setTransactions(transformedData);
     } catch (error: any) {
       toast({
         title: 'Error',
@@ -81,11 +92,85 @@ export function useTransactionVerification() {
     }
   };
 
+  const approveTransaction = async (transactionId: string) => {
+    try {
+      const { error } = await supabase
+        .from('transactions')
+        .update({ status: 'confirmed' })
+        .eq('id', transactionId);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Transaction approved',
+        description: 'Transaction has been approved',
+      });
+
+      await fetchPendingTransactions();
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const rejectTransaction = async (transactionId: string) => {
+    try {
+      const { error } = await supabase
+        .from('transactions')
+        .update({ status: 'failed' })
+        .eq('id', transactionId);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Transaction rejected',
+        description: 'Transaction has been rejected',
+      });
+
+      await fetchPendingTransactions();
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const flagTransaction = async (transactionId: string) => {
+    try {
+      setTransactions(prev => 
+        prev.map(tx => 
+          tx.id === transactionId 
+            ? { ...tx, verificationStatus: 'flagged' as const }
+            : tx
+        )
+      );
+
+      toast({
+        title: 'Transaction flagged',
+        description: 'Transaction has been flagged for review',
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
+  };
+
   return {
     verifying,
     transactions,
     loading,
     fetchPendingTransactions,
-    verifyTransaction
+    verifyTransaction,
+    approveTransaction,
+    rejectTransaction,
+    flagTransaction
   };
 }

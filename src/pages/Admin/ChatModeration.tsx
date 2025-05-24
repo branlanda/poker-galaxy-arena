@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/Button';
@@ -76,16 +75,16 @@ export default function ChatModeration() {
       if (error) throw error;
 
       // Transform the data to match the ReportedMessage interface
-      const transformedData: ReportedMessage[] = data.map(report => ({
+      const transformedData: ReportedMessage[] = (data || []).map((report: any) => ({
         id: report.reported_message_id,
-        user_id: report.reported_messages.user_id,
-        username: report.reported_messages.users.username,
-        message: report.reported_messages.message,
-        created_at: report.reported_messages.created_at,
+        user_id: report.reported_messages?.user_id || '',
+        username: report.reported_messages?.users?.username || 'Unknown',
+        message: report.reported_messages?.message || '',
+        created_at: report.reported_messages?.created_at || '',
         reported: true,
         is_flagged: true,
         reporter_id: report.reporter_id,
-        reporter_name: report.users.username,
+        reporter_name: report.users?.username || 'Unknown',
         reason: report.reason,
         report_date: report.created_at,
         status: report.status
@@ -97,7 +96,7 @@ export default function ChatModeration() {
       toast({
         title: 'Error',
         description: 'Could not load reported messages',
-        variant: 'default',
+        variant: 'destructive',
       });
     } finally {
       setLoading(false);
@@ -113,13 +112,13 @@ export default function ChatModeration() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setFilteredWords(data);
+      setFilteredWords(data || []);
     } catch (error) {
       console.error('Error fetching filtered words:', error);
       toast({
         title: 'Error',
         description: 'Could not load filtered words',
-        variant: 'default',
+        variant: 'destructive',
       });
     } finally {
       setLoading(false);
@@ -145,10 +144,10 @@ export default function ChatModeration() {
       if (error) throw error;
 
       // Transform the data to match the ChatMessage interface
-      const transformedData: ChatMessage[] = data.map(message => ({
+      const transformedData: ChatMessage[] = (data || []).map((message: any) => ({
         id: message.id,
         user_id: message.user_id,
-        username: message.users.username,
+        username: message.users?.username || 'Unknown',
         message: message.message,
         created_at: message.created_at,
         reported: false,
@@ -161,7 +160,7 @@ export default function ChatModeration() {
       toast({
         title: 'Error',
         description: 'Could not load recent messages',
-        variant: 'default',
+        variant: 'destructive',
       });
     } finally {
       setLoading(false);
@@ -194,7 +193,7 @@ export default function ChatModeration() {
       toast({
         title: 'Error',
         description: 'Could not add the filtered word',
-        variant: 'default',
+        variant: 'destructive',
       });
     }
   }
@@ -219,7 +218,7 @@ export default function ChatModeration() {
       toast({
         title: 'Error',
         description: 'Could not remove the filtered word',
-        variant: 'default',
+        variant: 'destructive',
       });
     }
   }
@@ -249,7 +248,7 @@ export default function ChatModeration() {
       toast({
         title: 'Error',
         description: 'Could not update the report status',
-        variant: 'default',
+        variant: 'destructive',
       });
     }
   }
@@ -272,7 +271,7 @@ export default function ChatModeration() {
       toast({
         title: 'Error',
         description: 'Could not ban the user',
-        variant: 'default',
+        variant: 'destructive',
       });
     }
   }
@@ -299,7 +298,7 @@ export default function ChatModeration() {
       toast({
         title: 'Error',
         description: 'Could not delete the message',
-        variant: 'default',
+        variant: 'destructive',
       });
     }
   }
