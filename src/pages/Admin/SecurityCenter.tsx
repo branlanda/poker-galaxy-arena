@@ -87,7 +87,7 @@ export default function SecurityCenter() {
                     </Button>
                     <Button 
                       size="sm" 
-                      variant="destructive"
+                      variant="outline"
                       onClick={() => handleBanUser(alert.userId)}
                     >
                       Ban User
@@ -201,7 +201,7 @@ export default function SecurityCenter() {
                     </Button>
                     <Button 
                       size="sm" 
-                      variant="destructive"
+                      variant="outline"
                       onClick={() => flagTransaction(tx.id)}
                     >
                       Flag

@@ -22,10 +22,10 @@ export function TournamentFiltersPanel({ filters, onFiltersChange }: TournamentF
   const clearFilters = () => {
     onFiltersChange({
       searchQuery: '',
-      status: [],
+      status: 'ALL',
       buyInMin: null,
       buyInMax: null,
-      type: [],
+      type: 'ALL',
       isPrivate: null,
       isFeatured: null
     });
@@ -33,17 +33,13 @@ export function TournamentFiltersPanel({ filters, onFiltersChange }: TournamentF
 
   const hasActiveFilters = () => {
     return filters.searchQuery ||
-           (filters.status && Array.isArray(filters.status) && filters.status.length > 0) ||
+           (filters.status && filters.status !== 'ALL') ||
            filters.buyInMin !== null ||
            filters.buyInMax !== null ||
-           (filters.type && Array.isArray(filters.type) && filters.type.length > 0) ||
+           (filters.type && filters.type !== 'ALL') ||
            filters.isPrivate !== null ||
            filters.isFeatured !== null;
   };
-
-  // Ensure status and type are arrays
-  const statusArray = Array.isArray(filters.status) ? filters.status : [];
-  const typeArray = Array.isArray(filters.type) ? filters.type : [];
 
   return (
     <Card className="h-fit">
@@ -88,16 +84,20 @@ export function TournamentFiltersPanel({ filters, onFiltersChange }: TournamentF
         <div className="space-y-3">
           <Label>Status</Label>
           <div className="flex flex-wrap gap-2">
+            <Badge
+              variant={filters.status === 'ALL' ? "default" : "outline"}
+              className="cursor-pointer"
+              onClick={() => updateFilters({ status: 'ALL' })}
+            >
+              All
+            </Badge>
             {Object.values(TournamentStatus).map((status) => (
               <Badge
                 key={status}
-                variant={statusArray.includes(status) ? "default" : "outline"}
+                variant={filters.status === status ? "default" : "outline"}
                 className="cursor-pointer"
                 onClick={() => {
-                  const newStatus = statusArray.includes(status)
-                    ? statusArray.filter(s => s !== status)
-                    : [...statusArray, status];
-                  updateFilters({ status: newStatus });
+                  updateFilters({ status: status });
                 }}
               >
                 {status.replace('_', ' ')}
@@ -145,16 +145,20 @@ export function TournamentFiltersPanel({ filters, onFiltersChange }: TournamentF
         <div className="space-y-3">
           <Label>Type</Label>
           <div className="space-y-2">
+            <Badge
+              variant={filters.type === 'ALL' ? "default" : "outline"}
+              className="cursor-pointer w-full justify-center"
+              onClick={() => updateFilters({ type: 'ALL' })}
+            >
+              All Types
+            </Badge>
             {Object.values(TournamentType).map((type) => (
               <Badge
                 key={type}
-                variant={typeArray.includes(type) ? "default" : "outline"}
+                variant={filters.type === type ? "default" : "outline"}
                 className="cursor-pointer w-full justify-center"
                 onClick={() => {
-                  const newType = typeArray.includes(type)
-                    ? typeArray.filter(t => t !== type)
-                    : [...typeArray, type];
-                  updateFilters({ type: newType });
+                  updateFilters({ type: type });
                 }}
               >
                 {type.replace('_', ' ')}
