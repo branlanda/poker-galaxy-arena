@@ -19,7 +19,7 @@ import { Web3Provider } from './providers/Web3Provider';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from "@/components/ui/toaster";
 import { AppLayout } from './components/layout/AppLayout';
-import { TournamentLobby, TournamentDetail, TournamentCreateDialog } from './pages/Tournaments';
+import { TournamentLobby, TournamentDetail } from './pages/Tournaments';
 import { AchievementsPage, LeaderboardsPage } from './pages/Gamification';
 
 // Create a client
@@ -82,9 +82,9 @@ function App() {
             {/* Redirect /users to /admin/users */}
             <Route path="/users" element={<Navigate to="/admin/users" replace />} />
             
-            {/* All other routes with standard layout */}
+            {/* All other routes with standard layout and consistent breadcrumbs */}
             <Route path="/" element={
-              <AppLayout>
+              <AppLayout showBreadcrumbs={false}>
                 <DashboardPage />
               </AppLayout>
             } />

@@ -13,7 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Menu, LogOut, User, Settings, Moon, Sun, Trophy, Target } from "lucide-react";
+import { Menu, LogOut, User, Settings, Moon, Sun, Trophy, Target, Users, Gamepad2, DollarSign } from "lucide-react";
 import { useTheme } from "@/hooks/useTheme";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { MobileNav } from "./MobileNav";
@@ -32,7 +32,7 @@ export function Navbar() {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <nav className="sticky top-0 z-30 w-full backdrop-blur-sm border-b bg-navy/80 shadow-sm border-emerald/20">
+    <nav className="sticky top-0 z-30 w-full backdrop-blur-sm border-b bg-navy/95 shadow-sm border-emerald/20">
       <div className="container flex h-16 items-center justify-between">
         <div className="flex items-center gap-2">
           <Sheet open={open} onOpenChange={setOpen}>
@@ -47,11 +47,12 @@ export function Navbar() {
             </SheetContent>
           </Sheet>
           <Link to="/" className="flex items-center gap-2">
+            <Gamepad2 className="h-6 w-6 text-emerald" />
             <span className="font-bold text-xl text-emerald">Poker Galaxy</span>
           </Link>
         </div>
 
-        <div className="hidden md:flex items-center gap-6">
+        <div className="hidden lg:flex items-center gap-6">
           <Link 
             to="/" 
             className={`text-sm font-medium transition-colors hover:text-emerald ${
@@ -62,36 +63,39 @@ export function Navbar() {
           </Link>
           <Link 
             to="/lobby" 
-            className={`text-sm font-medium transition-colors hover:text-emerald ${
+            className={`text-sm font-medium transition-colors hover:text-emerald flex items-center gap-1 ${
               isActive('/lobby') ? 'text-emerald' : 'text-gray-300'
             }`}
           >
+            <Users className="h-4 w-4" />
             {t('lobby', 'Lobby')}
           </Link>
           <Link 
             to="/tournaments" 
-            className={`text-sm font-medium transition-colors hover:text-emerald ${
+            className={`text-sm font-medium transition-colors hover:text-emerald flex items-center gap-1 ${
               isActive('/tournaments') ? 'text-emerald' : 'text-gray-300'
             }`}
           >
+            <Trophy className="h-4 w-4" />
             {t('tournaments', 'Tournaments')}
           </Link>
           <Link 
             to="/leaderboards" 
-            className={`text-sm font-medium transition-colors hover:text-emerald ${
+            className={`text-sm font-medium transition-colors hover:text-emerald flex items-center gap-1 ${
               isActive('/leaderboards') ? 'text-emerald' : 'text-gray-300'
             }`}
           >
+            <Target className="h-4 w-4" />
             {t('leaderboards', 'Leaderboards')}
           </Link>
           {user && (
             <Link 
               to="/achievements" 
-              className={`text-sm font-medium transition-colors hover:text-emerald ${
+              className={`text-sm font-medium transition-colors hover:text-emerald flex items-center gap-1 ${
                 isActive('/achievements') ? 'text-emerald' : 'text-gray-300'
               }`}
             >
-              <Trophy className="h-4 w-4 inline mr-1" />
+              <Trophy className="h-4 w-4" />
               {t('achievements', 'Achievements')}
             </Link>
           )}
@@ -124,7 +128,7 @@ export function Navbar() {
                       src={user.avatarUrl}
                       alt={user.alias || "User"}
                     />
-                    <AvatarFallback>
+                    <AvatarFallback className="bg-emerald/20 text-emerald">
                       {(user.alias || "User")
                         .charAt(0)
                         .toUpperCase()}
@@ -147,19 +151,25 @@ export function Navbar() {
                 <DropdownMenuItem asChild>
                   <Link to="/profile" className="text-gray-300 hover:text-white">
                     <User className="mr-2 h-4 w-4" />
-                    <span>{t("profile")}</span>
+                    <span>{t("profile", "Profile")}</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link to="/funds" className="text-gray-300 hover:text-white">
-                    <Target className="mr-2 h-4 w-4" />
+                    <DollarSign className="mr-2 h-4 w-4" />
                     <span>{t("funds", "Funds")}</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/achievements" className="text-gray-300 hover:text-white">
+                    <Trophy className="mr-2 h-4 w-4" />
+                    <span>{t("achievements", "Achievements")}</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link to="/settings" className="text-gray-300 hover:text-white">
                     <Settings className="mr-2 h-4 w-4" />
-                    <span>{t("settings")}</span>
+                    <span>{t("settings", "Settings")}</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator className="bg-emerald/20" />
@@ -168,14 +178,19 @@ export function Navbar() {
                   onClick={() => logout()}
                 >
                   <LogOut className="mr-2 h-4 w-4" />
-                  <span>{t("signOut")}</span>
+                  <span>{t("signOut", "Sign Out")}</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <Button size="sm" onClick={() => window.location.href = '/login'}>
-              {t("signIn")}
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" asChild>
+                <Link to="/login">{t("signIn", "Sign In")}</Link>
+              </Button>
+              <Button size="sm" asChild>
+                <Link to="/signup">{t("signUp", "Sign Up")}</Link>
+              </Button>
+            </div>
           )}
         </div>
       </div>
