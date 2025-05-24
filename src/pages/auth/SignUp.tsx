@@ -30,12 +30,17 @@ const SignUp = () => {
     setError(null);
     
     if (!email || !password || !alias) {
-      setError("All fields are required");
+      setError("Todos los campos son requeridos");
       return;
     }
     
     if (alias.length < 3 || alias.length > 24) {
-      setError("Alias must be between 3 and 24 characters");
+      setError("El alias debe tener entre 3 y 24 caracteres");
+      return;
+    }
+
+    if (password.length < 6) {
+      setError("La contraseña debe tener al menos 6 caracteres");
       return;
     }
     
@@ -47,48 +52,64 @@ const SignUp = () => {
         email, 
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          emailRedirectTo: `${window.location.origin}/lobby`,
         }
       });
       
-      if (authError) throw authError;
+      if (authError) {
+        // Handle specific error cases
+        if (authError.message.includes('rate limit')) {
+          throw new Error('Has enviado demasiados emails. Por favor espera unos minutos antes de intentar de nuevo.');
+        }
+        if (authError.message.includes('already registered')) {
+          throw new Error('Este email ya está registrado. Intenta iniciar sesión en su lugar.');
+        }
+        throw authError;
+      }
       
       if (authData.user && authData.session) {
-        // Wait a moment for the auth session to be established
-        await new Promise(resolve => setTimeout(resolve, 100));
-        
-        // Create player profile - the RLS policy should now work since user is authenticated
-        const { error: profileError } = await supabase
-          .from('players')
-          .insert([{ 
-            user_id: authData.user.id, 
-            alias,
-            show_public_stats: true
-          }]);
+        // User is logged in immediately
+        try {
+          // Create player profile
+          const { error: profileError } = await supabase
+            .from('players')
+            .insert([{ 
+              user_id: authData.user.id, 
+              alias,
+              show_public_stats: true
+            }]);
+            
+          if (profileError) {
+            console.error("Profile creation error:", profileError);
+            // Don't throw here, user is already created
+            toast.error("Cuenta creada pero hubo un problema con el perfil");
+          }
           
-        if (profileError) {
-          console.error("Profile creation error:", profileError);
-          throw new Error(`Failed to create player profile: ${profileError.message}`);
+          // Update user state
+          setUser({
+            id: authData.user.id,
+            email: authData.user.email || undefined,
+            alias,
+            showInLeaderboard: true
+          });
+          
+          toast.success("¡Cuenta creada exitosamente!");
+          navigate('/lobby');
+        } catch (profileErr: any) {
+          console.error("Profile setup error:", profileErr);
+          toast.success("Cuenta creada. Completa tu perfil en la configuración.");
+          navigate('/lobby');
         }
-        
-        // Update user state
-        setUser({
-          id: authData.user.id,
-          email: authData.user.email || undefined,
-          alias,
-          showInLeaderboard: true
-        });
-        
-        toast.success("Account created successfully!");
-        navigate('/lobby');
-      } else {
+      } else if (authData.user) {
         // User created but needs email confirmation
-        toast.success("Please check your email to confirm your account!");
+        toast.success("¡Registro exitoso! Revisa tu email para confirmar tu cuenta.");
+        setError("Revisa tu email y haz clic en el enlace de confirmación para activar tu cuenta.");
       }
     } catch (error: any) {
       console.error("Signup error:", error);
-      setError(error.message || "Failed to create account");
-      toast.error(error.message || "Failed to create account");
+      const errorMessage = error.message || "Error al crear la cuenta";
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -98,8 +119,8 @@ const SignUp = () => {
     <div className="flex min-h-screen items-center justify-center bg-navy p-4">
       <div className="w-full max-w-md space-y-8 rounded-xl bg-navy/50 p-8 shadow-lg backdrop-blur-md border border-emerald/20">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-emerald">Create Your Account</h1>
-          <p className="text-gray-400 mt-2">Join our poker community and start playing</p>
+          <h1 className="text-2xl font-bold text-emerald">Crear Cuenta</h1>
+          <p className="text-gray-400 mt-2">Únete a nuestra comunidad de poker</p>
         </div>
         
         {error && (
@@ -115,7 +136,7 @@ const SignUp = () => {
             <Input
               id="email"
               type="email"
-              placeholder="you@example.com"
+              placeholder="tu@ejemplo.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -126,7 +147,7 @@ const SignUp = () => {
           </div>
           
           <div className="space-y-2">
-            <label htmlFor="password" className="block text-sm font-medium text-gray-200">Password</label>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-200">Contraseña</label>
             <Input
               id="password"
               type="password"
@@ -134,21 +155,23 @@ const SignUp = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              minLength={6}
               className="w-full"
               disabled={loading}
               autoComplete="new-password"
             />
+            <p className="text-xs text-gray-400">Mínimo 6 caracteres</p>
           </div>
           
           <div className="space-y-2">
             <label htmlFor="alias" className="block text-sm font-medium text-gray-200">
-              Poker Alias
-              <span className="text-xs text-gray-400 ml-2">(3-24 characters)</span>
+              Alias de Poker
+              <span className="text-xs text-gray-400 ml-2">(3-24 caracteres)</span>
             </label>
             <Input
               id="alias"
               type="text"
-              placeholder="PokerMaster"
+              placeholder="MaestroPoker"
               value={alias}
               onChange={(e) => setAlias(e.target.value)}
               required
@@ -165,14 +188,14 @@ const SignUp = () => {
             loading={loading}
             fullWidth
           >
-            {loading ? "Creating Account..." : "Sign Up"}
+            {loading ? "Creando cuenta..." : "Registrarse"}
           </Button>
         </form>
         
         <div className="text-center text-gray-400 text-sm mt-6">
-          Already have an account?{" "}
+          ¿Ya tienes una cuenta?{" "}
           <Link to="/login" className="text-emerald hover:underline">
-            Sign In
+            Iniciar Sesión
           </Link>
         </div>
       </div>

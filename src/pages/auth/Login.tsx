@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
@@ -27,28 +28,41 @@ const Login = () => {
     setError(null);
     
     if (!email || !password) {
-      setError("Email and password are required");
+      setError("Email y contraseña son requeridos");
       return;
     }
     
     setLoading(true);
     
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email: email,
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
         password: password,
       });
 
       if (error) {
+        // Handle specific error cases
+        if (error.message.includes('Invalid login credentials')) {
+          throw new Error('Email o contraseña incorrectos. Verifica tus datos.');
+        }
+        if (error.message.includes('Email not confirmed')) {
+          throw new Error('Tu email no ha sido confirmado. Revisa tu bandeja de entrada.');
+        }
+        if (error.message.includes('Too many requests')) {
+          throw new Error('Demasiados intentos de login. Espera unos minutos antes de intentar de nuevo.');
+        }
         throw error;
       }
-      
-      toast.success("Logged in successfully!");
-      navigate('/lobby');
+
+      if (data.user) {
+        toast.success("¡Sesión iniciada exitosamente!");
+        navigate('/lobby');
+      }
     } catch (error: any) {
-      setError(error.message || "Failed to log in");
-      toast.error(error.message || "Failed to log in");
       console.error("Login error:", error);
+      const errorMessage = error.message || "Error al iniciar sesión";
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -58,8 +72,8 @@ const Login = () => {
     <div className="flex min-h-screen items-center justify-center bg-navy p-4">
       <div className="w-full max-w-md space-y-8 rounded-xl bg-navy/50 p-8 shadow-lg backdrop-blur-md border border-emerald/20">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-emerald">Welcome Back</h1>
-          <p className="text-gray-400 mt-2">Login to access your poker dashboard</p>
+          <h1 className="text-2xl font-bold text-emerald">Bienvenido</h1>
+          <p className="text-gray-400 mt-2">Inicia sesión para acceder a tu dashboard de poker</p>
         </div>
         
         {error && (
@@ -75,7 +89,7 @@ const Login = () => {
             <Input
               id="email"
               type="email"
-              placeholder="you@example.com"
+              placeholder="tu@ejemplo.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -86,7 +100,7 @@ const Login = () => {
           </div>
           
           <div className="space-y-2">
-            <label htmlFor="password" className="block text-sm font-medium text-gray-200">Password</label>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-200">Contraseña</label>
             <Input
               id="password"
               type="password"
@@ -106,20 +120,20 @@ const Login = () => {
             loading={loading}
             fullWidth
           >
-            {loading ? "Logging In..." : "Sign In"}
+            {loading ? "Iniciando sesión..." : "Iniciar Sesión"}
           </Button>
         </form>
         
         <div className="text-center text-gray-400 text-sm mt-6">
-          Don't have an account?{" "}
+          ¿No tienes una cuenta?{" "}
           <Link to="/signup" className="text-emerald hover:underline">
-            Sign Up
+            Registrarse
           </Link>
         </div>
         
         <div className="text-center text-gray-400 text-sm">
           <Link to="/forgot-password" className="text-emerald hover:underline">
-            Forgot Password?
+            ¿Olvidaste tu contraseña?
           </Link>
         </div>
       </div>
