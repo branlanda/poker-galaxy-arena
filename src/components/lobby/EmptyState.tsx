@@ -19,13 +19,13 @@ export function EmptyState({ onResetFilters }: EmptyStateProps) {
       transition={{ duration: 0.3 }}
     >
       <Search className="h-12 w-12 text-gray-500 mb-4" />
-      <h3 className="text-lg font-medium mb-2">{t('noTablesFound', 'No se encontraron mesas')}</h3>
+      <h3 className="text-lg font-medium mb-2">{t('lobby.noTablesFound')}</h3>
       <p className="text-gray-500 mb-6 max-w-md">
-        {t('noTablesDescription', 'No hay mesas que coincidan con tus filtros. Intenta cambiar los criterios de búsqueda o crea una mesa nueva.')}
+        {t('lobby.noTablesDescription')}
       </p>
       <Button onClick={onResetFilters}>
         <RefreshCcw className="h-4 w-4 mr-2" />
-        {t('resetFilters', 'Restablecer filtros')}
+        {t('lobby.resetFilters')}
       </Button>
     </motion.div>
   );

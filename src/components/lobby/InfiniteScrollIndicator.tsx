@@ -29,7 +29,7 @@ export function InfiniteScrollIndicator({
           >
             <LoaderCircle className="h-5 w-5 text-emerald" />
           </motion.div>
-          <p className="text-emerald">{t('loading', 'Cargando...')}</p>
+          <p className="text-emerald">{t('common.loading')}</p>
         </div>
       ) : hasMore ? (
         <Button 
@@ -37,10 +37,10 @@ export function InfiniteScrollIndicator({
           onClick={onLoadMore}
           className="border-emerald/30 hover:border-emerald/50"
         >
-          {t('loadMore', 'Cargar más')}
+          {t('lobby.loadMore')}
         </Button>
       ) : (
-        <p className="text-gray-500 text-sm">{t('noMoreTables', 'No hay más mesas para mostrar')}</p>
+        <p className="text-gray-500 text-sm">{t('lobby.noMoreTables')}</p>
       )}
     </div>
   );

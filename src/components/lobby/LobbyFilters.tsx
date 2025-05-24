@@ -57,7 +57,7 @@ export function LobbyFilters({ filters, onFilterChange }: LobbyFiltersProps) {
           <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
             className="pl-8"
-            placeholder={t('searchByName', 'Buscar mesas por nombre...')}
+            placeholder={t('lobby.searchByName')}
             value={filters.searchQuery}
             onChange={(e) => onFilterChange({ searchQuery: e.target.value })}
           />
@@ -69,12 +69,12 @@ export function LobbyFilters({ filters, onFilterChange }: LobbyFiltersProps) {
             onValueChange={(value) => onFilterChange({ tableType: value as TableType | 'ALL' })}
           >
             <SelectTrigger className="w-[150px]">
-              <SelectValue placeholder={t('tableType', 'Tipo de mesa')} />
+              <SelectValue placeholder={t('lobby.tableType')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="ALL">{t('allTableTypes', 'Todos los tipos')}</SelectItem>
-              <SelectItem value="CASH">{t('cashGame', 'Efectivo')}</SelectItem>
-              <SelectItem value="TOURNAMENT">{t('tournament', 'Torneo')}</SelectItem>
+              <SelectItem value="ALL">{t('lobby.allTableTypes')}</SelectItem>
+              <SelectItem value="CASH">{t('lobby.cashGame')}</SelectItem>
+              <SelectItem value="TOURNAMENT">{t('lobby.tournament')}</SelectItem>
             </SelectContent>
           </Select>
           
@@ -83,14 +83,14 @@ export function LobbyFilters({ filters, onFilterChange }: LobbyFiltersProps) {
             onValueChange={(value) => onFilterChange({ sortBy: value as SortOption })}
           >
             <SelectTrigger className="w-[150px]">
-              <SelectValue placeholder={t('sortBy', 'Ordenar por')} />
+              <SelectValue placeholder={t('lobby.sortBy')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="activity">{t('sortActivity', 'Actividad')}</SelectItem>
-              <SelectItem value="players">{t('sortPlayers', 'Jugadores')}</SelectItem>
-              <SelectItem value="newest">{t('sortNewest', 'Más nuevas')}</SelectItem>
-              <SelectItem value="blinds_asc">{t('sortBlindsAsc', 'Blinds (menor)')}</SelectItem>
-              <SelectItem value="blinds_desc">{t('sortBlindsDesc', 'Blinds (mayor)')}</SelectItem>
+              <SelectItem value="activity">{t('lobby.sortActivity')}</SelectItem>
+              <SelectItem value="players">{t('lobby.sortPlayers')}</SelectItem>
+              <SelectItem value="newest">{t('lobby.sortNewest')}</SelectItem>
+              <SelectItem value="blinds_asc">{t('lobby.sortBlindsAsc')}</SelectItem>
+              <SelectItem value="blinds_desc">{t('lobby.sortBlindsDesc')}</SelectItem>
             </SelectContent>
           </Select>
           
@@ -117,7 +117,7 @@ export function LobbyFilters({ filters, onFilterChange }: LobbyFiltersProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-emerald/10">
               <div className="space-y-4">
                 <div>
-                  <h3 className="text-sm font-medium mb-2">{t('blindsRange', 'Rango de Blinds')}</h3>
+                  <h3 className="text-sm font-medium mb-2">{t('lobby.blindsRange')}</h3>
                   <div className="space-y-4">
                     <Slider
                       value={[blindsRange[0], blindsRange[1]]}
@@ -139,14 +139,14 @@ export function LobbyFilters({ filters, onFilterChange }: LobbyFiltersProps) {
                           onFilterChange({ blindsRange: [0, 1000] });
                         }}
                       >
-                        {t('reset', 'Restablecer')}
+                        {t('common.reset')}
                       </Button>
                     </div>
                   </div>
                 </div>
                 
                 <div>
-                  <h3 className="text-sm font-medium mb-2">{t('buyInRange', 'Rango de Buy-in')}</h3>
+                  <h3 className="text-sm font-medium mb-2">{t('lobby.buyInRange')}</h3>
                   <div className="space-y-4">
                     <Slider
                       value={[buyInRange[0], buyInRange[1]]}
@@ -168,7 +168,7 @@ export function LobbyFilters({ filters, onFilterChange }: LobbyFiltersProps) {
                           onFilterChange({ buyInRange: [0, 10000] });
                         }}
                       >
-                        {t('reset', 'Restablecer')}
+                        {t('common.reset')}
                       </Button>
                     </div>
                   </div>
@@ -178,7 +178,7 @@ export function LobbyFilters({ filters, onFilterChange }: LobbyFiltersProps) {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="showEmpty" className="flex items-center space-x-2 cursor-pointer">
-                    <span>{t('showEmptyTables', 'Mostrar mesas vacías')}</span>
+                    <span>{t('lobby.showEmptyTables')}</span>
                   </Label>
                   <Switch 
                     id="showEmpty"
@@ -189,7 +189,7 @@ export function LobbyFilters({ filters, onFilterChange }: LobbyFiltersProps) {
                 
                 <div className="flex items-center justify-between">
                   <Label htmlFor="showFull" className="flex items-center space-x-2 cursor-pointer">
-                    <span>{t('showFullTables', 'Mostrar mesas llenas')}</span>
+                    <span>{t('lobby.showFullTables')}</span>
                   </Label>
                   <Switch 
                     id="showFull"
@@ -200,7 +200,7 @@ export function LobbyFilters({ filters, onFilterChange }: LobbyFiltersProps) {
                 
                 <div className="flex items-center justify-between">
                   <Label htmlFor="showPrivate" className="flex items-center space-x-2 cursor-pointer">
-                    <span>{t('showPrivateTables', 'Mostrar mesas privadas')}</span>
+                    <span>{t('lobby.showPrivateTables')}</span>
                   </Label>
                   <Switch 
                     id="showPrivate"
@@ -211,7 +211,7 @@ export function LobbyFilters({ filters, onFilterChange }: LobbyFiltersProps) {
                 
                 <div className="flex items-center justify-between">
                   <Label htmlFor="showActive" className="flex items-center space-x-2 cursor-pointer">
-                    <span>{t('onlyActiveTables', 'Solo mesas con actividad')}</span>
+                    <span>{t('lobby.onlyActiveTables')}</span>
                   </Label>
                   <Switch 
                     id="showActive"
@@ -235,7 +235,7 @@ export function LobbyFilters({ filters, onFilterChange }: LobbyFiltersProps) {
                       sortBy: 'activity'
                     })}
                   >
-                    {t('resetAllFilters', 'Restablecer todos los filtros')}
+                    {t('lobby.resetAllFilters')}
                   </Button>
                 </div>
               </div>

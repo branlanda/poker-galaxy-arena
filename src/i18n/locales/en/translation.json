@@ -27,7 +27,8 @@
     "more": "More",
     "share": "Share",
     "send": "Send",
-    "account": "Account"
+    "account": "Account",
+    "reset": "Reset"
   },
   "auth": {
     "signIn": "Sign In",
@@ -68,7 +69,29 @@
     "newTables": "New Tables",
     "popularTables": "Popular Tables",
     "swipeToNavigate": "Swipe to navigate",
-    "inviteFriends": "Invite Friends"
+    "inviteFriends": "Invite Friends",
+    "searchByName": "Search tables by name...",
+    "allTableTypes": "All table types",
+    "cashGame": "Cash Game",
+    "tournament": "Tournament",
+    "sortActivity": "Activity",
+    "sortPlayers": "Players",
+    "sortNewest": "Newest",
+    "sortBlindsAsc": "Blinds (Low to High)",
+    "sortBlindsDesc": "Blinds (High to Low)",
+    "blindsRange": "Blinds Range",
+    "buyInRange": "Buy-in Range",
+    "showEmptyTables": "Show empty tables",
+    "showFullTables": "Show full tables",
+    "showPrivateTables": "Show private tables",
+    "onlyActiveTables": "Only active tables",
+    "resetAllFilters": "Reset all filters",
+    "noTablesFound": "No tables found",
+    "noTablesDescription": "No tables match your filters. Try changing the search criteria or create a new table.",
+    "resetFilters": "Reset filters",
+    "loadMore": "Load more",
+    "noMoreTables": "No more tables to show",
+    "tableSettings": "Configure your poker table settings"
   },
   "game": {
     "fold": "Fold",
