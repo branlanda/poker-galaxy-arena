@@ -1,6 +1,7 @@
+
 import React, { useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 import { useAntiFraud } from '@/hooks/useAntiFraud';
 import { useTransactionVerification } from '@/hooks/useTransactionVerification';
 import { Switch } from "@/components/ui/switch";
@@ -40,7 +41,7 @@ export default function SecurityCenter() {
     await toggleRule(ruleId, enabled);
   };
 
-  const handleUpdateAlertStatus = async (alertId: string, status: string) => {
+  const handleUpdateAlertStatus = async (alertId: string, status: 'new' | 'investigating' | 'resolved' | 'ignored') => {
     await updateAlertStatus(alertId, status);
   };
 
@@ -75,8 +76,8 @@ export default function SecurityCenter() {
                 >
                   <p>Description: {alert.description}</p>
                   <p>Severity: {alert.severity}</p>
-                  <p>User ID: {alert.user_id}</p>
-                  <p>Created At: {format(new Date(alert.created_at), 'PPpp')}</p>
+                  <p>User ID: {alert.userId}</p>
+                  <p>Created At: {format(new Date(alert.timestamp), 'PPpp')}</p>
                   <div className="mt-4 flex gap-2">
                     <Button 
                       size="sm" 
@@ -87,7 +88,7 @@ export default function SecurityCenter() {
                     <Button 
                       size="sm" 
                       variant="destructive"
-                      onClick={() => handleBanUser(alert.user_id)}
+                      onClick={() => handleBanUser(alert.userId)}
                     >
                       Ban User
                     </Button>
@@ -130,11 +131,11 @@ export default function SecurityCenter() {
                   </div>
                   <div className="flex items-center space-x-2">
                     <Label htmlFor={`rule-${rule.id}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed">
-                      {rule.enabled ? 'Enabled' : 'Disabled'}
+                      {rule.active ? 'Enabled' : 'Disabled'}
                     </Label>
                     <Switch 
                       id={`rule-${rule.id}`} 
-                      checked={rule.enabled} 
+                      checked={rule.active} 
                       onCheckedChange={(checked) => handleToggleRule(rule.id, checked)} 
                     />
                   </div>
@@ -167,8 +168,8 @@ export default function SecurityCenter() {
                 <div
                   key={tx.id}
                   className={`p-4 border rounded-lg ${
-                    tx.verificationStatus === 'flagged' ? 'border-red-500' : 
-                    tx.verificationStatus === 'verified' ? 'border-green-500' : 
+                    tx.status === 'flagged' ? 'border-red-500' : 
+                    tx.status === 'verified' ? 'border-green-500' : 
                     'border-gray-300'
                   }`}
                 >
@@ -208,7 +209,7 @@ export default function SecurityCenter() {
                   </div>
                   
                   <div className="mt-2 text-sm text-muted-foreground">
-                    <p>User: {tx.userName || 'Unknown'}</p>
+                    <p>User: {tx.user_id || 'Unknown'}</p>
                     <p>Amount: {tx.amount}</p>
                     <p>Date: {format(new Date(tx.created_at), 'PPpp')}</p>
                   </div>

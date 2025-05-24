@@ -1,14 +1,17 @@
+
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import Login from './Login';
 import { AuthResponse } from '@supabase/supabase-js';
-import { useAuth } from '@/stores/auth';
 import { supabase } from '@/lib/supabase';
 
 // Mock the useAuth hook
+const mockSetUser = jest.fn();
 jest.mock('@/stores/auth', () => ({
-  useAuth: jest.fn(),
+  useAuth: () => ({
+    setUser: mockSetUser,
+  }),
 }));
 
 // Mock the supabase client
@@ -22,9 +25,7 @@ jest.mock('@/lib/supabase', () => ({
 
 describe('Login Component', () => {
   beforeEach(() => {
-    (useAuth as jest.Mock).mockReturnValue({
-      setUser: jest.fn(),
-    });
+    mockSetUser.mockClear();
   });
 
   it('renders the login form', () => {

@@ -33,13 +33,17 @@ export function TournamentFiltersPanel({ filters, onFiltersChange }: TournamentF
 
   const hasActiveFilters = () => {
     return filters.searchQuery ||
-           filters.status.length > 0 ||
+           (filters.status && Array.isArray(filters.status) && filters.status.length > 0) ||
            filters.buyInMin !== null ||
            filters.buyInMax !== null ||
-           filters.type.length > 0 ||
+           (filters.type && Array.isArray(filters.type) && filters.type.length > 0) ||
            filters.isPrivate !== null ||
            filters.isFeatured !== null;
   };
+
+  // Ensure status and type are arrays
+  const statusArray = Array.isArray(filters.status) ? filters.status : [];
+  const typeArray = Array.isArray(filters.type) ? filters.type : [];
 
   return (
     <Card className="h-fit">
@@ -71,7 +75,7 @@ export function TournamentFiltersPanel({ filters, onFiltersChange }: TournamentF
             <Input
               id="search"
               placeholder="Tournament name..."
-              value={filters.searchQuery}
+              value={filters.searchQuery || ''}
               onChange={(e) => updateFilters({ searchQuery: e.target.value })}
               className="pl-10"
             />
@@ -87,12 +91,12 @@ export function TournamentFiltersPanel({ filters, onFiltersChange }: TournamentF
             {Object.values(TournamentStatus).map((status) => (
               <Badge
                 key={status}
-                variant={filters.status.includes(status) ? "default" : "outline"}
+                variant={statusArray.includes(status) ? "default" : "outline"}
                 className="cursor-pointer"
                 onClick={() => {
-                  const newStatus = filters.status.includes(status)
-                    ? filters.status.filter(s => s !== status)
-                    : [...filters.status, status];
+                  const newStatus = statusArray.includes(status)
+                    ? statusArray.filter(s => s !== status)
+                    : [...statusArray, status];
                   updateFilters({ status: newStatus });
                 }}
               >
@@ -144,12 +148,12 @@ export function TournamentFiltersPanel({ filters, onFiltersChange }: TournamentF
             {Object.values(TournamentType).map((type) => (
               <Badge
                 key={type}
-                variant={filters.type.includes(type) ? "default" : "outline"}
+                variant={typeArray.includes(type) ? "default" : "outline"}
                 className="cursor-pointer w-full justify-center"
                 onClick={() => {
-                  const newType = filters.type.includes(type)
-                    ? filters.type.filter(t => t !== type)
-                    : [...filters.type, type];
+                  const newType = typeArray.includes(type)
+                    ? typeArray.filter(t => t !== type)
+                    : [...typeArray, type];
                   updateFilters({ type: newType });
                 }}
               >

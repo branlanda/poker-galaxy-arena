@@ -2,9 +2,9 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { toast } from '@/hooks/use-toast';
-import { LobbyTable } from '@/types/lobby';
+import { LobbyTable, TableFilters } from '@/types/lobby';
 
-export function useLobbyTables() {
+export function useLobbyTables(filters?: TableFilters) {
   const [tables, setTables] = useState<LobbyTable[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
