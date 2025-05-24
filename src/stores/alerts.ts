@@ -27,16 +27,19 @@ interface AlertState {
   rules: AlertRule[];
   loading: boolean;
   error: string | null;
+}
+
+interface AlertActions {
   addAlert: (alert: Alert) => void;
   removeAlert: (id: string) => void;
   fetchAlerts: () => Promise<void>;
   fetchRules: () => Promise<void>;
   toggleRule: (id: string) => Promise<void>;
-  updateAlertStatus: (id: string, status: string) => Promise<void>;
+  updateAlertStatus: (id: string, status: Alert['status']) => Promise<void>;
   banUser: (userId: string) => Promise<void>;
 }
 
-export const useAlertStore = create<AlertState>((set) => ({
+export const useAlertStore = create<AlertState & AlertActions>((set, get) => ({
   alerts: [],
   rules: [],
   loading: false,
@@ -121,7 +124,8 @@ export const useAlertStore = create<AlertState>((set) => ({
       set({ loading: true });
       
       // Find the rule to toggle
-      const ruleToUpdate = set.getState().rules.find(rule => rule.id === id);
+      const state = get();
+      const ruleToUpdate = state.rules.find(rule => rule.id === id);
       if (!ruleToUpdate) throw new Error('Rule not found');
       
       // Update in the database

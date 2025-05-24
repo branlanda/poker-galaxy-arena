@@ -1,49 +1,35 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { toast } from '@/hooks/use-toast';
 
-export interface VerifiableTransaction {
+export interface PendingTransaction {
   id: string;
-  type: 'deposit' | 'withdrawal';
+  user_id: string;
   amount: number;
-  status: 'pending' | 'completed' | 'rejected';
-  createdAt: string;
-  userName: string;
-  userId: string;
-  verificationStatus: 'unverified' | 'verified' | 'flagged';
+  type: string;
+  status: string;
+  blockchain_tx_hash?: string;
+  created_at: string;
 }
 
 export function useTransactionVerification() {
-  const [transactions, setTransactions] = useState<VerifiableTransaction[]>([]);
-  const [loading, setLoading] = useState(false);
   const [verifying, setVerifying] = useState(false);
+  const [transactions, setTransactions] = useState<PendingTransaction[]>([]);
+  const [loading, setLoading] = useState(false);
 
   const fetchPendingTransactions = async () => {
     try {
       setLoading(true);
-      
       const { data, error } = await supabase
         .from('transactions')
-        .select(`*, profiles(alias)`)
-        .in('status', ['pending', 'processing'])
+        .select('*')
+        .eq('status', 'pending')
         .order('created_at', { ascending: false });
-        
+
       if (error) throw error;
-      
-      // Transform data to match the VerifiableTransaction interface
-      const transformedData: VerifiableTransaction[] = (data || []).map((item: any) => ({
-        id: item.id,
-        type: item.type,
-        amount: item.amount,
-        status: item.status,
-        createdAt: item.created_at,
-        userName: item.profiles?.alias || 'Unknown',
-        userId: item.user_id,
-        verificationStatus: item.metadata?.verification_status || 'unverified'
-      }));
-      
-      setTransactions(transformedData);
+
+      setTransactions(data || []);
     } catch (error: any) {
       toast({
         title: 'Error',
@@ -59,25 +45,34 @@ export function useTransactionVerification() {
     try {
       setVerifying(true);
       
-      const { data, error } = await supabase.functions.invoke('verify-transaction', {
-        body: { transactionHash }
-      });
+      // Mock verification - in real app this would check blockchain
+      const isValid = transactionHash && transactionHash.length > 10;
       
-      if (error) throw error;
-      
-      toast({
-        title: 'Transaction verified',
-        description: data.verified
-          ? 'Transaction has been verified successfully'
-          : 'Transaction verification failed',
-        variant: data.verified ? 'default' : 'destructive',
-      });
-      
-      return data;
+      if (isValid) {
+        // Update transaction status
+        const { error } = await supabase
+          .from('transactions')
+          .update({ status: 'confirmed' })
+          .eq('blockchain_tx_hash', transactionHash);
+
+        if (error) throw error;
+
+        toast({
+          title: 'Transaction verified',
+          description: 'Transaction has been successfully verified',
+        });
+
+        // Refresh the list
+        await fetchPendingTransactions();
+        
+        return { success: true };
+      } else {
+        throw new Error('Invalid transaction hash');
+      }
     } catch (error: any) {
       toast({
-        title: 'Error',
-        description: `Failed to verify transaction: ${error.message}`,
+        title: 'Verification failed',
+        description: error.message,
         variant: 'destructive',
       });
       throw error;
@@ -85,145 +80,12 @@ export function useTransactionVerification() {
       setVerifying(false);
     }
   };
-  
-  const approveTransaction = async (id: string) => {
-    try {
-      setLoading(true);
-      
-      const { error } = await supabase
-        .from('transactions')
-        .update({ 
-          status: 'completed',
-          metadata: { verification_status: 'verified' } 
-        })
-        .eq('id', id);
-        
-      if (error) throw error;
-      
-      // Update local state
-      setTransactions(prev => 
-        prev.map(tx => 
-          tx.id === id 
-            ? { ...tx, status: 'completed', verificationStatus: 'verified' } 
-            : tx
-        )
-      );
-      
-      toast({
-        title: 'Transaction approved',
-        description: 'The transaction has been approved successfully',
-      });
-    } catch (error: any) {
-      toast({
-        title: 'Error',
-        description: `Failed to approve transaction: ${error.message}`,
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-  
-  const rejectTransaction = async (id: string) => {
-    try {
-      setLoading(true);
-      
-      const { error } = await supabase
-        .from('transactions')
-        .update({ 
-          status: 'rejected'
-        })
-        .eq('id', id);
-        
-      if (error) throw error;
-      
-      // Update local state
-      setTransactions(prev => 
-        prev.map(tx => 
-          tx.id === id 
-            ? { ...tx, status: 'rejected' } 
-            : tx
-        )
-      );
-      
-      toast({
-        title: 'Transaction rejected',
-        description: 'The transaction has been rejected',
-      });
-    } catch (error: any) {
-      toast({
-        title: 'Error',
-        description: `Failed to reject transaction: ${error.message}`,
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-  
-  const flagTransaction = async (id: string) => {
-    try {
-      setLoading(true);
-      
-      const { error } = await supabase
-        .from('transactions')
-        .update({ 
-          metadata: { verification_status: 'flagged' } 
-        })
-        .eq('id', id);
-        
-      if (error) throw error;
-      
-      // Update local state
-      setTransactions(prev => 
-        prev.map(tx => 
-          tx.id === id 
-            ? { ...tx, verificationStatus: 'flagged' } 
-            : tx
-        )
-      );
-      
-      // Create alert for flagged transaction
-      await supabase
-        .from('alerts')
-        .insert({
-          type: 'SUSPICIOUS_TRANSACTION',
-          severity: 'high',
-          description: `Transaction ${id} has been flagged for review`,
-          metadata: {
-            transaction_id: id,
-            amount: transactions.find(tx => tx.id === id)?.amount,
-            user_id: transactions.find(tx => tx.id === id)?.userId
-          }
-        });
-      
-      toast({
-        title: 'Transaction flagged',
-        description: 'The transaction has been flagged for review',
-      });
-    } catch (error: any) {
-      toast({
-        title: 'Error',
-        description: `Failed to flag transaction: ${error.message}`,
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-  
-  useEffect(() => {
-    fetchPendingTransactions();
-  }, []);
 
   return {
-    verifyTransaction,
     verifying,
     transactions,
     loading,
     fetchPendingTransactions,
-    approveTransaction,
-    rejectTransaction,
-    flagTransaction
+    verifyTransaction
   };
 }

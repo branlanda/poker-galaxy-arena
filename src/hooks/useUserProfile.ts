@@ -14,11 +14,15 @@ export interface Profile {
 
 export interface PlayerStatistics {
   totalGamesPlayed: number;
+  totalHands: number;
   winRate: number;
   biggestPot: number;
+  totalWinnings: number;
   averagePosition: number;
   bestHand: string;
   favoriteGame: string;
+  tournamentWins: number;
+  rankPosition: number;
   rank?: number;
   level?: number;
   xp?: number;
@@ -59,11 +63,15 @@ export const useUserProfile = (userId?: string) => {
       if (statsData) {
         setStatistics({
           totalGamesPlayed: statsData.total_games_played || 0,
+          totalHands: statsData.total_hands || 0,
           winRate: statsData.win_rate || 0,
           biggestPot: statsData.biggest_pot || 0,
+          totalWinnings: statsData.total_winnings || 0,
           averagePosition: statsData.average_position || 0,
           bestHand: statsData.best_hand || 'None',
           favoriteGame: statsData.favorite_game || 'None',
+          tournamentWins: statsData.tournament_wins || 0,
+          rankPosition: statsData.rank_position || 0,
           rank: statsData.rank,
           level: statsData.level,
           xp: statsData.xp
@@ -72,11 +80,15 @@ export const useUserProfile = (userId?: string) => {
         // If no stats found, set default values
         setStatistics({
           totalGamesPlayed: 0,
+          totalHands: 0,
           winRate: 0,
           biggestPot: 0,
+          totalWinnings: 0,
           averagePosition: 0,
           bestHand: 'None',
-          favoriteGame: 'None'
+          favoriteGame: 'None',
+          tournamentWins: 0,
+          rankPosition: 0
         });
       }
     } catch (err: any) {

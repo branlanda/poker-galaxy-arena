@@ -25,13 +25,13 @@ vi.mock('@/hooks/useTranslation', () => ({
 
 describe('TournamentStatusBadge', () => {
   const statuses: TournamentStatus[] = [
-    'SCHEDULED',
-    'REGISTERING',
-    'RUNNING',
-    'BREAK',
-    'FINAL_TABLE',
-    'COMPLETED',
-    'CANCELLED'
+    TournamentStatus.SCHEDULED,
+    TournamentStatus.REGISTERING,
+    TournamentStatus.RUNNING,
+    TournamentStatus.BREAK,
+    TournamentStatus.FINAL_TABLE,
+    TournamentStatus.COMPLETED,
+    TournamentStatus.CANCELLED
   ];
 
   it.each(statuses)('renders correct text for %s status', (status) => {
@@ -39,34 +39,34 @@ describe('TournamentStatusBadge', () => {
     
     // Check that we have the appropriate text for each status
     const expectedTexts: Record<TournamentStatus, string> = {
-      'SCHEDULED': 'Scheduled',
-      'REGISTERING': 'Registering',
-      'RUNNING': 'Running',
-      'BREAK': 'Break',
-      'FINAL_TABLE': 'Final Table',
-      'COMPLETED': 'Completed',
-      'CANCELLED': 'Cancelled',
+      [TournamentStatus.SCHEDULED]: 'Scheduled',
+      [TournamentStatus.REGISTERING]: 'Registering',
+      [TournamentStatus.RUNNING]: 'Running',
+      [TournamentStatus.BREAK]: 'Break',
+      [TournamentStatus.FINAL_TABLE]: 'Final Table',
+      [TournamentStatus.COMPLETED]: 'Completed',
+      [TournamentStatus.CANCELLED]: 'Cancelled',
     };
     
     expect(screen.getByText(expectedTexts[status])).toBeInTheDocument();
   });
 
   it('applies the correct color class for each status', () => {
-    const { rerender } = render(<TournamentStatusBadge status="SCHEDULED" />);
+    const { rerender } = render(<TournamentStatusBadge status={TournamentStatus.SCHEDULED} />);
     
     // Check SCHEDULED status has blue color
     expect(document.querySelector('.text-blue-500')).toBeInTheDocument();
     
     // Check REGISTERING status has emerald color
-    rerender(<TournamentStatusBadge status="REGISTERING" />);
+    rerender(<TournamentStatusBadge status={TournamentStatus.REGISTERING} />);
     expect(document.querySelector('.text-emerald-500')).toBeInTheDocument();
     
     // Check RUNNING status has amber color
-    rerender(<TournamentStatusBadge status="RUNNING" />);
+    rerender(<TournamentStatusBadge status={TournamentStatus.RUNNING} />);
     expect(document.querySelector('.text-amber-500')).toBeInTheDocument();
     
     // Check CANCELLED status has red color
-    rerender(<TournamentStatusBadge status="CANCELLED" />);
+    rerender(<TournamentStatusBadge status={TournamentStatus.CANCELLED} />);
     expect(document.querySelector('.text-red-500')).toBeInTheDocument();
   });
 });

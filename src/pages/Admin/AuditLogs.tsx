@@ -1,223 +1,252 @@
 
-import React, { useEffect, useState } from 'react';
-import { useTranslation } from '@/hooks/useTranslation';
-import { useAuditLogsStore } from '@/stores/auditLogs';
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/input";
-import { Search, Download, FileJson, FileText, Calendar } from 'lucide-react';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import React, { useEffect } from 'react';
 import { format } from 'date-fns';
+import { useAuditLogs } from '@/stores/auditLogs';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Calendar, Download, Search, Filter } from 'lucide-react';
 
-const AuditLogs = () => {
-  const { t } = useTranslation();
-  const { logs, isLoading, filters, fetchLogs, setFilters, exportLogs } = useAuditLogsStore();
-  const [searchTerm, setSearchTerm] = useState('');
-  
+export default function AuditLogs() {
+  const {
+    logs,
+    total,
+    loading,
+    currentPage,
+    pageSize,
+    filters,
+    fetchLogs,
+    setPage,
+    setPageSize,
+    setFilters,
+    clearFilters,
+    exportLogs
+  } = useAuditLogs();
+
   useEffect(() => {
     fetchLogs();
-  }, [fetchLogs, filters]);
-  
-  const handleSearch = () => {
-    // Apply search term to description or user_id
-    // In a real app, this would be handled by the server
-  };
-  
-  const handleActionFilterChange = (value: string) => {
-    setFilters({ action: value === 'all' ? undefined : value });
-  };
-  
-  const handleDateSelect = (field: 'fromDate' | 'toDate', date: Date | undefined) => {
-    if (date) {
-      setFilters({ [field]: date.toISOString() });
-    } else {
-      const newFilters = { ...filters };
-      delete newFilters[field];
-      setFilters(newFilters);
+  }, [fetchLogs]);
+
+  const handleExport = async (format: 'csv' | 'json') => {
+    try {
+      const data = await exportLogs(format);
+      const blob = new Blob([data], { 
+        type: format === 'csv' ? 'text/csv' : 'application/json' 
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `audit-logs-${new Date().toISOString().split('T')[0]}.${format}`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Export failed:', error);
     }
   };
-  
-  const handleExport = (format: 'csv' | 'json') => {
-    exportLogs(format);
-  };
-  
-  const actionTypes = [
-    { value: 'all', label: t('admin.audit.allActions') },
-    { value: 'LOGIN', label: t('admin.audit.login') },
-    { value: 'BAN_USER', label: t('admin.audit.banUser') },
-    { value: 'UNBAN_USER', label: t('admin.audit.unbanUser') },
-    { value: 'APPROVE_KYC', label: t('admin.audit.approveKyc') },
-    { value: 'RESET_FUNDS', label: t('admin.audit.resetFunds') },
-    { value: 'DELETE_CHAT_MESSAGE', label: t('admin.audit.deleteChatMessage') },
-    { value: 'RESOLVE_ALERT', label: t('admin.audit.resolveAlert') },
-  ];
-  
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString();
-  };
-  
+
+  const totalPages = Math.ceil(total / pageSize);
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold flex items-center gap-2">
-          <FileText className="h-6 w-6" />
-          {t('admin.audit.title')}
-        </h2>
-        
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-bold text-white">Audit Logs</h1>
+          <p className="text-gray-400">Monitor system activities and user actions</p>
+        </div>
         <div className="flex gap-2">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
+            size="sm"
             onClick={() => handleExport('csv')}
-            className="flex items-center gap-2"
+            disabled={loading}
           >
-            <FileText className="h-4 w-4" />
-            CSV
+            <Download className="h-4 w-4 mr-2" />
+            Export CSV
           </Button>
-          
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
+            size="sm"
             onClick={() => handleExport('json')}
-            className="flex items-center gap-2"
+            disabled={loading}
           >
-            <FileJson className="h-4 w-4" />
-            JSON
+            <Download className="h-4 w-4 mr-2" />
+            Export JSON
           </Button>
         </div>
       </div>
-      
-      <Card className="p-4">
-        <div className="flex flex-col md:flex-row gap-4 mb-6">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-            <Input
-              placeholder={t('admin.audit.search')}
-              className="pl-10"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-            />
-          </div>
-          
-          <Select 
-            value={filters.action || 'all'} 
-            onValueChange={handleActionFilterChange}
-          >
-            <SelectTrigger className="w-full md:w-[180px]">
-              <SelectValue placeholder={t('admin.audit.allActions')} />
-            </SelectTrigger>
-            <SelectContent>
-              {actionTypes.map(action => (
-                <SelectItem key={action.value} value={action.value}>
-                  {action.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          
-          <div className="flex gap-2">
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button 
-                  variant="outline" 
-                  className={`flex items-center gap-2 ${filters.fromDate ? 'border-emerald text-emerald' : ''}`}
-                >
-                  <Calendar className="h-4 w-4" />
-                  {filters.fromDate 
-                    ? format(new Date(filters.fromDate), 'PP') 
-                    : t('admin.audit.fromDate')
-                  }
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <CalendarComponent
-                  mode="single"
-                  selected={filters.fromDate ? new Date(filters.fromDate) : undefined}
-                  onSelect={(date) => handleDateSelect('fromDate', date)}
-                />
-              </PopoverContent>
-            </Popover>
+
+      {/* Filters */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <Filter className="h-5 w-5 mr-2" />
+            Filters
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="relative">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search actions or descriptions..."
+                className="pl-8"
+                value={filters.searchQuery || ''}
+                onChange={(e) => setFilters({ searchQuery: e.target.value })}
+              />
+            </div>
             
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button 
-                  variant="outline" 
-                  className={`flex items-center gap-2 ${filters.toDate ? 'border-emerald text-emerald' : ''}`}
-                >
-                  <Calendar className="h-4 w-4" />
-                  {filters.toDate 
-                    ? format(new Date(filters.toDate), 'PP') 
-                    : t('admin.audit.toDate')
-                  }
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <CalendarComponent
-                  mode="single"
-                  selected={filters.toDate ? new Date(filters.toDate) : undefined}
-                  onSelect={(date) => handleDateSelect('toDate', date)}
-                />
-              </PopoverContent>
-            </Popover>
-            
-            <Button variant="ghost" onClick={() => setFilters({})}>
-              {t('admin.audit.clearFilters')}
-            </Button>
+            <Select
+              value={filters.action || ''}
+              onValueChange={(value) => setFilters({ action: value || undefined })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Filter by action" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">All Actions</SelectItem>
+                <SelectItem value="USER_LOGIN">User Login</SelectItem>
+                <SelectItem value="USER_LOGOUT">User Logout</SelectItem>
+                <SelectItem value="DEPOSIT">Deposit</SelectItem>
+                <SelectItem value="WITHDRAWAL">Withdrawal</SelectItem>
+                <SelectItem value="BET_PLACED">Bet Placed</SelectItem>
+                <SelectItem value="ADMIN_ACTION">Admin Action</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={clearFilters}
+                disabled={loading}
+              >
+                Clear Filters
+              </Button>
+              <Button
+                size="sm"
+                onClick={fetchLogs}
+                disabled={loading}
+              >
+                Apply Filters
+              </Button>
+            </div>
           </div>
-        </div>
-        
-        {isLoading ? (
-          <div className="flex justify-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-emerald"></div>
+        </CardContent>
+      </Card>
+
+      {/* Logs Table */}
+      <Card>
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <div>
+              <CardTitle>Activity Log</CardTitle>
+              <CardDescription>
+                Showing {logs.length} of {total} entries
+              </CardDescription>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">Page size:</span>
+              <Select
+                value={pageSize.toString()}
+                onValueChange={(value) => setPageSize(parseInt(value))}
+              >
+                <SelectTrigger className="w-20">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="10">10</SelectItem>
+                  <SelectItem value="25">25</SelectItem>
+                  <SelectItem value="50">50</SelectItem>
+                  <SelectItem value="100">100</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-        ) : logs.length > 0 ? (
-          <div className="rounded-md border border-gray-700 overflow-hidden">
+        </CardHeader>
+        <CardContent>
+          <div className="border rounded-md">
             <Table>
               <TableHeader>
-                <TableRow className="bg-[#081624] hover:bg-[#081624]">
-                  <TableHead>{t('admin.audit.timestamp')}</TableHead>
-                  <TableHead>{t('admin.audit.user')}</TableHead>
-                  <TableHead>{t('admin.audit.action')}</TableHead>
-                  <TableHead className="hidden md:table-cell">{t('admin.audit.description')}</TableHead>
+                <TableRow>
+                  <TableHead>Timestamp</TableHead>
+                  <TableHead>User</TableHead>
+                  <TableHead>Action</TableHead>
+                  <TableHead>Description</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {logs.map((log) => (
-                  <TableRow 
-                    key={log.id}
-                    className="hover:bg-[#0e2337] cursor-pointer"
-                  >
-                    <TableCell className="font-mono text-xs whitespace-nowrap">
-                      {formatDate(log.created_at)}
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap">
-                      {log.user_id.substring(0, 8)}...
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap">
-                      <span className="px-2 py-1 rounded-full bg-emerald/10 text-emerald text-xs">
-                        {log.action}
-                      </span>
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell">
-                      {log.description}
+                {loading ? (
+                  Array.from({ length: 5 }).map((_, i) => (
+                    <TableRow key={i}>
+                      <TableCell><div className="h-4 bg-gray-200 rounded animate-pulse" /></TableCell>
+                      <TableCell><div className="h-4 bg-gray-200 rounded animate-pulse" /></TableCell>
+                      <TableCell><div className="h-4 bg-gray-200 rounded animate-pulse" /></TableCell>
+                      <TableCell><div className="h-4 bg-gray-200 rounded animate-pulse" /></TableCell>
+                    </TableRow>
+                  ))
+                ) : logs.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                      No audit logs found
                     </TableCell>
                   </TableRow>
-                ))}
+                ) : (
+                  logs.map((log) => (
+                    <TableRow key={log.id}>
+                      <TableCell className="font-mono text-sm">
+                        {format(new Date(log.created_at), 'MMM dd, yyyy HH:mm:ss')}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center">
+                          <span className="font-medium">{log.userName || 'Unknown'}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{log.action}</Badge>
+                      </TableCell>
+                      <TableCell className="max-w-md truncate">
+                        {log.description || 'No description'}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
           </div>
-        ) : (
-          <div className="flex flex-col items-center justify-center py-12">
-            <FileText className="h-12 w-12 text-gray-400 mb-4" />
-            <h3 className="text-xl font-medium mb-2">{t('admin.audit.noLogs')}</h3>
-            <p className="text-gray-400">{t('admin.audit.noLogsDescription')}</p>
-          </div>
-        )}
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between pt-4">
+              <div className="text-sm text-muted-foreground">
+                Page {currentPage} of {totalPages}
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage(currentPage - 1)}
+                  disabled={currentPage === 1 || loading}
+                >
+                  Previous
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage(currentPage + 1)}
+                  disabled={currentPage === totalPages || loading}
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          )}
+        </CardContent>
       </Card>
     </div>
   );
-};
-
-export default AuditLogs;
+}

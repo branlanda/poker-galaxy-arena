@@ -1,42 +1,43 @@
 
-// Wallet types
-export enum TransactionStatus {
-  PENDING = 'PENDING',
-  COMPLETED = 'COMPLETED',
-  FAILED = 'FAILED'
-}
-
-export type TransactionType = 'DEPOSIT' | 'WITHDRAW' | 'TRANSFER';
-
 export interface Transaction {
   id: string;
-  type: TransactionType;
+  user_id: string;
   amount: number;
-  status: TransactionStatus;
-  hash?: string | null;
+  type: 'deposit' | 'withdrawal' | 'bet' | 'payout';
+  status: 'pending' | 'confirmed' | 'failed';
+  blockchain_tx_hash?: string;
+  description?: string;
+  metadata?: any;
   created_at: string;
-  completed_at?: string;
 }
 
 export interface WalletState {
-  address: string | null;
   balance: number;
-  ethBalance: string | null;
-  connecting: boolean;
   transactions: Transaction[];
-  
-  setAddress: (address: string | null) => void;
-  setBalance: (balance: number) => void;
-  setEthBalance: (ethBalance: string | null) => void;
-  setConnecting: (connecting: boolean) => void;
-  
-  addTransaction: (transaction: Transaction) => void;
-  updateTransaction: (id: string, status: TransactionStatus) => void;
+  loading: boolean;
+  error: string | null;
+  pendingDeposit: boolean;
+  pendingWithdrawal: boolean;
 }
 
 export interface WalletActions {
-  loadTransactions: () => Promise<void>;
-  depositFunds: (amount: number) => Promise<Transaction>;
-  withdrawFunds: (address: string, amount: number) => Promise<Transaction>;
-  verifyTransactionHash: (txHash: string) => Promise<any>;
+  // Balance management
+  updateBalance: (newBalance: number) => void;
+  
+  // Transaction management
+  addTransaction: (transaction: Transaction) => void;
+  updateTransaction: (id: string, updates: Partial<Transaction>) => void;
+  
+  // Async actions
+  fetchBalance: () => Promise<void>;
+  fetchTransactions: () => Promise<void>;
+  depositFunds: (amount: number, txHash?: string) => Promise<void>;
+  withdrawFunds: (amount: number, address: string) => Promise<void>;
+  
+  // State management
+  setLoading: (loading: boolean) => void;
+  setError: (error: string | null) => void;
+  clearError: () => void;
 }
+
+export type WalletStore = WalletState & WalletActions;

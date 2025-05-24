@@ -1,54 +1,76 @@
 
 import { useState, useEffect } from 'react';
-import { LobbyTable } from '@/types/lobby';
 import { supabase } from '@/lib/supabase';
+import { toast } from '@/hooks/use-toast';
+
+export interface LobbyTable {
+  id: string;
+  name: string;
+  table_type: string;
+  status: string;
+  small_blind: number;
+  big_blind: number;
+  min_buy_in: number;
+  max_buy_in: number;
+  max_players: number;
+  current_players: number;
+  is_private: boolean;
+  creator_id: string;
+  created_at: string;
+  updated_at: string;
+}
 
 export function useLobbyTables() {
   const [tables, setTables] = useState<LobbyTable[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState('');
+  const [hasMore, setHasMore] = useState(false);
+
+  const fetchTables = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      
+      const { data, error: fetchError } = await supabase
+        .from('lobby_tables')
+        .select('*')
+        .order('created_at', { ascending: false });
+        
+      if (fetchError) throw fetchError;
+      
+      setTables(data || []);
+      setHasMore(false); // For now, we're not implementing pagination
+    } catch (err: any) {
+      setError(err.message);
+      toast({
+        title: 'Error',
+        description: 'Failed to fetch tables',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadMore = async () => {
+    // Placeholder for pagination functionality
+    console.log('Load more tables');
+  };
+
+  const refreshTables = async () => {
+    await fetchTables();
+  };
 
   useEffect(() => {
-    const fetchTables = async () => {
-      setLoading(true);
-      try {
-        const { data, error } = await supabase
-          .from('lobby_tables')
-          .select('*')
-          .order('last_activity', { ascending: false });
-
-        if (error) {
-          setError(error.message);
-        } else {
-          setTables(data || []);
-        }
-      } catch (err: any) {
-        setError(err.message || 'Failed to load tables');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchTables();
-
-    // Set up a real-time subscription to the 'lobby_tables' table
-    const tableSubscription = supabase
-      .channel('public:lobby_tables')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'lobby_tables' },
-        (payload) => {
-          // When any change occurs in the table, refetch the data
-          fetchTables();
-        }
-      )
-      .subscribe();
-
-    // Clean up the subscription when the component unmounts
-    return () => {
-      supabase.removeChannel(tableSubscription);
-    };
   }, []);
 
-  return { tables, loading, error };
+  return {
+    tables,
+    loading,
+    error,
+    hasMore,
+    loadMore,
+    refreshTables
+  };
 }
