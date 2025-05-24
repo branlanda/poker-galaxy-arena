@@ -1,9 +1,9 @@
 
-import { lazy } from 'react';
-
-const TournamentLobby = lazy(() => import('./TournamentLobby'));
-const TournamentDetail = lazy(() => import('./TournamentDetail'));
-const TournamentCreateDialog = lazy(() => import('./TournamentCreateDialog').then(module => ({ default: module.TournamentCreateDialog })));
+// Remove lazy loading for components that should load immediately
+// since they're being used directly in routes
+import TournamentLobby from './TournamentLobby';
+import TournamentDetail from './TournamentDetail';
+import { TournamentCreateDialog } from './TournamentCreateDialog';
 
 export { TournamentLobby, TournamentDetail, TournamentCreateDialog };
 export default TournamentLobby;
