@@ -35,13 +35,13 @@ export default function Index() {
             <div className="flex gap-4 justify-center">
               <Button size="lg" className="px-8 py-4">
                 <Link to="/login" className="flex items-center">
-                  {t('signIn', 'Sign In')}
+                  {t('auth.signIn', 'Sign In')}
                   <ArrowRight className="h-5 w-5 ml-2" />
                 </Link>
               </Button>
               <Button size="lg" variant="outline" className="px-8 py-4">
                 <Link to="/signup" className="flex items-center">
-                  {t('signUp', 'Sign Up')}
+                  {t('auth.signUp', 'Sign Up')}
                 </Link>
               </Button>
             </div>
@@ -107,7 +107,7 @@ export default function Index() {
       {/* Welcome Section */}
       <div className="text-center mb-12">
         <h1 className="text-4xl font-bold text-emerald mb-4">
-          {t('welcome', 'Welcome back')}, {user.alias || user.email}!
+          {t('common.welcome', 'Welcome back')}, {user.alias || user.email}!
         </h1>
         <p className="text-xl text-gray-400 mb-8">
           {t('dashboardSubtitle', 'Ready to play some poker?')}
@@ -124,13 +124,13 @@ export default function Index() {
           <Button size="lg" variant="secondary" className="px-6">
             <Link to="/tournaments" className="flex items-center">
               <Trophy className="h-5 w-5 mr-2" />
-              {t('tournaments', 'Tournaments')}
+              {t('tournaments.lobby', 'Tournaments')}
             </Link>
           </Button>
           <Button size="lg" variant="outline" className="px-6">
             <Link to="/leaderboards" className="flex items-center">
               <TrendingUp className="h-5 w-5 mr-2" />
-              {t('leaderboards', 'Leaderboards')}
+              {t('leaderboards.title', 'Leaderboards')}
             </Link>
           </Button>
         </div>
@@ -238,7 +238,7 @@ export default function Index() {
               <Button variant="outline" className="w-full justify-start">
                 <Link to="/profile" className="flex items-center">
                   <User className="h-4 w-4 mr-3" />
-                  {t('viewProfile', 'View Profile')}
+                  {t('common.profile', 'View Profile')}
                 </Link>
               </Button>
               <Button variant="outline" className="w-full justify-start">
@@ -250,7 +250,7 @@ export default function Index() {
               <Button variant="outline" className="w-full justify-start">
                 <Link to="/settings" className="flex items-center">
                   <Settings className="h-4 w-4 mr-3" />
-                  {t('settings', 'Settings')}
+                  {t('common.settings', 'Settings')}
                 </Link>
               </Button>
             </CardContent>
