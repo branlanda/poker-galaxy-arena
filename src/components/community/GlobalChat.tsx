@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/stores/auth';
 import { supabase } from '@/lib/supabase';
@@ -37,7 +36,7 @@ export function GlobalChat({
 }: GlobalChatProps) {
   const { user } = useAuth();
   const { toast } = useToast();
-  const { t, language } = useTranslation();
+  const { t } = useTranslation('common');
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(true);
@@ -156,7 +155,7 @@ export function GlobalChat({
     } catch (err) {
       console.error('Error sending message:', err);
       toast({
-        title: t('errors.messageFailed'),
+        title: t('chat.messageFailed'),
         description: t('chat.messageNotSent'),
         variant: 'destructive',
       });

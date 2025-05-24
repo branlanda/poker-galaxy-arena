@@ -27,5 +27,17 @@
   "share": "Share",
   "send": "Send",
   "account": "Account",
-  "reset": "Reset"
+  "reset": "Reset",
+  "chat": {
+    "loginToSend": "You must be logged in to send messages",
+    "messageNotSent": "Message could not be sent",
+    "messageFailed": "Failed to send message",
+    "unknownUser": "Unknown User",
+    "noMessages": "No messages yet",
+    "beTheFirstToSend": "Be the first to send a message!",
+    "typeMessage": "Type your message...",
+    "openChat": "Open Chat",
+    "globalChat": "Global Chat",
+    "placeholder": "Type a message..."
+  }
 }

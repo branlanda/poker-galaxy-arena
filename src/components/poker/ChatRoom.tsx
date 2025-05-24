@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/stores/auth';
@@ -15,13 +14,12 @@ interface ChatRoomProps {
 
 export function ChatRoom({ tableId }: ChatRoomProps) {
   const { user } = useAuth();
-  const { t } = useTranslation();
+  const { t } = useTranslation('common');
   const [messages, setMessages] = useState<RoomMessageType[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
-  // Fetch existing messages
   useEffect(() => {
     const fetchMessages = async () => {
       try {
@@ -46,7 +44,6 @@ export function ChatRoom({ tableId }: ChatRoomProps) {
     
     fetchMessages();
     
-    // Subscribe to new messages
     const channel = supabase
       .channel('table-chat')
       .on(
@@ -68,7 +65,6 @@ export function ChatRoom({ tableId }: ChatRoomProps) {
     };
   }, [tableId]);
   
-  // Auto-scroll to bottom when new message arrives
   useEffect(() => {
     if (scrollAreaRef.current) {
       const scrollContainer = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
@@ -84,10 +80,8 @@ export function ChatRoom({ tableId }: ChatRoomProps) {
     
     setLoading(true);
     try {
-      // Get the username from the user object using the alias property instead of user_metadata
       const playerName = user.alias || user.email || 'Anonymous';
       
-      // Use the type assertion to workaround type issues until Supabase types are regenerated
       const { error } = await supabase
         .from('room_messages' as any)
         .insert({
@@ -152,7 +146,7 @@ export function ChatRoom({ tableId }: ChatRoomProps) {
           type="submit" 
           size="icon" 
           disabled={!user || loading || !newMessage.trim()} 
-          aria-label={t('send', 'Send message')}
+          aria-label={t('send')}
         >
           <Send className="h-4 w-4" aria-hidden="true" />
         </Button>
