@@ -2,10 +2,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/stores/auth';
-import { toast } from 'sonner';
+import { useToast } from '@/hooks/use-toast';
 import { AlertCircle } from 'lucide-react';
 
 const SignUp = () => {
@@ -17,6 +17,7 @@ const SignUp = () => {
   const navigate = useNavigate();
   const user = useAuth((s) => s.user);
   const setUser = useAuth((s) => s.setUser);
+  const { toast } = useToast();
 
   // If user is already logged in, redirect to lobby
   useEffect(() => {
@@ -82,7 +83,10 @@ const SignUp = () => {
           if (profileError) {
             console.error("Profile creation error:", profileError);
             // Don't throw here, user is already created
-            toast.error("Cuenta creada pero hubo un problema con el perfil");
+            toast({
+              title: "Cuenta creada pero hubo un problema con el perfil",
+              variant: "destructive",
+            });
           }
           
           // Update user state
@@ -93,23 +97,33 @@ const SignUp = () => {
             showInLeaderboard: true
           });
           
-          toast.success("¡Cuenta creada exitosamente!");
+          toast({
+            title: "¡Cuenta creada exitosamente!",
+          });
           navigate('/lobby');
         } catch (profileErr: any) {
           console.error("Profile setup error:", profileErr);
-          toast.success("Cuenta creada. Completa tu perfil en la configuración.");
+          toast({
+            title: "Cuenta creada. Completa tu perfil en la configuración.",
+          });
           navigate('/lobby');
         }
       } else if (authData.user) {
         // User created but needs email confirmation
-        toast.success("¡Registro exitoso! Revisa tu email para confirmar tu cuenta.");
+        toast({
+          title: "¡Registro exitoso! Revisa tu email para confirmar tu cuenta.",
+        });
         setError("Revisa tu email y haz clic en el enlace de confirmación para activar tu cuenta.");
       }
     } catch (error: any) {
       console.error("Signup error:", error);
       const errorMessage = error.message || "Error al crear la cuenta";
       setError(errorMessage);
-      toast.error(errorMessage);
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }

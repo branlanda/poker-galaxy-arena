@@ -2,10 +2,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/stores/auth';
-import { toast } from 'sonner';
+import { useToast } from '@/hooks/use-toast';
 import { AlertCircle } from 'lucide-react';
 
 const Login = () => {
@@ -15,6 +15,7 @@ const Login = () => {
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const user = useAuth((s) => s.user);
+  const { toast } = useToast();
 
   // If user is already logged in, redirect to lobby
   useEffect(() => {
@@ -55,14 +56,20 @@ const Login = () => {
       }
 
       if (data.user) {
-        toast.success("¡Sesión iniciada exitosamente!");
+        toast({
+          title: "¡Sesión iniciada exitosamente!",
+        });
         navigate('/lobby');
       }
     } catch (error: any) {
       console.error("Login error:", error);
       const errorMessage = error.message || "Error al iniciar sesión";
       setError(errorMessage);
-      toast.error(errorMessage);
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
