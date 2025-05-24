@@ -23,7 +23,7 @@ export function LobbyHeader({ onRefresh, loading }: LobbyHeaderProps) {
           <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white">
             <Link to="/" className="flex items-center">
               <ArrowLeft className="h-4 w-4 mr-2" />
-              {t('backToHome', 'Back to Home')}
+              {t('common.back', 'Back to Home')}
             </Link>
           </Button>
           <div className="h-6 w-px bg-gray-600"></div>
@@ -31,20 +31,20 @@ export function LobbyHeader({ onRefresh, loading }: LobbyHeaderProps) {
             <Button variant="ghost" size="sm">
               <Link to="/tournaments" className="flex items-center text-gray-300 hover:text-emerald">
                 <Trophy className="h-4 w-4 mr-2" />
-                {t('tournaments', 'Tournaments')}
+                {t('tournaments.lobby', 'Tournaments')}
               </Link>
             </Button>
             <Button variant="ghost" size="sm">
               <Link to="/leaderboards" className="flex items-center text-gray-300 hover:text-emerald">
                 <Users className="h-4 w-4 mr-2" />
-                {t('leaderboards', 'Leaderboards')}
+                {t('leaderboards.title', 'Leaderboards')}
               </Link>
             </Button>
             {user && (
               <Button variant="ghost" size="sm">
                 <Link to="/achievements" className="flex items-center text-gray-300 hover:text-emerald">
                   <Target className="h-4 w-4 mr-2" />
-                  {t('achievements', 'Achievements')}
+                  {t('achievements.title', 'Achievements')}
                 </Link>
               </Button>
             )}
@@ -60,14 +60,14 @@ export function LobbyHeader({ onRefresh, loading }: LobbyHeaderProps) {
             className="hidden sm:flex"
           >
             <RefreshCcw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-            {t('refresh', 'Refresh')}
+            {t('common.refresh', 'Refresh')}
           </Button>
           
           {user ? (
             <CreateTableDialog />
           ) : (
             <Button onClick={() => window.location.href = '/login'}>
-              {t('logInToCreateTables', 'Log In to Create Tables')}
+              {t('auth.login', 'Log In to Create Tables')}
             </Button>
           )}
         </div>
@@ -76,10 +76,10 @@ export function LobbyHeader({ onRefresh, loading }: LobbyHeaderProps) {
       {/* Page Header */}
       <div className="text-center">
         <h1 className="text-3xl font-bold text-emerald mb-2">
-          {t('pokerTablesLobby', 'Poker Tables Lobby')}
+          {t('lobby.title', 'Poker Tables Lobby')}
         </h1>
         <p className="text-gray-400">
-          {t('lobbyDescription', 'Join an existing table or create your own')}
+          {t('lobby.joinTable', 'Join an existing table or create your own')}
         </p>
       </div>
     </div>

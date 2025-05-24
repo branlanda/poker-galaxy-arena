@@ -4,14 +4,14 @@ import { ChevronRight, Home, Users, Trophy, Target, User, Settings, DollarSign, 
 import { useTranslation } from '@/hooks/useTranslation';
 
 const routeNames: Record<string, string> = {
-  '/': 'home',
-  '/lobby': 'lobby',
-  '/tournaments': 'tournaments',
-  '/profile': 'profile',
-  '/settings': 'settings',
-  '/funds': 'funds',
-  '/achievements': 'achievements',
-  '/leaderboards': 'leaderboards',
+  '/': 'common.welcome',
+  '/lobby': 'lobby.title',
+  '/tournaments': 'tournaments.lobby',
+  '/profile': 'common.profile',
+  '/settings': 'common.settings',
+  '/funds': 'common.chips',
+  '/achievements': 'achievements.title',
+  '/leaderboards': 'leaderboards.title',
   '/admin': 'admin',
 };
 
@@ -39,7 +39,7 @@ export function Breadcrumbs() {
   }
   
   const breadcrumbs = [
-    { name: t('home', 'Home'), path: '/', icon: Home }
+    { name: t('common.welcome', 'Home'), path: '/', icon: Home }
   ];
   
   let currentPath = '';

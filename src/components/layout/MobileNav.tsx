@@ -29,7 +29,7 @@ export function MobileNav({ setOpen }: MobileNavProps) {
             onClick={handleLinkClick}
           >
             <Home className="mr-3 h-5 w-5" />
-            {t("home", "Home")}
+            {t("common.welcome", "Home")}
           </Link>
           <Link
             to="/lobby"
@@ -37,7 +37,7 @@ export function MobileNav({ setOpen }: MobileNavProps) {
             onClick={handleLinkClick}
           >
             <Users className="mr-3 h-5 w-5" />
-            {t("lobby", "Lobby")}
+            {t("lobby.title", "Lobby")}
           </Link>
           <Link
             to="/tournaments"
@@ -45,7 +45,7 @@ export function MobileNav({ setOpen }: MobileNavProps) {
             onClick={handleLinkClick}
           >
             <Trophy className="mr-3 h-5 w-5" />
-            {t("tournaments", "Tournaments")}
+            {t("tournaments.lobby", "Tournaments")}
           </Link>
           <Link
             to="/leaderboards"
@@ -53,7 +53,7 @@ export function MobileNav({ setOpen }: MobileNavProps) {
             onClick={handleLinkClick}
           >
             <Target className="mr-3 h-5 w-5" />
-            {t("leaderboards", "Leaderboards")}
+            {t("leaderboards.title", "Leaderboards")}
           </Link>
           {user && (
             <Link
@@ -62,7 +62,7 @@ export function MobileNav({ setOpen }: MobileNavProps) {
               onClick={handleLinkClick}
             >
               <Trophy className="mr-3 h-5 w-5" />
-              {t("achievements", "Achievements")}
+              {t("achievements.title", "Achievements")}
             </Link>
           )}
         </nav>
@@ -72,7 +72,7 @@ export function MobileNav({ setOpen }: MobileNavProps) {
         <>
           <Separator className="bg-emerald/20" />
           <div className="px-2 py-4">
-            <h3 className="text-sm font-semibold mb-3 text-gray-400 uppercase tracking-wider">{t("account", "Account")}</h3>
+            <h3 className="text-sm font-semibold mb-3 text-gray-400 uppercase tracking-wider">{t("common.account", "Account")}</h3>
             <nav className="space-y-2">
               <Link
                 to="/profile"
@@ -80,7 +80,7 @@ export function MobileNav({ setOpen }: MobileNavProps) {
                 onClick={handleLinkClick}
               >
                 <User className="mr-3 h-5 w-5" />
-                {t("profile", "Profile")}
+                {t("common.profile", "Profile")}
               </Link>
               <Link
                 to="/funds"
@@ -88,7 +88,7 @@ export function MobileNav({ setOpen }: MobileNavProps) {
                 onClick={handleLinkClick}
               >
                 <DollarSign className="mr-3 h-5 w-5" />
-                {t("funds", "Funds")}
+                {t("common.chips", "Funds")}
               </Link>
               <Link
                 to="/settings"
@@ -96,7 +96,7 @@ export function MobileNav({ setOpen }: MobileNavProps) {
                 onClick={handleLinkClick}
               >
                 <Settings className="mr-3 h-5 w-5" />
-                {t("settings", "Settings")}
+                {t("common.settings", "Settings")}
               </Link>
             </nav>
           </div>
@@ -114,7 +114,7 @@ export function MobileNav({ setOpen }: MobileNavProps) {
             }}
           >
             <LogOut className="mr-3 h-5 w-5" />
-            {t("signOut", "Sign Out")}
+            {t("auth.signOut", "Sign Out")}
           </Button>
         ) : (
           <div className="space-y-2">
@@ -125,7 +125,7 @@ export function MobileNav({ setOpen }: MobileNavProps) {
                 window.location.href = '/login';
               }}
             >
-              {t("signIn", "Sign In")}
+              {t("auth.signIn", "Sign In")}
             </Button>
             <Button 
               variant="outline" 
@@ -135,7 +135,7 @@ export function MobileNav({ setOpen }: MobileNavProps) {
                 window.location.href = '/signup';
               }}
             >
-              {t("signUp", "Sign Up")}
+              {t("auth.signUp", "Sign Up")}
             </Button>
           </div>
         )}

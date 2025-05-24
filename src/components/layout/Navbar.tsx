@@ -59,7 +59,7 @@ export function Navbar() {
               isActive('/') ? 'text-emerald' : 'text-gray-300'
             }`}
           >
-            {t('home', 'Home')}
+            {t('common.welcome', 'Home')}
           </Link>
           <Link 
             to="/lobby" 
@@ -68,7 +68,7 @@ export function Navbar() {
             }`}
           >
             <Users className="h-4 w-4" />
-            {t('lobby', 'Lobby')}
+            {t('lobby.title', 'Lobby')}
           </Link>
           <Link 
             to="/tournaments" 
@@ -77,7 +77,7 @@ export function Navbar() {
             }`}
           >
             <Trophy className="h-4 w-4" />
-            {t('tournaments', 'Tournaments')}
+            {t('tournaments.lobby', 'Tournaments')}
           </Link>
           <Link 
             to="/leaderboards" 
@@ -86,7 +86,7 @@ export function Navbar() {
             }`}
           >
             <Target className="h-4 w-4" />
-            {t('leaderboards', 'Leaderboards')}
+            {t('leaderboards.title', 'Leaderboards')}
           </Link>
           {user && (
             <Link 
@@ -96,7 +96,7 @@ export function Navbar() {
               }`}
             >
               <Trophy className="h-4 w-4" />
-              {t('achievements', 'Achievements')}
+              {t('achievements.title', 'Achievements')}
             </Link>
           )}
         </div>
@@ -151,25 +151,25 @@ export function Navbar() {
                 <DropdownMenuItem asChild>
                   <Link to="/profile" className="text-gray-300 hover:text-white">
                     <User className="mr-2 h-4 w-4" />
-                    <span>{t("profile", "Profile")}</span>
+                    <span>{t("common.profile", "Profile")}</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link to="/funds" className="text-gray-300 hover:text-white">
                     <DollarSign className="mr-2 h-4 w-4" />
-                    <span>{t("funds", "Funds")}</span>
+                    <span>{t("common.chips", "Funds")}</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link to="/achievements" className="text-gray-300 hover:text-white">
                     <Trophy className="mr-2 h-4 w-4" />
-                    <span>{t("achievements", "Achievements")}</span>
+                    <span>{t("achievements.title", "Achievements")}</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link to="/settings" className="text-gray-300 hover:text-white">
                     <Settings className="mr-2 h-4 w-4" />
-                    <span>{t("settings", "Settings")}</span>
+                    <span>{t("common.settings", "Settings")}</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator className="bg-emerald/20" />
@@ -178,17 +178,17 @@ export function Navbar() {
                   onClick={() => logout()}
                 >
                   <LogOut className="mr-2 h-4 w-4" />
-                  <span>{t("signOut", "Sign Out")}</span>
+                  <span>{t("auth.signOut", "Sign Out")}</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
             <div className="flex gap-2">
               <Button variant="outline" size="sm" asChild>
-                <Link to="/login">{t("signIn", "Sign In")}</Link>
+                <Link to="/login">{t("auth.signIn", "Sign In")}</Link>
               </Button>
               <Button size="sm" asChild>
-                <Link to="/signup">{t("signUp", "Sign Up")}</Link>
+                <Link to="/signup">{t("auth.signUp", "Sign Up")}</Link>
               </Button>
             </div>
           )}
