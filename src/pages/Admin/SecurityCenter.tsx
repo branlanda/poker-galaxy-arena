@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/Button";
@@ -38,7 +37,7 @@ export default function SecurityCenter() {
   }, [fetchAlerts, fetchRules, fetchPendingTransactions]);
 
   const handleToggleRule = async (ruleId: string, enabled: boolean) => {
-    await toggleRule(ruleId, enabled);
+    await toggleRule(ruleId);
   };
 
   const handleUpdateAlertStatus = async (alertId: string, status: 'new' | 'investigating' | 'resolved' | 'ignored') => {
