@@ -61,7 +61,7 @@ export default function TournamentLobby() {
             <p className="text-gray-400 mb-4">{error}</p>
             <Button onClick={refreshTournaments}>
               <RefreshCw className="h-4 w-4 mr-2" />
-              {t('common.retry', 'Retry')}
+              {t('common.refresh', 'Retry')}
             </Button>
           </div>
         </div>
@@ -77,16 +77,16 @@ export default function TournamentLobby() {
           <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white">
             <Link to="/" className="flex items-center">
               <ArrowLeft className="h-4 w-4 mr-2" />
-              {t('backToHome', 'Back to Home')}
+              {t('common.back', 'Back to Home')}
             </Link>
           </Button>
           <div className="h-6 w-px bg-gray-600"></div>
           <div>
             <h1 className="text-3xl font-bold text-emerald">
-              {t('tournaments.title', 'Tournaments')}
+              {t('tournaments.lobby', 'Tournaments')}
             </h1>
             <p className="text-gray-400 mt-1">
-              {t('tournaments.subtitle', 'Compete in exciting tournaments with guaranteed prize pools')}
+              {t('tournaments.description', 'Compete in exciting tournaments with guaranteed prize pools')}
             </p>
           </div>
         </div>
@@ -95,13 +95,13 @@ export default function TournamentLobby() {
           <Button variant="outline" size="sm">
             <Link to="/lobby" className="flex items-center">
               <Users className="h-4 w-4 mr-2" />
-              {t('lobby', 'Lobby')}
+              {t('lobby.title', 'Lobby')}
             </Link>
           </Button>
           <Button variant="outline" size="sm">
             <Link to="/leaderboards" className="flex items-center">
               <Target className="h-4 w-4 mr-2" />
-              {t('leaderboards', 'Leaderboards')}
+              {t('leaderboards.title', 'Leaderboards')}
             </Link>
           </Button>
           {user && (
@@ -162,7 +162,7 @@ export default function TournamentLobby() {
                   </p>
                   <Button>
                     <Link to="/login">
-                      {t('signIn', 'Sign In')}
+                      {t('auth.signIn', 'Sign In')}
                     </Link>
                   </Button>
                 </div>

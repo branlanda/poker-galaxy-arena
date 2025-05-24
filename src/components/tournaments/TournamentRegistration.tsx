@@ -56,7 +56,7 @@ export const TournamentRegistration: React.FC<TournamentRegistrationProps> = ({
   
   const renderRegistrationStatus = () => {
     if (loading) {
-      return <p>{t('loading')}</p>;
+      return <p>{t('common.loading')}</p>;
     }
     
     if (registered && registration) {
@@ -147,7 +147,7 @@ export const TournamentRegistration: React.FC<TournamentRegistrationProps> = ({
           />
           <DialogFooter>
             <Button onClick={handleAccessCodeSubmit} disabled={loading}>
-              {t('submit')}
+              {t('common.submit')}
             </Button>
           </DialogFooter>
         </DialogContent>

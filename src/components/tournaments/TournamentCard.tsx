@@ -43,7 +43,7 @@ export function TournamentCard({ tournament, onClick }: TournamentCardProps) {
           <TournamentStatusBadge status={tournament.status} />
           {tournament.is_private && (
             <Badge variant="outline" className="ml-2">
-              <Lock className="h-3 w-3 mr-1" /> {t('private')}
+              <Lock className="h-3 w-3 mr-1" /> {t('tournaments.privateTournament')}
             </Badge>
           )}
         </div>
@@ -66,7 +66,7 @@ export function TournamentCard({ tournament, onClick }: TournamentCardProps) {
           <div className="flex items-center">
             <Users className="h-4 w-4 mr-2 text-emerald" />
             <span>
-              {tournament.registered_players_count || 0} / {tournament.max_players} {t('players')}
+              {tournament.registered_players_count || 0} / {tournament.max_players} {t('common.players')}
             </span>
           </div>
           <div className="flex items-center">

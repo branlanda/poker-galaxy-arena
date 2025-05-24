@@ -35,7 +35,7 @@ export function TableHeader({ table, onLeaveTable }: TableHeaderProps) {
               <TableStatusBadge status={table.status} />
               {table.is_private && (
                 <span className="px-2 py-0.5 rounded-full bg-gray-500/20 text-gray-300 border border-gray-500/30 text-xs font-medium">
-                  {t('private', 'Privada')}
+                  {t('tournaments.privateTournament', 'Private')}
                 </span>
               )}
             </div>
@@ -44,18 +44,18 @@ export function TableHeader({ table, onLeaveTable }: TableHeaderProps) {
           <div className="flex items-center gap-4 mt-2 text-gray-400 text-sm">
             <div className="flex items-center">
               <Info className="h-4 w-4 mr-1" />
-              {t('blinds', 'Blinds')}: ${table.small_blind} / ${table.big_blind}
+              {t('lobby.blinds', 'Blinds')}: ${table.small_blind} / ${table.big_blind}
             </div>
             
             <div className="flex items-center">
               <Users className="h-4 w-4 mr-1" />
-              {t('players', 'Jugadores')}: {table.current_players}/{table.max_players}
+              {t('common.players', 'Players')}: {table.current_players}/{table.max_players}
             </div>
             
             {table.hand_number > 0 && (
               <div className="flex items-center">
                 <Clock className="h-4 w-4 mr-1" />
-                {t('handNumber', 'Mano')}: #{table.hand_number}
+                {t('game.hand', 'Hand')}: #{table.hand_number}
               </div>
             )}
           </div>
@@ -63,7 +63,7 @@ export function TableHeader({ table, onLeaveTable }: TableHeaderProps) {
         
         <div className="flex gap-2">
           <Button variant="outline" size="sm">
-            {t('inviteFriends', 'Invitar amigos')}
+            {t('lobby.inviteFriends', 'Invite Friends')}
           </Button>
         </div>
       </div>
