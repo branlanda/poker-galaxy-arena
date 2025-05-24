@@ -63,7 +63,7 @@ export const LeaderboardsPage = () => {
           <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white">
             <Link to="/" className="flex items-center">
               <ArrowLeft className="h-4 w-4 mr-2" />
-              {t('backToHome', 'Back to Home')}
+              {t('common.welcome', 'Back to Home')}
             </Link>
           </Button>
           <div className="h-6 w-px bg-gray-600"></div>
@@ -77,13 +77,13 @@ export const LeaderboardsPage = () => {
           <Button variant="outline" size="sm">
             <Link to="/lobby" className="flex items-center">
               <Users className="h-4 w-4 mr-2" />
-              {t('lobby', 'Lobby')}
+              {t('lobby.title', 'Lobby')}
             </Link>
           </Button>
           <Button variant="outline" size="sm">
             <Link to="/tournaments" className="flex items-center">
               <Trophy className="h-4 w-4 mr-2" />
-              {t('tournaments', 'Tournaments')}
+              {t('tournaments.lobby', 'Tournaments')}
             </Link>
           </Button>
         </div>
@@ -102,7 +102,7 @@ export const LeaderboardsPage = () => {
             <Button>
               <Link to="/lobby" className="flex items-center">
                 <Users className="h-4 w-4 mr-2" />
-                {t('lobby', 'Go to Lobby')}
+                {t('lobby.title', 'Go to Lobby')}
               </Link>
             </Button>
           </CardContent>
@@ -138,7 +138,7 @@ export const LeaderboardsPage = () => {
                 <div className="relative">
                   <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                   <Input
-                    placeholder={t('search', 'Search players...')}
+                    placeholder={t('common.search', 'Search players...')}
                     className="pl-10 bg-navy/60 border-emerald/20 text-white placeholder-gray-400"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
