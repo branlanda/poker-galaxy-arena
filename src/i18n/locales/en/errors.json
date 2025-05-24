@@ -1,0 +1,20 @@
+
+{
+  "fetchFailed": "Failed to fetch data",
+  "tryAgain": "Please try again later",
+  "notLoggedIn": "Not Logged In",
+  "loginRequired": "You need to be logged in to perform this action",
+  "invalidAccessCode": "Invalid Access Code",
+  "cannotJoinPrivateTournament": "Cannot join private tournament with this access code",
+  "registrationNotOpen": "Registration Not Open",
+  "registrationOpensAt": "Registration opens at {{time}}",
+  "registrationClosed": "Registration Closed",
+  "registrationClosedAt": "Registration closed at {{time}}",
+  "registrationFailed": "Registration Failed",
+  "unregistrationFailed": "Unregistration Failed",
+  "cannotUnregister": "Cannot Unregister",
+  "tournamentAlreadyStarted": "Tournament has already started",
+  "failedToLoad": "Failed to load data",
+  "cannotClaim": "Cannot claim reward",
+  "achievementNotCompleted": "This achievement has not been completed or was already claimed"
+}

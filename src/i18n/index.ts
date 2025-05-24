@@ -4,11 +4,32 @@ import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 import { languages } from '@/stores/language';
 
-// Import translation files
-import enTranslation from './locales/en/translation.json';
+// Import English translation files
+import enCommon from './locales/en/common.json';
+import enAuth from './locales/en/auth.json';
+import enLobby from './locales/en/lobby.json';
+import enGame from './locales/en/game.json';
+import enTournaments from './locales/en/tournaments.json';
+import enAchievements from './locales/en/achievements.json';
+import enLeaderboards from './locales/en/leaderboards.json';
+import enErrors from './locales/en/errors.json';
+
+// Import translation files for other languages
 import esTranslation from './locales/es/translation.json';
 import frTranslation from './locales/fr/translation.json';
 import deTranslation from './locales/de/translation.json';
+
+// Combine English translations
+const enTranslation = {
+  common: enCommon,
+  auth: enAuth,
+  lobby: enLobby,
+  game: enGame,
+  tournaments: enTournaments,
+  achievements: enAchievements,
+  leaderboards: enLeaderboards,
+  errors: enErrors
+};
 
 // Configure i18next
 i18n

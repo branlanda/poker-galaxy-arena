@@ -1,0 +1,24 @@
+
+{
+  "fold": "Fold",
+  "check": "Check",
+  "call": "Call",
+  "bet": "Bet",
+  "raise": "Raise",
+  "allIn": "All In",
+  "pot": "Pot",
+  "dealer": "Dealer",
+  "smallBlind": "Small Blind",
+  "bigBlind": "Big Blind",
+  "waitingForPlayers": "Waiting for players",
+  "yourTurn": "Your turn",
+  "sitDown": "Sit Down",
+  "standUp": "Stand Up",
+  "buyIn": "Buy In",
+  "rebuy": "Rebuy",
+  "leaveTable": "Leave Table",
+  "chat": "Chat",
+  "history": "History",
+  "info": "Info",
+  "hand": "Hand"
+}

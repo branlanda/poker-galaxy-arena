@@ -1,0 +1,25 @@
+
+{
+  "title": "Leaderboards",
+  "description": "See who's at the top of the rankings",
+  "noLeaderboards": "No Leaderboards Available",
+  "noLeaderboardsDescription": "Leaderboards will appear here once games begin.",
+  "checkBackSoon": "Check back soon for new competitions",
+  "players": "players",
+  "score": "Score",
+  "points": "points",
+  "noEntries": "No Entries Yet",
+  "noPlayersYet": "No players have been ranked in this category yet.",
+  "noSearchResults": "No players match your search criteria.",
+  "beTheFirst": "Be the first to participate and claim the top spot",
+  "participate": "Participate",
+  "selectPeriod": "Select Period",
+  "daily": "Daily",
+  "weekly": "Weekly",
+  "monthly": "Monthly",
+  "allTime": "All Time",
+  "selectCategory": "Leaderboard Categories",
+  "browseDifferentCategories": "Browse different leaderboard categories and compete with other players",
+  "dateAchieved": "Achieved",
+  "clearSearch": "Clear Search"
+}

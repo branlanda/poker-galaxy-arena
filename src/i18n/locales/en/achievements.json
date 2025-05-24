@@ -1,0 +1,20 @@
+
+{
+  "title": "Achievements & Missions",
+  "description": "Complete challenges and earn rewards",
+  "level": "Level",
+  "currentXP": "Current XP",
+  "toNextLevel": "to next level",
+  "totalXP": "Total XP earned",
+  "dailyMissions": "Daily Missions",
+  "noActiveMissions": "No Active Missions",
+  "checkBackLater": "Check back later for new missions",
+  "alsoEarn": "Also earn",
+  "all": "All Achievements",
+  "unlocked": "Unlocked",
+  "locked": "Locked",
+  "playToUnlock": "Play games and complete challenges to unlock achievements",
+  "unlockedOn": "Unlocked on {{date}}",
+  "rewardClaimed": "Reward Claimed",
+  "rewardCreditedToAccount": "Your reward has been credited to your account"
+}
