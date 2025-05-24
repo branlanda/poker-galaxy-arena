@@ -2,12 +2,14 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { cva } from 'class-variance-authority';
+import { Slot } from '@radix-ui/react-slot';
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'default' | 'primary' | 'secondary' | 'accent' | 'outline' | 'link' | 'ghost';
   size?: 'sm' | 'md' | 'lg' | 'icon' | 'default';
   loading?: boolean;
   fullWidth?: boolean;
+  asChild?: boolean;
 }
 
 export const buttonVariants = cva(
@@ -42,9 +44,11 @@ export const buttonVariants = cva(
 );
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant = 'default', size = 'md', loading, fullWidth, children, ...props }, ref) => {
+  ({ className, variant = 'default', size = 'md', loading, fullWidth, asChild = false, children, ...props }, ref) => {
+    const Comp = asChild ? Slot : "button";
+    
     return (
-      <button
+      <Comp
         className={cn(
           buttonVariants({ variant, size }),
           fullWidth && 'w-full',
@@ -60,7 +64,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           </div>
         )}
         <span className={loading ? 'opacity-0' : ''}>{children}</span>
-      </button>
+      </Comp>
     );
   }
 );

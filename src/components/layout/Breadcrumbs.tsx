@@ -36,7 +36,8 @@ export function Breadcrumbs() {
     const routeName = routeNames[currentPath] || segment;
     breadcrumbs.push({
       name: t(routeName, segment.charAt(0).toUpperCase() + segment.slice(1)),
-      path: currentPath
+      path: currentPath,
+      icon: undefined
     });
   });
   
