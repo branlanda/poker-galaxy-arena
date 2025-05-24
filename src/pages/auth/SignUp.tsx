@@ -42,47 +42,53 @@ const SignUp = () => {
     setLoading(true);
     
     try {
-      // Create auth user
-      const { data, error } = await supabase.auth.signUp({ 
+      // Create auth user first
+      const { data: authData, error: authError } = await supabase.auth.signUp({ 
         email, 
         password,
         options: {
           emailRedirectTo: `${window.location.origin}/auth/callback`,
-          data: {
-            alias // Include alias in user metadata for profile trigger
-          }
         }
       });
       
-      if (error) throw error;
+      if (authError) throw authError;
       
-      if (data.user) {
-        // Create player profile
+      if (authData.user && authData.session) {
+        // Wait a moment for the auth session to be established
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        // Create player profile - the RLS policy should now work since user is authenticated
         const { error: profileError } = await supabase
           .from('players')
           .insert([{ 
-            user_id: data.user.id, 
+            user_id: authData.user.id, 
             alias,
             show_public_stats: true
           }]);
           
-        if (profileError) throw profileError;
+        if (profileError) {
+          console.error("Profile creation error:", profileError);
+          throw new Error(`Failed to create player profile: ${profileError.message}`);
+        }
         
         // Update user state
         setUser({
-          id: data.user.id,
-          email: data.user.email || undefined,
+          id: authData.user.id,
+          email: authData.user.email || undefined,
           alias,
           showInLeaderboard: true
         });
         
         toast.success("Account created successfully!");
         navigate('/lobby');
+      } else {
+        // User created but needs email confirmation
+        toast.success("Please check your email to confirm your account!");
       }
     } catch (error: any) {
+      console.error("Signup error:", error);
       setError(error.message || "Failed to create account");
       toast.error(error.message || "Failed to create account");
-      console.error("Signup error:", error);
     } finally {
       setLoading(false);
     }
