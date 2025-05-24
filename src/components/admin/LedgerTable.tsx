@@ -2,7 +2,7 @@
 import React, { useMemo } from 'react';
 import { useLedgerStore } from '@/stores/ledger';
 import { LedgerRow } from './LedgerRow';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/hooks/useTranslation';
 import { 
   Table, 

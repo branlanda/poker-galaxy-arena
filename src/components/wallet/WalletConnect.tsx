@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useWalletStore } from '@/stores/wallet';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { ethers } from 'ethers';
 import { Loader2, Wallet, LogOut } from 'lucide-react';

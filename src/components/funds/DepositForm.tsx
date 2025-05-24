@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Slider } from "@/components/ui/slider";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import { Loader2, QrCode } from "lucide-react";
 
 interface DepositFormProps {

@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { useBalance } from "@/hooks/useBalance";
 import { Slider } from "@/components/ui/slider";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 
 interface WithdrawFormProps {

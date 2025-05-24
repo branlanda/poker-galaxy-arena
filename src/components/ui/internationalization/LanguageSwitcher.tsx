@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useLanguage } from '@/stores/language';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { Check, Globe } from 'lucide-react';
 import { 
   DropdownMenu,

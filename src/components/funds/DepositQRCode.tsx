@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Copy, Check } from "lucide-react";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 
 interface DepositQRCodeProps {

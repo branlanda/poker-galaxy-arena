@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useLedgerStore } from '@/stores/ledger';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Download } from 'lucide-react';
 

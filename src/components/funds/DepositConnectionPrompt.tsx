@@ -3,7 +3,7 @@ import React from 'react';
 import { AlertCircle } from "lucide-react";
 import { WalletConnect } from "@/components/wallet/WalletConnect";
 import { useTranslation } from '@/hooks/useTranslation';
-import { Button } from '../ui/Button';
+import { Button } from '@/components/ui/button';
 
 const DepositConnectionPrompt: React.FC = () => {
   const { t } = useTranslation();

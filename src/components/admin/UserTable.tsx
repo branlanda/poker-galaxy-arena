@@ -6,7 +6,7 @@ import KycBadge from './KycBadge';
 import UserDrawer from './UserDrawer';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Eye } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 
 interface UserTableProps {
   onUserSelect?: (userId: string) => void;
@@ -30,93 +30,73 @@ const UserTable: React.FC<UserTableProps> = ({ onUserSelect }) => {
     }
     
     // Filter by KYC level
-    if (filters.kyc !== undefined && user.kyc !== filters.kyc) {
-      return false;
-    }
-    
-    // Filter by banned status
-    if (filters.banned !== undefined && user.banned !== filters.banned) {
+    if (filters.kycLevel && user.kycLevel !== filters.kycLevel) {
       return false;
     }
     
     return true;
   });
 
-  const handleUserSelect = (user: User) => {
-    if (onUserSelect) {
-      onUserSelect(user.id);
-    } else {
-      setSelectedUser(user);
-    }
-  };
-
   return (
-    <div className="relative overflow-x-auto rounded-lg border border-emerald/10">
-      <Table>
-        <TableHeader>
-          <TableRow className="bg-[#081624]">
-            <TableHead>{t('admin.users.alias')}</TableHead>
-            <TableHead className="hidden md:table-cell">{t('admin.users.email')}</TableHead>
-            <TableHead className="hidden lg:table-cell">{t('admin.users.country')}</TableHead>
-            <TableHead>{t('admin.users.balance')}</TableHead>
-            <TableHead>KYC</TableHead>
-            <TableHead>{t('admin.users.status')}</TableHead>
-            <TableHead className="text-right">{t('admin.users.actions')}</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {filteredUsers.length > 0 ? (
-            filteredUsers.map(user => (
-              <TableRow 
-                key={user.id}
-                className="hover:bg-[#0e2337]"
-              >
-                <TableCell>{user.alias}</TableCell>
-                <TableCell className="hidden md:table-cell">{user.email}</TableCell>
-                <TableCell className="hidden lg:table-cell">{user.country}</TableCell>
-                <TableCell className="font-mono">${user.balance.toFixed(2)}</TableCell>
-                <TableCell><KycBadge level={user.kyc} /></TableCell>
+    <>
+      <div className="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>{t('admin.users.alias')}</TableHead>
+              <TableHead>{t('admin.users.email')}</TableHead>
+              <TableHead>{t('admin.users.country')}</TableHead>
+              <TableHead>{t('admin.users.kyc')}</TableHead>
+              <TableHead>{t('admin.users.joinDate')}</TableHead>
+              <TableHead>{t('admin.users.actions')}</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredUsers.map((user) => (
+              <TableRow key={user.id}>
+                <TableCell className="font-medium">{user.alias}</TableCell>
+                <TableCell>{user.email}</TableCell>
+                <TableCell>{user.country}</TableCell>
                 <TableCell>
-                  {user.banned ? (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-700/20 text-red-400">
-                      {t('admin.users.statusBanned')}
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-700/20 text-emerald-400">
-                      {t('admin.users.statusActive')}
-                    </span>
-                  )}
+                  <KycBadge level={user.kycLevel} />
                 </TableCell>
-                <TableCell className="text-right">
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    className="h-8 w-8 p-0" 
-                    onClick={() => handleUserSelect(user)}
-                  >
-                    <Eye className="h-4 w-4" />
-                    <span className="sr-only">{t('admin.users.viewDetails')}</span>
-                  </Button>
+                <TableCell>
+                  {new Date(user.createdAt).toLocaleDateString()}
+                </TableCell>
+                <TableCell>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setSelectedUser(user)}
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                    {onUserSelect && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => onUserSelect(user.id)}
+                      >
+                        {t('admin.users.select')}
+                      </Button>
+                    )}
+                  </div>
                 </TableCell>
               </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell colSpan={7} className="text-center py-10 text-gray-400">
-                {t('admin.users.noResults')}
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
-      
-      {!onUserSelect && selectedUser && (
-        <UserDrawer 
-          user={selectedUser} 
-          onClose={() => setSelectedUser(null)} 
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+
+      {selectedUser && (
+        <UserDrawer
+          user={selectedUser}
+          open={!!selectedUser}
+          onClose={() => setSelectedUser(null)}
         />
       )}
-    </div>
+    </>
   );
 };
 
