@@ -5,18 +5,35 @@ export interface Tournament {
   name: string;
   description?: string;
   start_date: string;
+  start_time: string;
   status: TournamentStatus;
   buy_in: number;
   players_registered: number;
   max_players: number;
+  min_players: number;
   prize_pool: number;
   created_at: string;
   is_private?: boolean;
+  is_featured?: boolean;
   access_code?: string;
   tournament_type?: TournamentType;
   registration_open_time?: string;
   registration_close_time?: string;
   starting_chips?: number;
+  fee_percent: number;
+  current_level?: number;
+  blind_structure: Array<{
+    level: number;
+    small_blind: number;
+    big_blind: number;
+    ante: number;
+    duration_minutes: number;
+  }>;
+  payout_structure: Array<{
+    position: number;
+    percentage: number;
+  }>;
+  rules?: string;
   [key: string]: any; // For other properties
 }
 
@@ -33,7 +50,7 @@ export enum TournamentStatus {
   BREAK = 'BREAK',
   FINAL_TABLE = 'FINAL_TABLE',
   COMPLETED = 'COMPLETED',
-  CANCELLED = 'CANCELLED'  // Added CANCELLED status
+  CANCELLED = 'CANCELLED'
 }
 
 export enum TournamentType {
@@ -49,7 +66,11 @@ export interface TournamentFilters {
   type?: TournamentType | 'ALL';
   status?: TournamentStatus | 'ALL';
   showPrivate?: boolean;
+  isPrivate?: boolean;
+  isFeatured?: boolean;
   buyInRange?: [number, number];
+  buyInMin?: number;
+  buyInMax?: number;
 }
 
 export const DEFAULT_TOURNAMENT_FILTERS: TournamentFilters = {
@@ -57,7 +78,11 @@ export const DEFAULT_TOURNAMENT_FILTERS: TournamentFilters = {
   type: 'ALL',
   status: 'ALL',
   showPrivate: false,
-  buyInRange: [0, 10000]
+  isPrivate: false,
+  isFeatured: false,
+  buyInRange: [0, 10000],
+  buyInMin: 0,
+  buyInMax: 10000
 };
 
 export interface TournamentRegistration {
@@ -71,6 +96,10 @@ export interface TournamentRegistration {
   registration_time?: string;
   player_name?: string;
   player_avatar?: string;
+  profiles?: {
+    alias?: string;
+    avatar_url?: string;
+  };
   player?: {
     id: string;
     username: string;
@@ -88,7 +117,7 @@ export interface TournamentTable {
   current_players?: number;
   status: string;
   is_final_table?: boolean;
-  seats?: any[];
+  seats?: TournamentSeat[];
 }
 
 export interface TournamentSeat {
@@ -96,6 +125,12 @@ export interface TournamentSeat {
   seat_number: number;
   player_id: string;
   chips: number;
+  player_name?: string;
+  player_avatar?: string;
+  profiles?: {
+    alias?: string;
+    avatar_url?: string;
+  };
   player?: {
     id: string;
     username: string;

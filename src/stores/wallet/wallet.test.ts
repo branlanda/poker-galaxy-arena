@@ -1,88 +1,74 @@
-
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { act } from '@testing-library/react';
 import { useWalletStore } from './index';
-
-// Setup fetch mock
-global.fetch = vi.fn();
 
 describe('Wallet Store', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
-    
-    // Reset the store
-    act(() => {
-      useWalletStore.setState({
-        address: null,
-        balance: 0,
-        ethBalance: null,
-        connecting: false,
-        transactions: [],
-        
-        // Include actions required by TypeScript
-        setAddress: () => {},
-        setBalance: () => {},
-        setEthBalance: () => {},
-        setConnecting: () => {},
-        addTransaction: () => {},
-        updateTransaction: () => {},
-        loadTransactions: async () => {},
-        depositFunds: async () => null,
-        withdrawFunds: async () => null,
-        verifyTransactionHash: async () => false,
-      });
+    useWalletStore.setState({
+      address: null,
+      balance: 0,
+      ethBalance: null,
+      connecting: false,
+      transactions: [],
+      loading: false,
+      error: null,
+      pendingDeposit: false,
+      pendingWithdrawal: false,
     });
   });
 
-  it('should update address correctly', () => {
-    act(() => {
-      useWalletStore.getState().setAddress('0x123');
-    });
-    
-    expect(useWalletStore.getState().address).toBe('0x123');
+  it('should initialize with default state', () => {
+    const state = useWalletStore.getState();
+    expect(state.address).toBeNull();
+    expect(state.balance).toBe(0);
+    expect(state.connecting).toBe(false);
+    expect(state.transactions).toEqual([]);
   });
 
-  it('should update balance correctly', () => {
-    act(() => {
-      useWalletStore.getState().setBalance(100.5);
-    });
-    
-    expect(useWalletStore.getState().balance).toBe(100.5);
+  it('should update address', () => {
+    const testAddress = '0x123...';
+    useWalletStore.getState().setAddress(testAddress);
+    expect(useWalletStore.getState().address).toBe(testAddress);
   });
 
-  it('should add transactions correctly', () => {
-    const transaction = {
-      id: '1',
-      hash: '0xabc',
-      amount: 10,
+  it('should update balance', () => {
+    const testBalance = 100.5;
+    useWalletStore.getState().setBalance(testBalance);
+    expect(useWalletStore.getState().balance).toBe(testBalance);
+  });
+
+  it('should handle connecting state', () => {
+    useWalletStore.getState().setConnecting(true);
+    expect(useWalletStore.getState().connecting).toBe(true);
+  });
+
+  it('should add transaction', () => {
+    const mockTransaction = {
+      id: 'test-id',
+      user_id: 'user-123',
+      amount: 50,
       type: 'deposit' as const,
       status: 'confirmed' as const,
-      timestamp: new Date(),
+      created_at: new Date().toISOString(),
     };
     
-    act(() => {
-      useWalletStore.getState().addTransaction(transaction);
-    });
-    
+    useWalletStore.getState().addTransaction(mockTransaction);
     expect(useWalletStore.getState().transactions).toHaveLength(1);
-    expect(useWalletStore.getState().transactions[0]).toEqual(transaction);
+    expect(useWalletStore.getState().transactions[0]).toEqual(mockTransaction);
   });
 
-  it('should update transaction status correctly', () => {
-    const transaction = {
-      id: '1',
-      hash: '0xabc',
-      amount: 10,
+  it('should update transaction', () => {
+    const mockTransaction = {
+      id: 'test-id',
+      user_id: 'user-123',
+      amount: 50,
       type: 'deposit' as const,
       status: 'pending' as const,
-      timestamp: new Date(),
+      created_at: new Date().toISOString(),
     };
     
-    act(() => {
-      useWalletStore.getState().addTransaction(transaction);
-      useWalletStore.getState().updateTransaction('1', 'confirmed');
-    });
+    useWalletStore.getState().addTransaction(mockTransaction);
+    useWalletStore.getState().updateTransaction('test-id', { status: 'confirmed' });
     
-    expect(useWalletStore.getState().transactions[0].status).toBe('confirmed');
+    const updatedTransaction = useWalletStore.getState().transactions[0];
+    expect(updatedTransaction.status).toBe('confirmed');
   });
 });

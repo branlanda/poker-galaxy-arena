@@ -1,103 +1,70 @@
 
 import { supabase } from '@/lib/supabase';
-import { Transaction, TransactionStatus } from './types';
+import { useAuth } from '@/stores/auth';
+import { Transaction } from './types';
 
-export const loadTransactions = async (set: any, get: any) => {
+export const depositFunds = async (amount: number, txHash?: string) => {
+  const { user } = useAuth.getState();
+  
+  if (!user) {
+    throw new Error('User not authenticated');
+  }
+
   try {
     const { data, error } = await supabase
-      .from('wallet_transactions')
-      .select('*')
-      .order('created_at', { ascending: false });
-    
-    if (error) {
-      console.error('Error loading transactions:', error);
-      return;
-    }
-    
-    if (data) {
-      set({ transactions: data });
-    }
-  } catch (error) {
-    console.error('Error in loadTransactions action:', error);
-  }
-};
+      .from('transactions')
+      .insert([
+        {
+          user_id: user.id,
+          amount,
+          type: 'deposit',
+          status: txHash ? 'confirmed' : 'pending',
+          blockchain_tx_hash: txHash,
+          description: `Deposit of ${amount} USDT`,
+          created_at: new Date().toISOString(),
+        },
+      ])
+      .select()
+      .single();
 
-export const depositFunds = async (amount: number, set: any, get: any) => {
-  try {
-    const { address } = get();
-    if (!address) throw new Error('No wallet connected');
-    
-    const { data, error } = await supabase.functions.invoke('deposit-funds', {
-      body: { amount, address }
-    });
-    
     if (error) throw error;
-    
-    // Add transaction to local state
-    const transaction: Transaction = {
-      id: data.transaction_id,
-      type: 'DEPOSIT',
-      amount,
-      status: TransactionStatus.PENDING,
-      hash: data.txHash || null,
-      created_at: new Date().toISOString()
-    };
-    
-    get().addTransaction(transaction);
-    return transaction;
-  } catch (error: any) {
-    console.error('Error in deposit action:', error);
-    throw error;
-  }
-};
 
-export const withdrawFunds = async (address: string, amount: number, set: any, get: any) => {
-  try {
-    if (!address) throw new Error('No withdrawal address provided');
-    
-    const { data, error } = await supabase.functions.invoke('withdraw-funds', {
-      body: { amount, address }
-    });
-    
-    if (error) throw error;
-    
-    // Add transaction to local state
-    const transaction: Transaction = {
-      id: data.transaction_id,
-      type: 'WITHDRAW',
-      amount,
-      status: TransactionStatus.PENDING,
-      hash: data.txHash || null,
-      created_at: new Date().toISOString()
-    };
-    
-    get().addTransaction(transaction);
-    return transaction;
-  } catch (error: any) {
-    console.error('Error in withdraw action:', error);
-    throw error;
-  }
-};
-
-export const verifyTransactionHash = async (txHash: string, set: any, get: any) => {
-  try {
-    const { data, error } = await supabase.functions.invoke('verify-transaction', {
-      body: { transactionHash: txHash }
-    });
-    
-    if (error) throw error;
-    
-    // If transaction exists in local state, update it
-    const txId = data.transaction_id;
-    const status = data.verified ? TransactionStatus.COMPLETED : TransactionStatus.FAILED;
-    
-    if (txId) {
-      get().updateTransaction(txId, status);
-    }
-    
     return data;
   } catch (error) {
-    console.error('Error verifying transaction:', error);
+    console.error('Error depositing funds:', error);
+    throw error;
+  }
+};
+
+export const withdrawFunds = async (amount: number, address: string) => {
+  const { user } = useAuth.getState();
+  
+  if (!user) {
+    throw new Error('User not authenticated');
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('transactions')
+      .insert([
+        {
+          user_id: user.id,
+          amount: -amount,
+          type: 'withdrawal',
+          status: 'pending',
+          description: `Withdrawal of ${amount} USDT to ${address}`,
+          metadata: { withdrawal_address: address },
+          created_at: new Date().toISOString(),
+        },
+      ])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return data;
+  } catch (error) {
+    console.error('Error withdrawing funds:', error);
     throw error;
   }
 };

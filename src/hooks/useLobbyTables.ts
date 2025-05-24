@@ -2,24 +2,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { toast } from '@/hooks/use-toast';
-import { TableType } from '@/types/lobby';
-
-export interface LobbyTable {
-  id: string;
-  name: string;
-  table_type: TableType;
-  status: string;
-  small_blind: number;
-  big_blind: number;
-  min_buy_in: number;
-  max_buy_in: number;
-  max_players: number;
-  current_players: number;
-  is_private: boolean;
-  creator_id: string;
-  created_at: string;
-  updated_at: string;
-}
+import { LobbyTable } from '@/types/lobby';
 
 export function useLobbyTables() {
   const [tables, setTables] = useState<LobbyTable[]>([]);

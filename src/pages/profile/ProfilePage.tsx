@@ -1,175 +1,326 @@
-
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/Button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Bell, Calendar, ChevronDown, CreditCard, FileText, HelpCircle, Plus, Settings } from 'lucide-react';
+import { format } from 'date-fns';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Separator } from '@/components/ui/separator';
+import { ScrollArea } from "@/components/ui/scroll-area"
 import { Badge } from '@/components/ui/badge';
-import { useUserProfile } from '@/hooks/useUserProfile';
-import { useAuth } from '@/stores/auth';
-import { Loader2, Upload, Settings, BarChart3, Trophy, Users, MessageSquare } from 'lucide-react';
-import { StatisticsSection } from '@/components/profile/StatisticsSection';
-import { AchievementsSection } from '@/components/profile/AchievementsSection';
-import { FriendsSection } from '@/components/profile/FriendsSection';
-import { RecentGamesSection } from '@/components/profile/RecentGamesSection';
-import { NotificationsPanel } from '@/components/profile/NotificationsPanel';
+import { Switch } from "@/components/ui/switch"
+import { Label } from "@/components/ui/label"
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableFooter,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+
+const StatisticsSection: React.FC<{ stats: any }> = ({ stats }) => (
+  <Card>
+    <CardHeader>
+      <CardTitle>Statistics</CardTitle>
+      <CardDescription>Your game statistics</CardDescription>
+    </CardHeader>
+    <CardContent className="grid gap-4">
+      <div className="flex items-center justify-between">
+        <span>Total Hands Played</span>
+        <span>{stats.totalHands}</span>
+      </div>
+      <div className="flex items-center justify-between">
+        <span>Total Winnings</span>
+        <span>${stats.totalWinnings}</span>
+      </div>
+      <div className="flex items-center justify-between">
+        <span>Tournament Wins</span>
+        <span>{stats.tournamentWins}</span>
+      </div>
+      <div className="flex items-center justify-between">
+        <span>Rank Position</span>
+        <span>{stats.rankPosition}</span>
+      </div>
+    </CardContent>
+  </Card>
+);
+
+const AchievementsSection: React.FC<{ achievements: any[] }> = ({ achievements }) => (
+  <Card>
+    <CardHeader>
+      <CardTitle>Achievements</CardTitle>
+      <CardDescription>Your unlocked achievements</CardDescription>
+    </CardHeader>
+    <CardContent className="space-y-3">
+      {achievements.map((achievement) => (
+        <div key={achievement.id} className="flex items-center justify-between">
+          <div>
+            <p className="font-medium">{achievement.name}</p>
+            <p className="text-sm text-muted-foreground">{achievement.description}</p>
+          </div>
+          {achievement.unlocked ? (
+            <Badge variant="outline">Unlocked</Badge>
+          ) : (
+            <span>{achievement.progress}%</span>
+          )}
+        </div>
+      ))}
+    </CardContent>
+  </Card>
+);
+
+const FriendsSection: React.FC<{ friends: any[], onRefresh: () => void }> = ({ friends, onRefresh }) => (
+  <Card>
+    <CardHeader>
+      <CardTitle>Friends</CardTitle>
+      <CardDescription>Your list of friends</CardDescription>
+    </CardHeader>
+    <CardContent className="space-y-3">
+      {friends.map((friend) => (
+        <div key={friend.id} className="flex items-center justify-between">
+          <div>
+            <p className="font-medium">{friend.username}</p>
+            <p className="text-sm text-muted-foreground">{friend.status}</p>
+          </div>
+          <Badge variant="secondary">{friend.status}</Badge>
+        </div>
+      ))}
+      <Button variant="outline" onClick={onRefresh}>Refresh</Button>
+    </CardContent>
+  </Card>
+);
+
+const RecentGamesSection: React.FC<{ games: any[] }> = ({ games }) => (
+  <Card>
+    <CardHeader>
+      <CardTitle>Recent Games</CardTitle>
+      <CardDescription>Your recent game history</CardDescription>
+    </CardHeader>
+    <CardContent>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Type</TableHead>
+            <TableHead>Result</TableHead>
+            <TableHead>Amount</TableHead>
+            <TableHead>Date</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {games.map((game) => (
+            <TableRow key={game.id}>
+              <TableCell>{game.type}</TableCell>
+              <TableCell>{game.result}</TableCell>
+              <TableCell>{game.amount}</TableCell>
+              <TableCell>{format(game.date, 'PPP')}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </CardContent>
+  </Card>
+);
+
+interface NotificationsPanelProps {
+  open: boolean;
+  onClose: () => void;
+}
+
+const NotificationsPanel: React.FC<NotificationsPanelProps> = ({ open, onClose }) => {
+  return (
+    <DropdownMenu open={open} onOpenChange={onClose}>
+      <DropdownMenuContent className="w-80">
+        <DropdownMenuLabel>Notifications</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <ScrollArea className="h-[200px] w-full pr-2">
+          <div className="space-y-1">
+            <p className="text-sm leading-tight">
+              Your account was created <Calendar className="inline-block h-4 w-4 align-middle" />
+            </p>
+            <p className="px-2 text-xs text-muted-foreground">
+              on January 1, 2024
+            </p>
+          </div>
+          <DropdownMenuSeparator />
+          <div className="space-y-1">
+            <p className="text-sm leading-tight">
+              You received a new credit <CreditCard className="inline-block h-4 w-4 align-middle" />
+            </p>
+            <p className="px-2 text-xs text-muted-foreground">
+              on January 1, 2024
+            </p>
+          </div>
+        </ScrollArea>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+};
 
 export default function ProfilePage() {
-  const { user } = useAuth();
-  const { profile, loading, updateProfile } = useUserProfile();
-  const [editing, setEditing] = useState(false);
-  const [alias, setAlias] = useState(profile?.alias || '');
-  const [saving, setSaving] = useState(false);
-
-  React.useEffect(() => {
-    if (profile?.alias) {
-      setAlias(profile.alias);
-    }
-  }, [profile]);
-
-  const handleSave = async () => {
-    if (!alias.trim()) return;
-    
-    try {
-      setSaving(true);
-      await updateProfile({ alias: alias.trim() });
-      setEditing(false);
-    } catch (error) {
-      console.error('Error saving profile:', error);
-    } finally {
-      setSaving(false);
-    }
+  const [activeTab, setActiveTab] = useState('overview');
+  const [showNotifications, setShowNotifications] = useState(false);
+  
+  const mockStats = {
+    totalHands: 1250,
+    totalWinnings: 5420.50,
+    tournamentWins: 15,
+    rankPosition: 42
   };
-
-  const handleCancel = () => {
-    setAlias(profile?.alias || '');
-    setEditing(false);
-  };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
+  
+  const mockAchievements = [
+    { id: '1', name: 'First Win', description: 'Win your first game', unlocked: true, progress: 100 },
+    { id: '2', name: 'High Roller', description: 'Win a high stakes game', unlocked: false, progress: 60 }
+  ];
+  
+  const mockFriends = [
+    { id: '1', username: 'Player1', status: 'online' },
+    { id: '2', username: 'Player2', status: 'offline' }
+  ];
+  
+  const mockGames = [
+    { id: '1', type: 'Cash Game', result: 'win', amount: 250, date: new Date() },
+    { id: '2', type: 'Tournament', result: 'loss', amount: -100, date: new Date() }
+  ];
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="max-w-6xl mx-auto">
-        {/* Profile Header */}
-        <Card className="mb-8">
-          <CardContent className="p-6">
-            <div className="flex flex-col md:flex-row gap-6">
-              <div className="flex-shrink-0">
-                <div className="w-32 h-32 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-3xl font-bold">
-                  {(profile?.alias || user?.alias || 'U').charAt(0).toUpperCase()}
-                </div>
-              </div>
-              
-              <div className="flex-grow">
-                <div className="flex items-center gap-4 mb-4">
-                  {editing ? (
-                    <div className="flex items-center gap-2">
-                      <Input
-                        value={alias}
-                        onChange={(e) => setAlias(e.target.value)}
-                        className="text-xl font-bold max-w-xs"
-                        placeholder="Enter alias"
-                      />
-                      <Button size="sm" onClick={handleSave} disabled={saving}>
-                        {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Save'}
-                      </Button>
-                      <Button size="sm" variant="outline" onClick={handleCancel}>
-                        Cancel
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-3">
-                      <h1 className="text-3xl font-bold">{profile?.alias || user?.alias || 'Anonymous'}</h1>
-                      <Button size="sm" variant="outline" onClick={() => setEditing(true)}>
-                        <Settings className="h-4 w-4 mr-2" />
-                        Edit
-                      </Button>
-                    </div>
-                  )}
-                </div>
-                
-                <div className="flex flex-wrap gap-2 mb-4">
-                  <Badge variant="secondary">Level 1</Badge>
-                  <Badge variant="secondary">Rookie</Badge>
-                  <Badge variant="secondary">0 XP</Badge>
-                </div>
-                
-                <div className="text-sm text-muted-foreground">
-                  <p>Member since {new Date().toLocaleDateString()}</p>
-                  {profile?.wallet_address && (
-                    <p className="font-mono mt-1">
-                      Wallet: {profile.wallet_address.substring(0, 6)}...{profile.wallet_address.substring(38)}
-                    </p>
-                  )}
-                </div>
-              </div>
-              
-              <div className="flex flex-col gap-2">
-                <Button variant="outline" size="sm">
-                  <Upload className="h-4 w-4 mr-2" />
-                  Upload Avatar
-                </Button>
-                <Button variant="outline" size="sm">
-                  <MessageSquare className="h-4 w-4 mr-2" />
-                  Send Message
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Profile Tabs */}
-        <Tabs defaultValue="statistics" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="statistics">
-              <BarChart3 className="h-4 w-4 mr-2" />
-              Statistics
-            </TabsTrigger>
-            <TabsTrigger value="achievements">
-              <Trophy className="h-4 w-4 mr-2" />
-              Achievements
-            </TabsTrigger>
-            <TabsTrigger value="friends">
-              <Users className="h-4 w-4 mr-2" />
-              Friends
-            </TabsTrigger>
-            <TabsTrigger value="recent">
-              Recent Games
-            </TabsTrigger>
-            <TabsTrigger value="notifications">
-              Notifications
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="statistics">
-            <StatisticsSection />
-          </TabsContent>
-
-          <TabsContent value="achievements">
-            <AchievementsSection />
-          </TabsContent>
-
-          <TabsContent value="friends">
-            <FriendsSection />
-          </TabsContent>
-
-          <TabsContent value="recent">
-            <RecentGamesSection />
-          </TabsContent>
-
-          <TabsContent value="notifications">
-            <NotificationsPanel />
-          </TabsContent>
-        </Tabs>
+    <div className="container mx-auto p-6 space-y-8">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-4">
+          <Avatar>
+            <AvatarImage src="https://github.com/shadcn.png" alt="Your Avatar" />
+            <AvatarFallback>CN</AvatarFallback>
+          </Avatar>
+          <div>
+            <h2 className="text-2xl font-semibold">Your Profile</h2>
+            <p className="text-muted-foreground">Manage your profile and settings</p>
+          </div>
+        </div>
+        <div className="flex items-center space-x-4">
+          <Button variant="ghost" size="sm" onClick={() => setShowNotifications(true)}>
+            <Bell className="h-4 w-4 mr-2" />
+            Notifications
+          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm">
+                <Plus className="h-4 w-4 mr-2" />
+                Add Funds <ChevronDown className="h-4 w-4 ml-auto" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuItem>Deposit Funds</DropdownMenuItem>
+              <DropdownMenuItem>Withdraw Funds</DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>View Transactions</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
+      
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList>
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="settings">Settings</TabsTrigger>
+          <TabsTrigger value="security">Security</TabsTrigger>
+          <TabsTrigger value="help">Help</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="overview" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <StatisticsSection stats={mockStats} />
+            <AchievementsSection achievements={mockAchievements} />
+            <FriendsSection friends={mockFriends} onRefresh={() => {}} />
+            <RecentGamesSection games={mockGames} />
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="settings" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Personal Information</CardTitle>
+              <CardDescription>Manage your personal information</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Name</Label>
+                <input type="text" id="name" className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50" placeholder="Your Name" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <input type="email" id="email" className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50" placeholder="Your Email" />
+              </div>
+              <Button>Update Information</Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="security" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Security Settings</CardTitle>
+              <CardDescription>Manage your account security settings</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <p className="text-base font-medium leading-none">Two-Factor Authentication</p>
+                  <p className="text-sm text-muted-foreground">Enable two-factor authentication for added security</p>
+                </div>
+                <Switch id="2fa" />
+              </div>
+              <Separator />
+              <div className="space-y-2">
+                <Label htmlFor="password">Change Password</Label>
+                <input type="password" id="password" className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50" placeholder="New Password" />
+                <Button>Change Password</Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="help" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Help & Support</CardTitle>
+              <CardDescription>Get help and support for our platform</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center space-x-4">
+                <HelpCircle className="h-5 w-5 text-muted-foreground" />
+                <div className="space-y-0.5">
+                  <p className="text-base font-medium leading-none">FAQ</p>
+                  <p className="text-sm text-muted-foreground">Find answers to common questions</p>
+                </div>
+              </div>
+              <Separator />
+              <div className="flex items-center space-x-4">
+                <FileText className="h-5 w-5 text-muted-foreground" />
+                <div className="space-y-0.5">
+                  <p className="text-base font-medium leading-none">Contact Support</p>
+                  <p className="text-sm text-muted-foreground">Get in touch with our support team</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+      
+      <NotificationsPanel 
+        open={showNotifications} 
+        onClose={() => setShowNotifications(false)} 
+      />
     </div>
   );
 }
