@@ -32,7 +32,8 @@ export enum TournamentStatus {
   RUNNING = 'RUNNING',
   BREAK = 'BREAK',
   FINAL_TABLE = 'FINAL_TABLE',
-  COMPLETED = 'COMPLETED'
+  COMPLETED = 'COMPLETED',
+  CANCELLED = 'CANCELLED'  // Added CANCELLED status
 }
 
 export enum TournamentType {
@@ -66,6 +67,10 @@ export interface TournamentRegistration {
   chips: number;
   status: string;
   created_at: string;
+  is_active?: boolean;
+  registration_time?: string;
+  player_name?: string;
+  player_avatar?: string;
   player?: {
     id: string;
     username: string;
@@ -76,10 +81,14 @@ export interface TournamentRegistration {
 export interface TournamentTable {
   id: string;
   tournament_id: string;
-  name: string;
-  max_players: number;
-  current_players: number;
+  table_number?: number;
+  name?: string;
+  max_players?: number;
+  max_seats?: number;
+  current_players?: number;
   status: string;
+  is_final_table?: boolean;
+  seats?: any[];
 }
 
 export interface TournamentSeat {

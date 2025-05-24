@@ -1,68 +1,64 @@
-import { useState, useEffect } from 'react';
-import { useAuth } from '@/stores/auth';
-import { supabase } from '@/lib/supabase';
-import { useToast } from '@/hooks/use-toast';
-import { useTranslation } from '@/hooks/useTranslation';
 
-interface FraudCheck {
+import { useState, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
+import { toast } from '@/hooks/use-toast';
+import { Alert, AlertRule, useAlertStore } from '@/stores/alerts';
+
+export interface FraudCheck {
   id: string;
-  user_id: string;
-  check_type: string;
-  status: 'PENDING' | 'PASSED' | 'FAILED';
-  details?: any;
+  type: string;
+  status: string;
   created_at: string;
-  updated_at: string;
+  user_id: string;
+  details: any;
 }
 
 export function useAntiFraud() {
-  const { user } = useAuth();
-  const { toast } = useToast();
-  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [fraudChecks, setFraudChecks] = useState<FraudCheck[]>([]);
-  const [hasPendingChecks, setHasPendingChecks] = useState(false);
-
-  // Fetch user's fraud checks
+  const alertStore = useAlertStore();
+  
+  // Map alert store properties and methods directly
+  const alerts = alertStore.alerts;
+  const rules = alertStore.rules;
+  const fetchAlerts = alertStore.fetchAlerts;
+  const fetchRules = alertStore.fetchRules;
+  const toggleRule = alertStore.toggleRule;
+  const updateAlertStatus = alertStore.updateAlertStatus;
+  const banUser = alertStore.banUser;
+  
+  const hasPendingChecks = fraudChecks.some(check => check.status === 'pending');
+  
   const fetchFraudChecks = async () => {
-    if (!user) return;
-    
     try {
       setLoading(true);
-      
       const { data, error } = await supabase
         .from('fraud_checks')
         .select('*')
-        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
         
       if (error) throw error;
       
       setFraudChecks(data || []);
-      
-      // Check if there are any pending checks
-      const pending = data?.some(check => check.status === 'PENDING') || false;
-      setHasPendingChecks(pending);
-      
     } catch (error: any) {
-      console.error('Error fetching fraud checks:', error);
+      toast({
+        title: 'Error',
+        description: `Failed to fetch fraud checks: ${error.message}`,
+        variant: 'destructive',
+      });
     } finally {
       setLoading(false);
     }
   };
   
-  // Initiate a new fraud check
-  const initiateCheck = async (checkType: string, details?: any) => {
-    if (!user) return null;
-    
+  const initiateCheck = async (checkType: string, details: any = {}) => {
     try {
       setLoading(true);
-      
       const { data, error } = await supabase
         .from('fraud_checks')
         .insert({
-          user_id: user.id,
-          check_type: checkType,
-          status: 'PENDING',
+          type: checkType,
+          status: 'pending',
           details
         })
         .select()
@@ -70,101 +66,106 @@ export function useAntiFraud() {
         
       if (error) throw error;
       
-      // Refresh the list
-      await fetchFraudChecks();
+      setFraudChecks(prev => [data, ...prev]);
+      
+      toast({
+        title: 'Fraud check initiated',
+        description: `A new ${checkType} check has been initiated`,
+      });
       
       return data;
     } catch (error: any) {
-      console.error('Error initiating fraud check:', error);
       toast({
-        title: t('errors.checkFailed'),
-        description: error.message,
+        title: 'Error',
+        description: `Failed to initiate fraud check: ${error.message}`,
         variant: 'destructive',
       });
-      return null;
+      throw error;
     } finally {
       setLoading(false);
     }
   };
   
-  // Submit verification documents
   const submitVerification = async (checkId: string, documents: File[]) => {
-    if (!user) return false;
-    
     try {
       setLoading(true);
       
-      // Upload each document to storage
-      const uploadPromises = documents.map(async (doc, index) => {
-        const fileName = `${user.id}/${checkId}/${index}-${doc.name}`;
+      // Upload documents to storage
+      const uploadPromises = documents.map(async (file) => {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${checkId}/${Date.now()}.${fileExt}`;
+        const filePath = `fraud-checks/${fileName}`;
         
-        const { error: uploadError } = await supabase
-          .storage
-          .from('verification_docs')
-          .upload(fileName, doc, {
-            cacheControl: '3600',
-            upsert: false
-          });
+        const { error: uploadError } = await supabase.storage
+          .from('verifications')
+          .upload(filePath, file);
           
         if (uploadError) throw uploadError;
         
-        return fileName;
+        return filePath;
       });
       
-      const uploadedFiles = await Promise.all(uploadPromises);
+      const uploadedPaths = await Promise.all(uploadPromises);
       
-      // Update the check with file references
-      const { error: updateError } = await supabase
+      // Update fraud check with document paths
+      const { error } = await supabase
         .from('fraud_checks')
-        .update({
-          details: {
-            documents: uploadedFiles,
-            submitted_at: new Date().toISOString()
-          }
+        .update({ 
+          document_paths: uploadedPaths,
+          status: 'submitted',
+          updated_at: new Date().toISOString()
         })
-        .eq('id', checkId)
-        .eq('user_id', user.id);
+        .eq('id', checkId);
         
-      if (updateError) throw updateError;
+      if (error) throw error;
+      
+      // Update local state
+      setFraudChecks(prev => 
+        prev.map(check => 
+          check.id === checkId 
+            ? { ...check, status: 'submitted' } 
+            : check
+        )
+      );
       
       toast({
-        title: t('verification.documentsUploaded'),
-        description: t('verification.underReview'),
+        title: 'Verification submitted',
+        description: 'Your verification documents have been submitted for review',
       });
       
-      // Refresh the list
-      await fetchFraudChecks();
-      
-      return true;
+      return { success: true };
     } catch (error: any) {
-      console.error('Error submitting verification:', error);
       toast({
-        title: t('errors.uploadFailed'),
-        description: error.message,
+        title: 'Error',
+        description: `Failed to submit verification: ${error.message}`,
         variant: 'destructive',
       });
-      return false;
+      throw error;
     } finally {
       setLoading(false);
     }
   };
-  
-  // Load fraud checks when user changes
+
   useEffect(() => {
-    if (user) {
-      fetchFraudChecks();
-    } else {
-      setFraudChecks([]);
-      setHasPendingChecks(false);
-    }
-  }, [user]);
-  
+    fetchFraudChecks();
+    fetchAlerts();
+    fetchRules();
+  }, [fetchAlerts, fetchRules]);
+
   return {
     loading,
     fraudChecks,
     hasPendingChecks,
     fetchFraudChecks,
     initiateCheck,
-    submitVerification
+    submitVerification,
+    // Properties and methods from alertStore
+    alerts,
+    rules,
+    fetchAlerts,
+    fetchRules,
+    toggleRule,
+    updateAlertStatus,
+    banUser
   };
 }
