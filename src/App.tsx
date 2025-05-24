@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { useAuth } from '@/stores/auth';
@@ -15,12 +14,7 @@ import GameRoom from './pages/Game/GameRoom';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import { useAuthSync } from './hooks/useAuthSync';
 import NotFound from './pages/NotFound';
-import AdminLayout from './pages/Admin/AdminLayout';
-import Dashboard from './pages/Admin/Dashboard';
-import Users from './pages/Admin/Users';
-import Tables from './pages/Admin/Tables';
-import Ledger from './pages/Admin/Ledger';
-import { AdminGuard } from './hooks/useAdminGuard';
+import AdminRoutes from './router/AdminRoutes';
 import { Web3Provider } from './providers/Web3Provider';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from "@/components/ui/toaster";
@@ -83,16 +77,10 @@ function App() {
             } />
             
             {/* Admin routes with admin layout */}
-            <Route path="/admin" element={
-              <AdminGuard>
-                <AdminLayout />
-              </AdminGuard>
-            }>
-              <Route index element={<Dashboard />} />
-              <Route path="users" element={<Users />} />
-              <Route path="tables" element={<Tables />} />
-              <Route path="ledger" element={<Ledger />} />
-            </Route>
+            <Route path="/admin/*" element={<AdminRoutes />} />
+            
+            {/* Redirect /users to /admin/users */}
+            <Route path="/users" element={<Navigate to="/admin/users" replace />} />
             
             {/* All other routes with standard layout */}
             <Route path="/" element={
