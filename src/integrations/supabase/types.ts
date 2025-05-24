@@ -159,6 +159,30 @@ export type Database = {
         }
         Relationships: []
       }
+      chat_messages: {
+        Row: {
+          channel_id: string
+          created_at: string
+          id: string
+          message: string
+          player_id: string
+        }
+        Insert: {
+          channel_id?: string
+          created_at?: string
+          id?: string
+          message: string
+          player_id: string
+        }
+        Update: {
+          channel_id?: string
+          created_at?: string
+          id?: string
+          message?: string
+          player_id?: string
+        }
+        Relationships: []
+      }
       compliance_reports: {
         Row: {
           created_at: string | null
@@ -1698,6 +1722,33 @@ export type Database = {
           show_public_stats?: boolean | null
           updated_at?: string | null
           wallet_address?: string | null
+        }
+        Relationships: []
+      }
+      room_messages: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          player_id: string
+          player_name: string
+          table_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          player_id: string
+          player_name: string
+          table_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          player_id?: string
+          player_name?: string
+          table_id?: string
         }
         Relationships: []
       }

@@ -6,6 +6,7 @@ import { Send } from "lucide-react";
 import { supabase } from '@/lib/supabase';
 import { RoomMessageType } from '@/types/supabase';
 import { useAuth } from '@/stores/auth';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface GameChatProps {
   tableId: string;
@@ -18,6 +19,7 @@ export function GameChat({ tableId, userId }: GameChatProps) {
   const [isLoading, setIsLoading] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
+  const { t } = useTranslation('common');
   
   // Fetch chat messages on component mount
   useEffect(() => {
@@ -31,7 +33,7 @@ export function GameChat({ tableId, userId }: GameChatProps) {
         {
           event: 'INSERT',
           schema: 'public',
-          table: 'table_chat_messages',
+          table: 'room_messages',
           filter: `table_id=eq.${tableId}`
         },
         (payload) => {
@@ -51,12 +53,16 @@ export function GameChat({ tableId, userId }: GameChatProps) {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
   
-  // Fetch messages from the server using RPC function
+  // Fetch messages from the database
   const fetchMessages = async () => {
     setIsLoading(true);
     try {
       const { data, error } = await supabase
-        .rpc('get_table_chat_messages', { p_table_id: tableId });
+        .from('room_messages')
+        .select('*')
+        .eq('table_id', tableId)
+        .order('created_at', { ascending: true })
+        .limit(50);
       
       if (error) {
         console.error('Error fetching messages:', error);
@@ -71,21 +77,22 @@ export function GameChat({ tableId, userId }: GameChatProps) {
     }
   };
   
-  // Send a new message using RPC function
+  // Send a new message
   const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !newMessage.trim() || isLoading) return;
     
     setIsLoading(true);
     try {
-      const playerName = user.email?.split('@')[0] || 'Player';
+      const playerName = user.alias || user.email?.split('@')[0] || 'Player';
       
       const { error } = await supabase
-        .rpc('insert_chat_message', {
-          p_table_id: tableId,
-          p_player_id: user.id,
-          p_player_name: playerName,
-          p_message: newMessage.trim()
+        .from('room_messages')
+        .insert({
+          table_id: tableId,
+          player_id: user.id,
+          player_name: playerName,
+          message: newMessage.trim()
         });
       
       if (error) {
@@ -153,7 +160,7 @@ export function GameChat({ tableId, userId }: GameChatProps) {
           <Input
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
-            placeholder="Type your message..."
+            placeholder={t('chat.typeMessage')}
             disabled={isLoading || !user}
             className="flex-1"
           />
@@ -167,7 +174,7 @@ export function GameChat({ tableId, userId }: GameChatProps) {
         </div>
         {!user && (
           <p className="text-xs text-amber-500 mt-1">
-            You must be logged in to send messages
+            {t('chat.loginToSend')}
           </p>
         )}
       </form>

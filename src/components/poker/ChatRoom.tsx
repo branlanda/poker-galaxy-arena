@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/stores/auth';
@@ -23,13 +24,12 @@ export function ChatRoom({ tableId }: ChatRoomProps) {
   useEffect(() => {
     const fetchMessages = async () => {
       try {
-        // Use the type assertion to workaround type issues until Supabase types are regenerated
         const { data, error } = await supabase
-          .from('room_messages' as any)
+          .from('room_messages')
           .select('*')
           .eq('table_id', tableId)
           .order('created_at', { ascending: true })
-          .limit(50) as { data: RoomMessageType[], error: any };
+          .limit(50);
           
         if (error) {
           console.error('Error fetching messages:', error);
@@ -83,7 +83,7 @@ export function ChatRoom({ tableId }: ChatRoomProps) {
       const playerName = user.alias || user.email || 'Anonymous';
       
       const { error } = await supabase
-        .from('room_messages' as any)
+        .from('room_messages')
         .insert({
           table_id: tableId,
           player_id: user.id,

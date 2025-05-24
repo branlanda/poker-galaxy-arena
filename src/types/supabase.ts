@@ -16,7 +16,7 @@ export interface Profile {
   website?: string;
 }
 
-// Add this new interface for the table_chat_messages
+// Room message type for table-specific chat
 export interface RoomMessageType {
   id: string;
   table_id: string;
@@ -24,4 +24,15 @@ export interface RoomMessageType {
   player_name: string;
   message: string;
   created_at: string;
+}
+
+// Global chat message type
+export interface ChatMessageType {
+  id: string;
+  player_id: string;
+  channel_id: string;
+  message: string;
+  created_at: string;
+  player_name?: string;
+  player_avatar?: string;
 }

@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/stores/auth';
 import { supabase } from '@/lib/supabase';
@@ -10,16 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { format } from 'date-fns';
-
-interface ChatMessage {
-  id: string;
-  player_id: string;
-  message: string;
-  created_at: string;
-  channel_id: string;
-  player_name?: string;
-  player_avatar?: string;
-}
+import { ChatMessageType } from '@/types/supabase';
 
 export interface GlobalChatProps {
   collapsed?: boolean;
@@ -38,7 +30,7 @@ export function GlobalChat({
   const { toast } = useToast();
   const { t } = useTranslation('common');
   const [message, setMessage] = useState('');
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [messages, setMessages] = useState<ChatMessageType[]>([]);
   const [loading, setLoading] = useState(true);
   const [isOpen, setIsOpen] = useState(defaultOpen);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -58,9 +50,8 @@ export function GlobalChat({
     const fetchMessages = async () => {
       setLoading(true);
       try {
-        // Use type assertion to handle the table not being in the types yet
         const { data, error } = await supabase
-          .from('chat_messages' as any)
+          .from('chat_messages')
           .select(`
             *,
             profiles (
@@ -83,7 +74,7 @@ export function GlobalChat({
           }))
           .reverse();
           
-        setMessages(formattedMessages as ChatMessage[]);
+        setMessages(formattedMessages as ChatMessageType[]);
       } catch (err) {
         console.error('Error fetching messages:', err);
       } finally {
@@ -99,7 +90,7 @@ export function GlobalChat({
       .on('postgres_changes', 
         { event: 'INSERT', schema: 'public', table: 'chat_messages', filter: `channel_id=eq.${channelId}` },
         async (payload) => {
-          const newMessage = payload.new as ChatMessage;
+          const newMessage = payload.new as ChatMessageType;
           
           // Fetch player details
           if (newMessage.player_id) {
@@ -141,7 +132,7 @@ export function GlobalChat({
     
     try {
       const { error } = await supabase
-        .from('chat_messages' as any)
+        .from('chat_messages')
         .insert({
           player_id: user.id,
           message: message.trim(),
