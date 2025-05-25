@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { UserPlus, Search, User } from 'lucide-react';

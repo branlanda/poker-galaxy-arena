@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Tournament } from '@/types/tournaments';
 import { useTournamentRegistration } from '@/hooks/useTournamentRegistration';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { useTranslation } from '@/hooks/useTranslation';

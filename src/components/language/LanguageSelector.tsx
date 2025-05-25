@@ -11,7 +11,7 @@ import {
   DropdownMenuGroup,
   DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useDeviceInfo } from '@/hooks/use-mobile';
