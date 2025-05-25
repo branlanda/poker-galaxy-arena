@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect } from 'react';
 import { useLeaderboards } from '@/hooks/useLeaderboards';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -9,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Trophy, Medal, Award, Star, SearchIcon, Users, Globe, ArrowLeft 
 } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -230,3 +231,4 @@ export const LeaderboardsPage = () => {
     </div>
   );
 };
+

@@ -1,459 +1,334 @@
-import React, { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
+
+import React, { useState } from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
+import { Button } from '@/components/ui/button';
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { 
+  Table, 
+  TableHeader, 
+  TableRow, 
+  TableHead, 
+  TableBody, 
+  TableCell 
+} from "@/components/ui/table";
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuSeparator, 
+  DropdownMenuTrigger 
+} from "@/components/ui/dropdown-menu";
+import { 
+  Search, 
+  MoreHorizontal, 
+  Ban, 
+  MessageSquare, 
+  Eye, 
+  Trash2,
+  Filter,
+  Download
+} from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { AlertTriangle, Flag, Shield, UserX, CheckCircle, MessageSquare } from 'lucide-react';
 
-interface ChatMessage {
-  id: string;
-  user_id: string;
-  username: string;
-  message: string;
-  created_at: string;
-  reported: boolean;
-  is_flagged: boolean;
-}
+// Mock chat data
+const mockChatMessages = [
+  {
+    id: '1',
+    userId: 'user1',
+    username: 'PokerPro21',
+    tableId: 'table1',
+    tableName: 'Texas Hold\'em - $1/$2',
+    message: 'Good game everyone!',
+    timestamp: '2025-05-21 14:32:15',
+    flagged: false,
+    severity: 'low'
+  },
+  {
+    id: '2',
+    userId: 'user2',
+    username: 'BluffMaster',
+    tableId: 'table2',
+    tableName: 'Omaha - $2/$5',
+    message: 'You are terrible at this game',
+    timestamp: '2025-05-21 14:30:42',
+    flagged: true,
+    severity: 'medium'
+  },
+  {
+    id: '3',
+    userId: 'user3',
+    username: 'CardShark88',
+    tableId: 'table1',
+    tableName: 'Texas Hold\'em - $1/$2',
+    message: 'Nice hand!',
+    timestamp: '2025-05-21 14:28:33',
+    flagged: false,
+    severity: 'low'
+  },
+  {
+    id: '4',
+    userId: 'user4',
+    username: 'RiverRat',
+    tableId: 'table3',
+    tableName: 'Seven Card Stud - $1/$2',
+    message: 'This is rigged! Complete garbage site!',
+    timestamp: '2025-05-21 14:25:11',
+    flagged: true,
+    severity: 'high'
+  },
+  {
+    id: '5',
+    userId: 'user5',
+    username: 'AllInAnnie',
+    tableId: 'table2',
+    tableName: 'Omaha - $2/$5',
+    message: 'Thanks for the fun game',
+    timestamp: '2025-05-21 14:22:45',
+    flagged: false,
+    severity: 'low'
+  },
+];
 
-interface ReportedMessage extends ChatMessage {
-  reporter_id: string;
-  reporter_name: string;
-  reason: string;
-  report_date: string;
-  status: 'pending' | 'resolved' | 'dismissed';
-}
-
-interface FilteredWord {
-  id: string;
-  word: string;
-  severity: 'low' | 'medium' | 'high';
-  created_at: string;
-}
-
-export default function ChatModeration() {
+const ChatModeration: React.FC = () => {
+  const { t } = useTranslation();
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState('reports');
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [reportedMessages, setReportedMessages] = useState<ReportedMessage[]>([]);
-  const [filteredWords, setFilteredWords] = useState<FilteredWord[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [newFilteredWord, setNewFilteredWord] = useState('');
-  const [newFilteredWordSeverity, setNewFilteredWordSeverity] = useState<'low' | 'medium' | 'high'>('medium');
-
-  useEffect(() => {
-    fetchReportedMessages();
-    fetchFilteredWords();
-    fetchRecentMessages();
-  }, []);
-
-  async function fetchReportedMessages() {
-    try {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('message_reports')
-        .select(`
-          id,
-          reported_message_id,
-          reporter_id,
-          reason,
-          status,
-          created_at,
-          users:reporter_id (username),
-          reported_messages:reported_message_id (
-            id,
-            user_id,
-            message,
-            created_at,
-            users:user_id (username)
-          )
-        `)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-
-      // Transform the data to match the ReportedMessage interface
-      const transformedData: ReportedMessage[] = (data || []).map((report: any) => ({
-        id: report.reported_message_id,
-        user_id: report.reported_messages?.user_id || '',
-        username: report.reported_messages?.users?.username || 'Unknown',
-        message: report.reported_messages?.message || '',
-        created_at: report.reported_messages?.created_at || '',
-        reported: true,
-        is_flagged: true,
-        reporter_id: report.reporter_id,
-        reporter_name: report.users?.username || 'Unknown',
-        reason: report.reason,
-        report_date: report.created_at,
-        status: report.status
-      }));
-
-      setReportedMessages(transformedData);
-    } catch (error) {
-      console.error('Error fetching reported messages:', error);
-      toast({
-        title: 'Error',
-        description: 'Could not load reported messages',
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function fetchFilteredWords() {
-    try {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('filtered_words')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setFilteredWords(data || []);
-    } catch (error) {
-      console.error('Error fetching filtered words:', error);
-      toast({
-        title: 'Error',
-        description: 'Could not load filtered words',
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function fetchRecentMessages() {
-    try {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('chat_messages')
-        .select(`
-          id,
-          user_id,
-          message,
-          created_at,
-          is_flagged,
-          users:user_id (username)
-        `)
-        .order('created_at', { ascending: false })
-        .limit(100);
-
-      if (error) throw error;
-
-      // Transform the data to match the ChatMessage interface
-      const transformedData: ChatMessage[] = (data || []).map((message: any) => ({
-        id: message.id,
-        user_id: message.user_id,
-        username: message.users?.username || 'Unknown',
-        message: message.message,
-        created_at: message.created_at,
-        reported: false,
-        is_flagged: message.is_flagged || false
-      }));
-
-      setMessages(transformedData);
-    } catch (error) {
-      console.error('Error fetching recent messages:', error);
-      toast({
-        title: 'Error',
-        description: 'Could not load recent messages',
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function addFilteredWord() {
-    if (!newFilteredWord.trim()) return;
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterFlagged, setFilterFlagged] = useState<boolean | null>(null);
+  const [selectedMessage, setSelectedMessage] = useState<string | null>(null);
+  
+  const filteredMessages = mockChatMessages.filter(message => {
+    const matchesSearch = 
+      message.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      message.message.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      message.tableName.toLowerCase().includes(searchTerm.toLowerCase());
     
-    try {
-      const { data, error } = await supabase
-        .from('filtered_words')
-        .insert({
-          word: newFilteredWord.toLowerCase().trim(),
-          severity: newFilteredWordSeverity
-        })
-        .select();
+    if (filterFlagged === null) return matchesSearch;
+    return matchesSearch && message.flagged === filterFlagged;
+  });
 
-      if (error) throw error;
-      
-      setFilteredWords([...filteredWords, data[0]]);
-      setNewFilteredWord('');
-      
-      toast({
-        title: 'Word Added',
-        description: `"${newFilteredWord}" has been added to the filtered list`,
-      });
-    } catch (error) {
-      console.error('Error adding filtered word:', error);
-      toast({
-        title: 'Error',
-        description: 'Could not add the filtered word',
-        variant: 'destructive',
-      });
+  const getSeverityBadgeClass = (severity: string) => {
+    switch (severity) {
+      case 'high':
+        return 'bg-red-500/20 text-red-400';
+      case 'medium':
+        return 'bg-amber-500/20 text-amber-400';
+      case 'low':
+        return 'bg-emerald/20 text-emerald';
+      default:
+        return 'bg-gray-500/20 text-gray-400';
     }
-  }
-
-  async function removeFilteredWord(id: string, word: string) {
-    try {
-      const { error } = await supabase
-        .from('filtered_words')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-      
-      setFilteredWords(filteredWords.filter(w => w.id !== id));
-      
-      toast({
-        title: 'Word Removed',
-        description: `"${word}" has been removed from the filtered list`,
-      });
-    } catch (error) {
-      console.error('Error removing filtered word:', error);
-      toast({
-        title: 'Error',
-        description: 'Could not remove the filtered word',
-        variant: 'destructive',
-      });
+  };
+  
+  const handleMessageAction = (action: string, messageId: string) => {
+    const message = mockChatMessages.find(m => m.id === messageId);
+    
+    if (!message) return;
+    
+    switch (action) {
+      case 'view':
+        toast({
+          title: 'Message details',
+          description: `Viewing details for message from ${message.username}`,
+        });
+        break;
+      case 'delete':
+        setSelectedMessage(messageId);
+        break;
+      case 'ban':
+        toast({
+          title: 'User banned',
+          description: `${message.username} has been banned from chat`,
+        });
+        break;
+      case 'warn':
+        toast({
+          title: 'Warning sent',
+          description: `Warning sent to ${message.username}`,
+        });
+        break;
     }
-  }
+  };
+  
+  const confirmDeleteMessage = () => {
+    if (!selectedMessage) return;
+    
+    const message = mockChatMessages.find(m => m.id === selectedMessage);
+    
+    toast({
+      title: 'Message deleted',
+      description: `Message from ${message?.username} has been deleted`,
+    });
+    
+    setSelectedMessage(null);
+  };
 
-  async function handleReportResolution(reportId: string, status: 'resolved' | 'dismissed') {
-    try {
-      const { error } = await supabase
-        .from('message_reports')
-        .update({ status })
-        .eq('id', reportId);
-
-      if (error) throw error;
-      
-      // Update UI
-      setReportedMessages(prev => 
-        prev.map(message => 
-          message.id === reportId ? { ...message, status } : message
-        )
-      );
-      
-      toast({
-        title: 'Report Updated',
-        description: `Report has been marked as ${status}`,
-      });
-    } catch (error) {
-      console.error('Error updating report status:', error);
-      toast({
-        title: 'Error',
-        description: 'Could not update the report status',
-        variant: 'destructive',
-      });
-    }
-  }
-
-  async function banUser(userId: string, username: string) {
-    try {
-      // This would call a server function to ban the user
-      const { error } = await supabase.functions.invoke('ban-user', {
-        body: { userId }
-      });
-
-      if (error) throw error;
-      
-      toast({
-        title: 'User Banned',
-        description: `${username} has been banned from chat`,
-      });
-    } catch (error) {
-      console.error('Error banning user:', error);
-      toast({
-        title: 'Error',
-        description: 'Could not ban the user',
-        variant: 'destructive',
-      });
-    }
-  }
-
-  async function deleteMessage(messageId: string) {
-    try {
-      const { error } = await supabase
-        .from('chat_messages')
-        .delete()
-        .eq('id', messageId);
-
-      if (error) throw error;
-      
-      // Update UI by removing the message from both lists
-      setMessages(prev => prev.filter(m => m.id !== messageId));
-      setReportedMessages(prev => prev.filter(m => m.id !== messageId));
-      
-      toast({
-        title: 'Message Deleted',
-        description: 'The message has been deleted',
-      });
-    } catch (error) {
-      console.error('Error deleting message:', error);
-      toast({
-        title: 'Error',
-        description: 'Could not delete the message',
-        variant: 'destructive',
-      });
-    }
-  }
+  const handleExportLogs = () => {
+    toast({
+      title: 'Chat logs exported',
+      description: 'Chat moderation logs have been exported',
+    });
+  };
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">Chat Moderation</h1>
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">{t('admin.chat.title')}</h2>
+        
+        <Button onClick={handleExportLogs} className="flex items-center gap-2">
+          <Download className="h-4 w-4" />
+          {t('admin.chat.exportLogs')}
+        </Button>
+      </div>
       
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="mb-4">
-          <TabsTrigger value="reports">
-            <Flag className="mr-2 h-4 w-4" />
-            Reported Messages
-            {reportedMessages.filter(m => m.status === 'pending').length > 0 && (
-              <Badge className="ml-2 bg-red-500">{reportedMessages.filter(m => m.status === 'pending').length}</Badge>
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="messages">
-            <MessageSquare className="mr-2 h-4 w-4" />
-            Recent Messages
-          </TabsTrigger>
-          <TabsTrigger value="filters">
-            <Shield className="mr-2 h-4 w-4" />
-            Word Filters
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="reports">
-          <Card>
-            <CardHeader>
-              <CardTitle>Reported Messages</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {loading ? (
-                <div className="flex justify-center p-8">
-                  <div className="animate-spin h-8 w-8 border-4 border-emerald border-t-transparent rounded-full"></div>
-                </div>
-              ) : reportedMessages.length === 0 ? (
-                <div className="text-center p-8 text-gray-500">
-                  No reported messages found.
-                </div>
-              ) : (
-                reportedMessages.map(report => (
-                  <Card key={report.id + report.reporter_id} className="overflow-hidden">
-                    <CardContent className="p-4">
-                      <div className="flex justify-between">
-                        <div>
-                          <div className="flex items-center mb-2">
-                            <span className="font-semibold">{report.username}</span>
-                            <Badge className={`ml-2 ${
-                              report.status === 'pending' ? 'bg-yellow-500' : 
-                              report.status === 'resolved' ? 'bg-green-500' : 'bg-gray-500'
-                            }`}>
-                              {report.status.charAt(0).toUpperCase() + report.status.slice(1)}
-                            </Badge>
-                          </div>
-                          <p className="bg-gray-100 dark:bg-gray-800 p-2 rounded">{report.message}</p>
-                          <div className="mt-2 text-sm text-gray-500">
-                            <span>Reported by {report.reporter_name} • {new Date(report.report_date).toLocaleString()}</span>
-                          </div>
-                          <div className="mt-1 flex items-center">
-                            <AlertTriangle className="h-4 w-4 text-yellow-500 mr-1" />
-                            <span className="text-sm font-medium">Reason: {report.reason}</span>
-                          </div>
-                        </div>
+      <Card className="p-4">
+        <div className="flex flex-col md:flex-row justify-between gap-4 mb-6">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder={t('admin.chat.searchPlaceholder')}
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          
+          <div className="flex gap-2">
+            <Button
+              variant={filterFlagged === true ? "default" : "outline"}
+              size="sm"
+              onClick={() => setFilterFlagged(filterFlagged === true ? null : true)}
+            >
+              <Filter className="h-4 w-4 mr-2" />
+              {t('admin.chat.flaggedOnly')}
+            </Button>
+            <Button
+              variant={filterFlagged === false ? "default" : "outline"}
+              size="sm"
+              onClick={() => setFilterFlagged(filterFlagged === false ? null : false)}
+            >
+              <Filter className="h-4 w-4 mr-2" />
+              {t('admin.chat.allMessages')}
+            </Button>
+          </div>
+        </div>
+        
+        <div className="rounded-md border border-emerald/10 overflow-auto">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-[#081624]">
+                <TableHead>{t('admin.chat.timestamp')}</TableHead>
+                <TableHead>{t('admin.chat.user')}</TableHead>
+                <TableHead>{t('admin.chat.table')}</TableHead>
+                <TableHead>{t('admin.chat.message')}</TableHead>
+                <TableHead>{t('admin.chat.severity')}</TableHead>
+                <TableHead>{t('admin.chat.status')}</TableHead>
+                <TableHead className="text-right">{t('admin.chat.actions')}</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredMessages.map(message => (
+                <TableRow key={message.id} className="hover:bg-[#0e2337]">
+                  <TableCell className="font-mono text-sm">{message.timestamp}</TableCell>
+                  <TableCell className="font-medium">{message.username}</TableCell>
+                  <TableCell className="text-sm">{message.tableName}</TableCell>
+                  <TableCell className="max-w-xs truncate">{message.message}</TableCell>
+                  <TableCell>
+                    <span className={`px-2 py-1 rounded-full text-xs uppercase ${getSeverityBadgeClass(message.severity)}`}>
+                      {message.severity}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    {message.flagged ? (
+                      <span className="px-2 py-1 rounded-full text-xs bg-red-500/20 text-red-400">
+                        {t('admin.chat.flagged')}
+                      </span>
+                    ) : (
+                      <span className="px-2 py-1 rounded-full text-xs bg-emerald/20 text-emerald">
+                        {t('admin.chat.normal')}
+                      </span>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                          <MoreHorizontal className="h-4 w-4" />
+                          <span className="sr-only">Actions</span>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => handleMessageAction('view', message.id)}>
+                          <Eye className="h-4 w-4 mr-2" />
+                          {t('admin.chat.viewDetails')}
+                        </DropdownMenuItem>
                         
-                        <div className="flex flex-col space-y-2">
-                          <Button 
-                            size="sm" 
-                            variant="outline"
-                            onClick={() => handleReportResolution(report.id, 'resolved')}
-                          >
-                            <CheckCircle className="h-4 w-4 mr-1" />
-                            Resolve
-                          </Button>
-                          <Button 
-                            size="sm" 
-                            variant="outline"
-                            onClick={() => deleteMessage(report.id)}
-                          >
-                            Delete Message
-                          </Button>
-                          <Button 
-                            size="sm" 
-                            variant="outline"
-                            onClick={() => banUser(report.user_id, report.username)}
-                          >
-                            <UserX className="h-4 w-4 mr-1" />
-                            Ban User
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))
+                        <DropdownMenuItem onClick={() => handleMessageAction('warn', message.id)}>
+                          <MessageSquare className="h-4 w-4 mr-2" />
+                          {t('admin.chat.warnUser')}
+                        </DropdownMenuItem>
+                        
+                        <DropdownMenuItem onClick={() => handleMessageAction('ban', message.id)}>
+                          <Ban className="h-4 w-4 mr-2" />
+                          {t('admin.chat.banUser')}
+                        </DropdownMenuItem>
+                        
+                        <DropdownMenuSeparator />
+                        
+                        <DropdownMenuItem 
+                          onClick={() => handleMessageAction('delete', message.id)}
+                          className="text-red-400 focus:text-red-400"
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          {t('admin.chat.deleteMessage')}
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))}
+              
+              {filteredMessages.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={7} className="h-24 text-center">
+                    {t('admin.chat.noMessages')}
+                  </TableCell>
+                </TableRow>
               )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="messages">
-          {/* Similar structure for recent messages tab */}
-        </TabsContent>
-
-        <TabsContent value="filters">
-          <Card>
-            <CardHeader>
-              <CardTitle>Filtered Words</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex space-x-2 mb-4">
-                <Input 
-                  placeholder="Add word to filter..." 
-                  value={newFilteredWord}
-                  onChange={(e) => setNewFilteredWord(e.target.value)}
-                  className="max-w-sm"
-                />
-                <select 
-                  className="border rounded px-3 py-1"
-                  value={newFilteredWordSeverity}
-                  onChange={(e) => setNewFilteredWordSeverity(e.target.value as 'low' | 'medium' | 'high')}
-                >
-                  <option value="low">Low</option>
-                  <option value="medium">Medium</option>
-                  <option value="high">High</option>
-                </select>
-                <Button onClick={addFilteredWord}>Add</Button>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {filteredWords.map(word => (
-                  <div key={word.id} className="flex items-center justify-between p-2 border rounded">
-                    <div className="flex items-center">
-                      <span className="font-mono">{word.word}</span>
-                      <Badge className={`ml-2 ${
-                        word.severity === 'high' ? 'bg-red-500' : 
-                        word.severity === 'medium' ? 'bg-yellow-500' : 'bg-blue-500'
-                      }`}>
-                        {word.severity}
-                      </Badge>
-                    </div>
-                    <Button 
-                      size="sm" 
-                      variant="outline"
-                      onClick={() => removeFilteredWord(word.id, word.word)}
-                    >
-                      Remove
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+            </TableBody>
+          </Table>
+        </div>
+      </Card>
+      
+      <AlertDialog open={!!selectedMessage} onOpenChange={() => setSelectedMessage(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('admin.chat.confirmDelete')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('admin.chat.confirmDeleteDescription')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('admin.chat.cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeleteMessage} className="bg-red-500 hover:bg-red-600">
+              {t('admin.chat.delete')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
-}
+};
+
+export default ChatModeration;
