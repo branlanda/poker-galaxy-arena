@@ -1,10 +1,10 @@
 
 import { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useAuth } from '@/stores/auth';
 import { useUserPresence } from '@/hooks/useUserPresence';
-import { useLocation } from 'react-router-dom';
 
-export const useGlobalPresence = () => {
+export function GlobalPresenceTracker() {
   const { user } = useAuth();
   const { updatePresence } = useUserPresence();
   const location = useLocation();
@@ -31,4 +31,4 @@ export const useGlobalPresence = () => {
   }, [location.pathname, user?.id, updatePresence]);
 
   return null;
-};
+}
