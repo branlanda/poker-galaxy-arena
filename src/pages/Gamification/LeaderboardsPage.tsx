@@ -1,72 +1,36 @@
 
-import React, { useState, useEffect } from 'react';
-import { AppLayout } from '@/components/layout/AppLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  Trophy, 
-  Medal, 
-  Award,
-  Search,
-  Calendar,
-  TrendingUp,
-  Users,
-  Target
-} from 'lucide-react';
-import { useTranslation } from '@/hooks/useTranslation';
+import React from 'react';
 import { useLeaderboards } from '@/hooks/useLeaderboards';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useTranslation } from '@/hooks/useTranslation';
+import { Trophy, Medal, Crown, TrendingUp } from 'lucide-react';
+import { AppLayout } from '@/components/layout/AppLayout';
 
-const LeaderboardsPage: React.FC = () => {
+const LeaderboardsPage = () => {
   const { t } = useTranslation();
-  const { 
-    leaderboards, 
-    leaderboardEntries, 
-    loading, 
-    fetchLeaderboards, 
-    fetchLeaderboardEntries 
-  } = useLeaderboards();
-  
-  const [selectedLeaderboard, setSelectedLeaderboard] = useState<string>('');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedPeriod, setSelectedPeriod] = useState('weekly');
+  const { leaderboards, loading } = useLeaderboards();
 
-  useEffect(() => {
-    if (leaderboards.length > 0 && !selectedLeaderboard) {
-      setSelectedLeaderboard(leaderboards[0].id);
-    }
-  }, [leaderboards, selectedLeaderboard]);
-
-  useEffect(() => {
-    if (selectedLeaderboard) {
-      fetchLeaderboardEntries(selectedLeaderboard);
-    }
-  }, [selectedLeaderboard, fetchLeaderboardEntries]);
-
-  const getRankIcon = (rank: number) => {
-    switch (rank) {
+  const getRankIcon = (position: number) => {
+    switch (position) {
       case 1:
-        return <Trophy className="h-6 w-6 text-gold" />;
+        return <Crown className="h-5 w-5 text-yellow-500" />;
       case 2:
-        return <Medal className="h-6 w-6 text-gray-400" />;
+        return <Medal className="h-5 w-5 text-gray-400" />;
       case 3:
-        return <Award className="h-6 w-6 text-amber-600" />;
+        return <Medal className="h-5 w-5 text-orange-600" />;
       default:
-        return <span className="text-lg font-bold text-gray-400">#{rank}</span>;
+        return <span className="text-lg font-bold text-emerald">#{position}</span>;
     }
   };
 
-  const filteredEntries = leaderboardEntries.filter(entry =>
-    entry.player_name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  if (loading && leaderboards.length === 0) {
+  if (loading) {
     return (
       <AppLayout>
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="w-8 h-8 border-4 border-t-emerald rounded-full animate-spin"></div>
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald"></div>
         </div>
       </AppLayout>
     );
@@ -74,170 +38,105 @@ const LeaderboardsPage: React.FC = () => {
 
   return (
     <AppLayout>
-      <div className="max-w-7xl mx-auto space-y-6">
+      <div className="space-y-6">
         {/* Header */}
         <div className="text-center">
-          <h1 className="text-4xl font-bold text-emerald mb-4">
+          <h1 className="text-3xl font-bold text-emerald mb-2">
             {t('leaderboards.title', 'Leaderboards')}
           </h1>
-          <p className="text-xl text-gray-400">
-            {t('leaderboards.description', 'See who\'s at the top of the rankings')}
+          <p className="text-gray-400">
+            {t('leaderboards.description', 'See how you rank against other players')}
           </p>
         </div>
 
-        {/* Search and Filters */}
-        <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-            <Input
-              placeholder="Search players..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-          
-          <div className="flex gap-2">
-            <Button
-              variant={selectedPeriod === 'daily' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setSelectedPeriod('daily')}
-            >
-              {t('leaderboards.daily', 'Daily')}
-            </Button>
-            <Button
-              variant={selectedPeriod === 'weekly' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setSelectedPeriod('weekly')}
-            >
-              {t('leaderboards.weekly', 'Weekly')}
-            </Button>
-            <Button
-              variant={selectedPeriod === 'monthly' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setSelectedPeriod('monthly')}
-            >
+        <Tabs defaultValue="earnings" className="w-full">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="earnings" className="text-white">
+              {t('leaderboards.earnings', 'Earnings')}
+            </TabsTrigger>
+            <TabsTrigger value="tournaments" className="text-white">
+              {t('leaderboards.tournaments', 'Tournaments')}
+            </TabsTrigger>
+            <TabsTrigger value="hands" className="text-white">
+              {t('leaderboards.hands', 'Hands Played')}
+            </TabsTrigger>
+            <TabsTrigger value="monthly" className="text-white">
               {t('leaderboards.monthly', 'Monthly')}
-            </Button>
-            <Button
-              variant={selectedPeriod === 'allTime' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setSelectedPeriod('allTime')}
-            >
-              {t('leaderboards.allTime', 'All Time')}
-            </Button>
-          </div>
-        </div>
+            </TabsTrigger>
+          </TabsList>
 
-        {leaderboards.length > 0 ? (
-          <div className="grid lg:grid-cols-4 gap-6">
-            {/* Leaderboard Categories */}
-            <div className="lg:col-span-1">
-              <Card className="bg-navy/50 border-emerald/20">
+          {Object.entries(leaderboards).map(([category, players]) => (
+            <TabsContent key={category} value={category} className="space-y-4">
+              <Card className="bg-navy/70 border-emerald/20">
                 <CardHeader>
-                  <CardTitle className="text-white flex items-center">
-                    <TrendingUp className="h-5 w-5 mr-2 text-emerald" />
-                    {t('leaderboards.selectCategory', 'Leaderboard Categories')}
+                  <CardTitle className="flex items-center gap-2 text-emerald">
+                    <Trophy className="h-5 w-5" />
+                    {t(`leaderboards.${category}`, category.charAt(0).toUpperCase() + category.slice(1))} Leaderboard
                   </CardTitle>
+                  <CardDescription className="text-gray-400">
+                    {t('leaderboards.topPlayers', 'Top performing players in this category')}
+                  </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-2">
-                  {leaderboards.map((leaderboard) => (
-                    <Button
-                      key={leaderboard.id}
-                      variant={selectedLeaderboard === leaderboard.id ? 'default' : 'ghost'}
-                      className="w-full justify-start"
-                      onClick={() => setSelectedLeaderboard(leaderboard.id)}
-                    >
-                      <Target className="h-4 w-4 mr-2" />
-                      {leaderboard.name}
-                    </Button>
-                  ))}
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Leaderboard Content */}
-            <div className="lg:col-span-3">
-              {filteredEntries.length > 0 ? (
-                <Card className="bg-navy/50 border-emerald/20">
-                  <CardHeader>
-                    <CardTitle className="text-white">
-                      {leaderboards.find(l => l.id === selectedLeaderboard)?.name} Rankings
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {filteredEntries.map((entry, index) => (
-                        <div
-                          key={entry.id}
-                          className={`flex items-center justify-between p-4 rounded-lg border transition-all ${
-                            entry.rank <= 3 
-                              ? 'bg-gradient-to-r from-emerald/10 to-gold/10 border-emerald/30' 
-                              : 'bg-navy border-gray-600 hover:border-emerald/30'
-                          }`}
-                        >
-                          <div className="flex items-center space-x-4">
-                            <div className="flex items-center justify-center w-12 h-12">
-                              {getRankIcon(entry.rank)}
-                            </div>
-                            
-                            <div>
-                              <h3 className="font-semibold text-white">{entry.player_name}</h3>
-                              <p className="text-sm text-gray-400">
-                                {t('leaderboards.score', 'Score')}: {entry.score}
-                              </p>
-                            </div>
+                <CardContent>
+                  <div className="space-y-3">
+                    {players.map((player, index) => (
+                      <div
+                        key={player.id}
+                        className={`flex items-center justify-between p-4 rounded-lg border transition-all hover:border-emerald/40 ${
+                          index < 3 
+                            ? 'bg-emerald/5 border-emerald/30' 
+                            : 'bg-navy/50 border-emerald/10'
+                        }`}
+                      >
+                        <div className="flex items-center space-x-4">
+                          <div className="flex items-center justify-center w-12 h-12">
+                            {getRankIcon(index + 1)}
                           </div>
-
-                          <div className="text-right">
-                            <Badge 
-                              variant={entry.rank <= 3 ? 'default' : 'secondary'}
-                              className={entry.rank <= 3 ? 'bg-emerald' : ''}
-                            >
-                              {entry.score} {t('leaderboards.points', 'points')}
-                            </Badge>
+                          
+                          <Avatar className="h-10 w-10">
+                            <AvatarImage src={player.avatarUrl} alt={player.alias} />
+                            <AvatarFallback className="bg-emerald/20 text-emerald">
+                              {player.alias?.charAt(0).toUpperCase() || 'P'}
+                            </AvatarFallback>
+                          </Avatar>
+                          
+                          <div>
+                            <h3 className="font-semibold text-white">
+                              {player.alias || 'Anonymous Player'}
+                            </h3>
+                            <p className="text-sm text-gray-400">
+                              {t('leaderboards.level', 'Level')} {player.level || 1}
+                            </p>
                           </div>
                         </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              ) : (
-                <Card className="bg-navy/50 border-gray-600">
-                  <CardContent className="p-12 text-center">
-                    <Users className="h-16 w-16 text-gray-500 mx-auto mb-4" />
-                    <h3 className="text-xl font-semibold text-white mb-2">
-                      {searchQuery ? 'No Search Results' : t('leaderboards.noEntries', 'No Entries Yet')}
-                    </h3>
-                    <p className="text-gray-400 mb-6">
-                      {searchQuery 
-                        ? 'No players match your search criteria.' 
-                        : t('leaderboards.beTheFirst', 'Be the first to participate and claim the top spot')
-                      }
-                    </p>
-                    {searchQuery && (
-                      <Button variant="outline" onClick={() => setSearchQuery('')}>
-                        Clear Search
-                      </Button>
-                    )}
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-          </div>
-        ) : (
-          <Card className="bg-navy/50 border-gray-600">
-            <CardContent className="p-12 text-center">
-              <Trophy className="h-16 w-16 text-gray-500 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-white mb-2">
-                {t('leaderboards.noLeaderboards', 'No Leaderboards Available')}
-              </h3>
-              <p className="text-gray-400">
-                {t('leaderboards.checkBackSoon', 'Check back soon for new competitions')}
-              </p>
-            </CardContent>
-          </Card>
-        )}
+
+                        <div className="text-right">
+                          <div className="flex items-center gap-2">
+                            <TrendingUp className="h-4 w-4 text-emerald" />
+                            <span className="text-lg font-bold text-white">
+                              {category === 'earnings' ? `$${player.stats?.earnings?.toLocaleString() || 0}` :
+                               category === 'tournaments' ? `${player.stats?.tournamentsWon || 0} wins` :
+                               category === 'hands' ? `${player.stats?.handsPlayed?.toLocaleString() || 0}` :
+                               `$${player.stats?.monthlyEarnings?.toLocaleString() || 0}`}
+                            </span>
+                          </div>
+                          {index < 3 && (
+                            <Badge 
+                              variant="secondary" 
+                              className="mt-1 bg-emerald/20 text-emerald"
+                            >
+                              {index === 0 ? 'Champion' : index === 1 ? 'Runner-up' : 'Third Place'}
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          ))}
+        </Tabs>
       </div>
     </AppLayout>
   );

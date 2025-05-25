@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTournaments } from '@/hooks/useTournaments';
@@ -6,10 +7,11 @@ import { TournamentFiltersPanel } from '@/components/tournaments/TournamentFilte
 import { TournamentCreateDialog } from './TournamentCreateDialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Plus, Search, RefreshCw, ArrowLeft, Users, Target } from 'lucide-react';
+import { Plus, Search, RefreshCw, Users, Target } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useAuth } from '@/stores/auth';
 import { Link } from 'react-router-dom';
+import { AppLayout } from '@/components/layout/AppLayout';
 
 export default function TournamentLobby() {
   const { t } = useTranslation();
@@ -51,7 +53,7 @@ export default function TournamentLobby() {
 
   if (error) {
     return (
-      <div className="container mx-auto px-4 py-8">
+      <AppLayout>
         <div className="flex items-center justify-center min-h-[50vh]">
           <div className="text-center">
             <h2 className="text-xl font-semibold text-white mb-2">
@@ -64,30 +66,21 @@ export default function TournamentLobby() {
             </Button>
           </div>
         </div>
-      </div>
+      </AppLayout>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Navigation Header */}
+    <AppLayout>
+      {/* Header with navigation */}
       <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white">
-            <Link to="/" className="flex items-center">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              {t('common.back', 'Back to Home')}
-            </Link>
-          </Button>
-          <div className="h-6 w-px bg-gray-600"></div>
-          <div>
-            <h1 className="text-3xl font-bold text-emerald">
-              {t('tournaments.lobby', 'Tournaments')}
-            </h1>
-            <p className="text-gray-400 mt-1">
-              {t('tournaments.description', 'Compete in exciting tournaments with guaranteed prize pools')}
-            </p>
-          </div>
+        <div>
+          <h1 className="text-3xl font-bold text-emerald">
+            {t('tournaments.lobby', 'Tournaments')}
+          </h1>
+          <p className="text-gray-400 mt-1">
+            {t('tournaments.description', 'Compete in exciting tournaments with guaranteed prize pools')}
+          </p>
         </div>
         
         <div className="flex gap-2">
@@ -187,6 +180,6 @@ export default function TournamentLobby() {
         onClose={() => setShowCreateDialog(false)}
         onTournamentCreated={handleTournamentCreated}
       />
-    </div>
+    </AppLayout>
   );
 }

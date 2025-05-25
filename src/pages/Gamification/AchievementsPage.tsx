@@ -1,36 +1,31 @@
 
 import React from 'react';
-import { AppLayout } from '@/components/layout/AppLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useAchievements } from '@/hooks/useAchievements';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  Trophy, 
-  Star, 
-  Target, 
-  Award,
-  Clock,
-  TrendingUp
-} from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
-import { useAchievements } from '@/hooks/useAchievements';
+import { Trophy, Star, Clock, CheckCircle, Gift } from 'lucide-react';
+import { AppLayout } from '@/components/layout/AppLayout';
 
-const AchievementsPage: React.FC = () => {
+const AchievementsPage = () => {
   const { t } = useTranslation();
-  const { 
-    achievements, 
-    userProgress, 
-    dailyMissions, 
-    loading 
+  const {
+    achievements,
+    userProgress,
+    dailyMissions,
+    loading,
+    refreshAchievements,
+    claimAchievementReward
   } = useAchievements();
 
   if (loading) {
     return (
       <AppLayout>
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="w-8 h-8 border-4 border-t-emerald rounded-full animate-spin"></div>
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald"></div>
         </div>
       </AppLayout>
     );
@@ -38,158 +33,169 @@ const AchievementsPage: React.FC = () => {
 
   return (
     <AppLayout>
-      <div className="max-w-7xl mx-auto space-y-6">
+      <div className="space-y-6">
         {/* Header */}
         <div className="text-center">
-          <h1 className="text-4xl font-bold text-emerald mb-4">
-            {t('achievements.title', 'Achievements & Missions')}
+          <h1 className="text-3xl font-bold text-emerald mb-2">
+            {t('achievements.title', 'Achievements')}
           </h1>
-          <p className="text-xl text-gray-400">
-            {t('achievements.description', 'Complete challenges and earn rewards')}
+          <p className="text-gray-400">
+            {t('achievements.description', 'Track your progress and earn rewards')}
           </p>
         </div>
 
-        {/* Player Level Progress */}
-        <Card className="bg-gradient-to-r from-emerald/20 to-gold/20 border-emerald/30">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h2 className="text-2xl font-bold text-white">
-                  {t('achievements.level', 'Level')} {userProgress?.level || 1}
-                </h2>
-                <p className="text-gray-300">
-                  {userProgress?.currentXP || 0} / {userProgress?.nextLevelXP || 1000} XP
-                </p>
+        {/* User Progress */}
+        <Card className="bg-navy/70 border-emerald/20">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-emerald">
+              <Star className="h-5 w-5" />
+              {t('achievements.userProgress', 'Your Progress')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <span className="text-white">Level {userProgress.level}</span>
+                <span className="text-gray-400">
+                  {userProgress.currentXP} / {userProgress.nextLevelXP} XP
+                </span>
               </div>
-              <Award className="h-12 w-12 text-gold" />
+              <Progress 
+                value={(userProgress.currentXP / userProgress.nextLevelXP) * 100} 
+                className="h-2"
+              />
             </div>
-            <Progress 
-              value={(userProgress?.currentXP || 0) / (userProgress?.nextLevelXP || 1000) * 100} 
-              className="h-3 mb-2" 
-            />
-            <p className="text-sm text-gray-400">
-              {(userProgress?.nextLevelXP || 1000) - (userProgress?.currentXP || 0)} XP {t('achievements.toNextLevel', 'to next level')}
-            </p>
           </CardContent>
         </Card>
 
-        <Tabs defaultValue="achievements" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 bg-navy-light">
-            <TabsTrigger value="achievements" className="data-[state=active]:bg-emerald">
-              <Trophy className="h-4 w-4 mr-2" />
-              {t('achievements.all', 'All Achievements')}
+        <Tabs defaultValue="achievements" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="achievements" className="text-white">
+              {t('achievements.achievements', 'Achievements')}
             </TabsTrigger>
-            <TabsTrigger value="missions" className="data-[state=active]:bg-emerald">
-              <Target className="h-4 w-4 mr-2" />
+            <TabsTrigger value="daily" className="text-white">
               {t('achievements.dailyMissions', 'Daily Missions')}
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="achievements">
-            {achievements.length > 0 ? (
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {achievements.map((achievement) => (
-                  <Card 
-                    key={achievement.id} 
-                    className={`border transition-all hover:border-emerald/50 ${
-                      achievement.completed ? 'bg-emerald/10 border-emerald/30' : 'bg-navy/50 border-gray-600'
-                    }`}
-                  >
-                    <CardHeader>
-                      <div className="flex items-center justify-between">
-                        <CardTitle className="text-white">{achievement.title}</CardTitle>
-                        {achievement.completed && <Star className="h-5 w-5 text-gold fill-gold" />}
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-gray-300 mb-4">{achievement.description}</p>
-                      
-                      {achievement.progress !== undefined && (
-                        <div className="mb-4">
-                          <Progress 
-                            value={(achievement.progress / achievement.target) * 100} 
-                            className="h-2 mb-1" 
-                          />
-                          <p className="text-xs text-gray-400">
-                            {achievement.progress} / {achievement.target}
-                          </p>
-                        </div>
+          <TabsContent value="achievements" className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {achievements.map((achievement) => (
+                <Card 
+                  key={achievement.id} 
+                  className={`bg-navy/70 border-emerald/20 transition-all hover:border-emerald/40 ${
+                    achievement.completed ? 'ring-2 ring-emerald/50' : ''
+                  }`}
+                >
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-lg text-white flex items-center gap-2">
+                        <Trophy className={`h-5 w-5 ${achievement.completed ? 'text-emerald' : 'text-gray-400'}`} />
+                        {achievement.title}
+                      </CardTitle>
+                      {achievement.completed && (
+                        <CheckCircle className="h-5 w-5 text-emerald" />
                       )}
-
-                      <div className="flex items-center justify-between">
-                        <Badge variant={achievement.completed ? 'default' : 'secondary'}>
-                          {achievement.xpReward} XP
-                        </Badge>
-                        {achievement.completed && (
-                          <Badge className="bg-emerald">
-                            {t('achievements.unlocked', 'Unlocked')}
-                          </Badge>
-                        )}
+                    </div>
+                    <CardDescription className="text-gray-400">
+                      {achievement.description}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {!achievement.completed && achievement.progress !== undefined && (
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-400">Progress</span>
+                          <span className="text-white">
+                            {achievement.progress} / {achievement.target}
+                          </span>
+                        </div>
+                        <Progress 
+                          value={(achievement.progress / (achievement.target || 100)) * 100} 
+                          className="h-2"
+                        />
                       </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            ) : (
-              <Card className="bg-navy/50 border-gray-600">
-                <CardContent className="p-12 text-center">
-                  <Trophy className="h-16 w-16 text-gray-500 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold text-white mb-2">No Achievements Yet</h3>
-                  <p className="text-gray-400 mb-6">
-                    {t('achievements.playToUnlock', 'Play games and complete challenges to unlock achievements')}
-                  </p>
-                </CardContent>
-              </Card>
-            )}
+                    )}
+                    
+                    <div className="flex items-center justify-between">
+                      <Badge variant="secondary" className="bg-emerald/20 text-emerald">
+                        {achievement.completed ? (
+                          <Gift className="h-3 w-3 mr-1" />
+                        ) : (
+                          <Star className="h-3 w-3 mr-1" />
+                        )}
+                        {achievement.xpReward} XP
+                      </Badge>
+                      
+                      {achievement.completed && (
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => claimAchievementReward(achievement.id)}
+                          className="border-emerald/20 text-emerald hover:bg-emerald/10"
+                        >
+                          {t('achievements.claim', 'Claim')}
+                        </Button>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </TabsContent>
 
-          <TabsContent value="missions">
-            {dailyMissions.length > 0 ? (
-              <div className="space-y-4">
-                {dailyMissions.map((mission) => (
-                  <Card key={mission.id} className="bg-navy/50 border-gray-600">
-                    <CardContent className="p-6">
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <h3 className="text-lg font-semibold text-white mb-2">{mission.title}</h3>
-                          <p className="text-gray-300 mb-3">{mission.description}</p>
-                          
-                          <div className="mb-3">
-                            <Progress 
-                              value={(mission.progress / mission.target) * 100} 
-                              className="h-2 mb-1" 
-                            />
-                            <p className="text-sm text-gray-400">
-                              {mission.progress} / {mission.target}
-                            </p>
-                          </div>
-                        </div>
-                        
-                        <div className="ml-6 text-right">
-                          <Badge className="bg-emerald mb-2">{mission.xpReward} XP</Badge>
-                          <div className="flex items-center text-gray-400 text-sm">
-                            <Clock className="h-4 w-4 mr-1" />
-                            {mission.timeRemaining}
-                          </div>
-                        </div>
+          <TabsContent value="daily" className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {dailyMissions.map((mission) => (
+                <Card key={mission.id} className="bg-navy/70 border-emerald/20">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-lg text-white flex items-center gap-2">
+                        <Clock className="h-5 w-5 text-emerald" />
+                        {mission.title}
+                      </CardTitle>
+                      <Badge variant="outline" className="border-emerald/20 text-emerald">
+                        {mission.timeRemaining}
+                      </Badge>
+                    </div>
+                    <CardDescription className="text-gray-400">
+                      {mission.description}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-400">Progress</span>
+                        <span className="text-white">
+                          {mission.progress} / {mission.target}
+                        </span>
                       </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            ) : (
-              <Card className="bg-navy/50 border-gray-600">
-                <CardContent className="p-12 text-center">
-                  <Target className="h-16 w-16 text-gray-500 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold text-white mb-2">
-                    {t('achievements.noActiveMissions', 'No Active Missions')}
-                  </h3>
-                  <p className="text-gray-400">
-                    {t('achievements.checkBackLater', 'Check back later for new missions')}
-                  </p>
-                </CardContent>
-              </Card>
-            )}
+                      <Progress 
+                        value={(mission.progress / mission.target) * 100} 
+                        className="h-2"
+                      />
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <Badge variant="secondary" className="bg-emerald/20 text-emerald">
+                        <Star className="h-3 w-3 mr-1" />
+                        {mission.xpReward} XP
+                      </Badge>
+                      
+                      {mission.progress >= mission.target && (
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          className="border-emerald/20 text-emerald hover:bg-emerald/10"
+                        >
+                          {t('achievements.claim', 'Claim')}
+                        </Button>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </TabsContent>
         </Tabs>
       </div>
