@@ -93,21 +93,24 @@ const SecurityDashboard: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {[...collusionAlerts.slice(0, 3), ...botAlerts.slice(0, 2)].map((alert, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 bg-navy rounded border border-emerald/10">
-                      <div>
-                        <p className="text-sm text-white">
-                          {'detectionType' in alert ? `Bot: ${alert.detectionType}` : `Colusión: ${alert.detectionType}`}
-                        </p>
-                        <p className="text-xs text-gray-400">
-                          Confianza: {(alert.confidence * 100).toFixed(0)}%
-                        </p>
+                  {[...collusionAlerts.slice(0, 3), ...botAlerts.slice(0, 2)].map((alert, index) => {
+                    const isCollusionAlert = 'players' in alert;
+                    return (
+                      <div key={index} className="flex items-center justify-between p-3 bg-navy rounded border border-emerald/10">
+                        <div>
+                          <p className="text-sm text-white">
+                            {isCollusionAlert ? `Colusión: ${alert.detectionType}` : `Bot: ${alert.detectionType}`}
+                          </p>
+                          <p className="text-xs text-gray-400">
+                            Confianza: {(alert.confidence * 100).toFixed(0)}%
+                          </p>
+                        </div>
+                        <Badge variant={alert.confidence > 0.8 ? 'destructive' : 'secondary'}>
+                          {alert.confidence > 0.8 ? 'Crítico' : 'Medio'}
+                        </Badge>
                       </div>
-                      <Badge variant={alert.confidence > 0.8 ? 'destructive' : 'secondary'}>
-                        {alert.confidence > 0.8 ? 'Crítico' : 'Medio'}
-                      </Badge>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </CardContent>
             </Card>
