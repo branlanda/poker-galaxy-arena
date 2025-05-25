@@ -1,104 +1,46 @@
-
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
-import { ProtectedRoute } from './ProtectedRoute';
-import { AdminRoute } from './AdminRoute';
-import { AuthRoute } from './AuthRoute';
-import { AppLayout } from '@/components/layout/AppLayout';
-import Index from '@/pages/Index';
-import Login from '@/pages/auth/Login';
-import SignUp from '@/pages/auth/SignUp';
-import Lobby from '@/pages/Lobby/LobbyPage';
-import Funds from '@/pages/Funds/FundsPage';
-import SettingsPage from '@/pages/settings/Settings';
-import LeaderboardsPage from '@/pages/Gamification/LeaderboardsPage';
-import TournamentsPage from '@/pages/Tournaments';
-import Table from '@/pages/Game/GameRoom';
-import Admin from '@/pages/Admin/Dashboard';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import LoginPage from '@/pages/LoginPage';
+import RegisterPage from '@/pages/RegisterPage';
+import HomePage from '@/pages/HomePage';
 import ProfilePage from '@/pages/profile/ProfilePage';
+import GameRoom from '@/pages/GameRoom';
+import AdminPage from '@/pages/AdminPage';
+import { ProtectedRoute } from './ProtectedRoute';
+import { AuthRoute } from './AuthRoute';
+import { AdminRoute } from './AdminRoute';
+import { TermsOfServicePage } from '@/pages/TermsOfServicePage';
+import { PrivacyPolicyPage } from '@/pages/PrivacyPolicyPage';
+import HandHistoryPage from '@/pages/HandHistoryPage';
+import { SharedHandPage } from '@/pages/SharedHandPage';
 
 export function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<AppLayout><Index /></AppLayout>} />
       <Route
         path="/login"
         element={
           <AuthRoute>
-            <Login />
+            <LoginPage />
           </AuthRoute>
         }
       />
       <Route
-        path="/signup"
+        path="/register"
         element={
           <AuthRoute>
-            <SignUp />
+            <RegisterPage />
           </AuthRoute>
         }
       />
+      <Route path="/terms" element={<TermsOfServicePage />} />
+      <Route path="/privacy" element={<PrivacyPolicyPage />} />
       <Route
-        path="/lobby"
+        path="/"
         element={
           <ProtectedRoute>
-            <AppLayout><Lobby /></AppLayout>
+            <HomePage />
           </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/funds"
-        element={
-          <ProtectedRoute>
-            <AppLayout><Funds /></AppLayout>
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/settings"
-        element={
-          <ProtectedRoute>
-            <AppLayout><SettingsPage /></AppLayout>
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/leaderboards"
-        element={
-          <ProtectedRoute>
-            <AppLayout><LeaderboardsPage /></AppLayout>
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/tournaments"
-        element={
-          <ProtectedRoute>
-            <AppLayout><TournamentsPage /></AppLayout>
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/table/:id"
-        element={
-          <ProtectedRoute>
-            <AppLayout><Table /></AppLayout>
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/game/:id"
-        element={
-          <ProtectedRoute>
-            <AppLayout><Table /></AppLayout>
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin"
-        element={
-          <AdminRoute>
-            <AppLayout><Admin /></AppLayout>
-          </AdminRoute>
         }
       />
       <Route
@@ -109,6 +51,31 @@ export function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/game/:tableId"
+        element={
+          <ProtectedRoute>
+            <GameRoom />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin"
+        element={
+          <AdminRoute>
+            <AdminPage />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/hand-history"
+        element={
+          <ProtectedRoute>
+            <HandHistoryPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route path="/shared-hand/:shareCode" element={<SharedHandPage />} />
     </Routes>
   );
 }

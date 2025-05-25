@@ -512,6 +512,75 @@ export type Database = {
         }
         Relationships: []
       }
+      detailed_hand_history: {
+        Row: {
+          betting_rounds: Json
+          blinds: string
+          community_cards: Json | null
+          created_at: string
+          duration_seconds: number | null
+          final_pot: number
+          game_id: string | null
+          game_type: string
+          hand_number: number
+          hand_strength: string | null
+          hole_cards: Json | null
+          id: string
+          metadata: Json | null
+          played_at: string
+          player_id: string
+          player_position: number | null
+          player_result: number
+          showdown_cards: Json | null
+          table_name: string
+          table_type: string
+        }
+        Insert: {
+          betting_rounds?: Json
+          blinds: string
+          community_cards?: Json | null
+          created_at?: string
+          duration_seconds?: number | null
+          final_pot?: number
+          game_id?: string | null
+          game_type?: string
+          hand_number: number
+          hand_strength?: string | null
+          hole_cards?: Json | null
+          id?: string
+          metadata?: Json | null
+          played_at?: string
+          player_id: string
+          player_position?: number | null
+          player_result?: number
+          showdown_cards?: Json | null
+          table_name: string
+          table_type?: string
+        }
+        Update: {
+          betting_rounds?: Json
+          blinds?: string
+          community_cards?: Json | null
+          created_at?: string
+          duration_seconds?: number | null
+          final_pot?: number
+          game_id?: string | null
+          game_type?: string
+          hand_number?: number
+          hand_strength?: string | null
+          hole_cards?: Json | null
+          id?: string
+          metadata?: Json | null
+          played_at?: string
+          player_id?: string
+          player_position?: number | null
+          player_result?: number
+          showdown_cards?: Json | null
+          table_name?: string
+          table_type?: string
+        }
+        Relationships: []
+      }
       event_participants: {
         Row: {
           event_id: string
@@ -779,6 +848,53 @@ export type Database = {
           },
         ]
       }
+      hand_analysis: {
+        Row: {
+          analysis_type: string
+          content: string
+          created_at: string
+          hand_id: string
+          id: string
+          is_public: boolean | null
+          player_id: string
+          rating: number | null
+          tags: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          analysis_type: string
+          content: string
+          created_at?: string
+          hand_id: string
+          id?: string
+          is_public?: boolean | null
+          player_id: string
+          rating?: number | null
+          tags?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          analysis_type?: string
+          content?: string
+          created_at?: string
+          hand_id?: string
+          id?: string
+          is_public?: boolean | null
+          player_id?: string
+          rating?: number | null
+          tags?: string[] | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hand_analysis_hand_id_fkey"
+            columns: ["hand_id"]
+            isOneToOne: false
+            referencedRelation: "detailed_hand_history"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       hand_audit: {
         Row: {
           created_at: string | null
@@ -799,6 +915,56 @@ export type Database = {
           hash_prev?: string | null
         }
         Relationships: []
+      }
+      hand_reports: {
+        Row: {
+          created_at: string
+          description: string
+          hand_id: string
+          id: string
+          moderator_id: string | null
+          moderator_notes: string | null
+          report_type: string
+          reported_by: string
+          reported_player_id: string | null
+          resolved_at: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          hand_id: string
+          id?: string
+          moderator_id?: string | null
+          moderator_notes?: string | null
+          report_type: string
+          reported_by: string
+          reported_player_id?: string | null
+          resolved_at?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          hand_id?: string
+          id?: string
+          moderator_id?: string | null
+          moderator_notes?: string | null
+          report_type?: string
+          reported_by?: string
+          reported_player_id?: string | null
+          resolved_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hand_reports_hand_id_fkey"
+            columns: ["hand_id"]
+            isOneToOne: false
+            referencedRelation: "detailed_hand_history"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       hands: {
         Row: {
@@ -2240,6 +2406,53 @@ export type Database = {
           },
         ]
       }
+      shared_hands: {
+        Row: {
+          created_at: string
+          description: string | null
+          expires_at: string | null
+          hand_id: string
+          id: string
+          is_public: boolean | null
+          share_code: string
+          shared_by: string
+          title: string | null
+          view_count: number | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          expires_at?: string | null
+          hand_id: string
+          id?: string
+          is_public?: boolean | null
+          share_code: string
+          shared_by: string
+          title?: string | null
+          view_count?: number | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          expires_at?: string | null
+          hand_id?: string
+          id?: string
+          is_public?: boolean | null
+          share_code?: string
+          shared_by?: string
+          title?: string | null
+          view_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shared_hands_hand_id_fkey"
+            columns: ["hand_id"]
+            isOneToOne: false
+            referencedRelation: "detailed_hand_history"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       special_events: {
         Row: {
           banner_url: string | null
@@ -3073,6 +3286,10 @@ export type Database = {
       }
       filter_chat_message: {
         Args: { content: string }
+        Returns: string
+      }
+      generate_share_code: {
+        Args: Record<PropertyKey, never>
         Returns: string
       }
       get_friends_with_status: {

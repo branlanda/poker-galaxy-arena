@@ -1,8 +1,7 @@
-
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, BarChart3 } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from '@/hooks/useTranslation';
 import { usePlayerStatistics } from '@/hooks/usePlayerStatistics';
@@ -14,6 +13,7 @@ import { AccountSettings } from '@/components/profile/AccountSettings';
 import { FriendsSection } from '@/components/profile/FriendsSection';
 import { AvatarSelector } from '@/components/profile/AvatarSelector';
 import StarfallEffect from '@/components/effects/StarfallEffect';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function ProfilePage() {
   const { t } = useTranslation();
@@ -39,6 +39,18 @@ export default function ProfilePage() {
             <Link to="/" className="flex items-center">
               <ArrowLeft className="h-4 w-4 mr-2" />
               {t('common.backToHome', 'Volver al inicio')}
+            </Link>
+          </Button>
+          
+          {/* Quick access to hand history */}
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="border-emerald/20 text-white hover:bg-emerald/10"
+          >
+            <Link to="/hand-history" className="flex items-center">
+              <BarChart3 className="h-4 w-4 mr-2" />
+              Historial Detallado
             </Link>
           </Button>
         </div>
@@ -71,6 +83,26 @@ export default function ProfilePage() {
 
           <TabsContent value="overview" className="space-y-6">
             <StatisticsSection stats={statistics} loading={loading} />
+            
+            {/* Quick access card */}
+            <Card className="bg-navy/70 border-emerald/20">
+              <CardHeader>
+                <CardTitle className="text-white">Acceso Rápido</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex space-x-4">
+                  <Button 
+                    variant="outline" 
+                    className="border-emerald/20 text-white hover:bg-emerald/10"
+                  >
+                    <Link to="/hand-history" className="flex items-center">
+                      <BarChart3 className="h-4 w-4 mr-2" />
+                      Ver Historial Completo
+                    </Link>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="history" className="space-y-6">
