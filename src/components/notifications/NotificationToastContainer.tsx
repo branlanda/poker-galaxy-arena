@@ -1,69 +1,42 @@
 
-import React, { useState, useEffect } from 'react';
-import { NotificationToast } from './NotificationToast';
+import React, { useEffect, useState } from 'react';
 import { useNotifications } from '@/hooks/useNotifications';
+import { NotificationToast } from './NotificationToast';
 
-interface ToastNotification {
-  id: string;
-  title: string;
-  message: string;
-  type: any;
-  actionUrl?: string;
-}
-
-export const NotificationToastContainer: React.FC = () => {
-  const [toasts, setToasts] = useState<ToastNotification[]>([]);
-  const { notifications } = useNotifications();
+export const NotificationToastContainer = () => {
+  const { notifications, markAsRead } = useNotifications();
+  const [toastQueue, setToastQueue] = useState<string[]>([]);
 
   useEffect(() => {
-    // Listen for new notifications and show them as toasts
-    const recentNotifications = notifications.filter(notif => {
-      const notifTime = new Date(notif.created_at).getTime();
-      const fiveMinutesAgo = Date.now() - (5 * 60 * 1000);
-      return notifTime > fiveMinutesAgo && !notif.is_read;
-    });
+    // Only add new notifications to the queue if they're not already processed
+    const unreadNotifications = notifications
+      .filter(notification => !notification.read && !toastQueue.includes(notification.id))
+      .map(notification => notification.id);
 
-    const newToasts = recentNotifications.map(notif => ({
-      id: notif.id,
-      title: notif.title,
-      message: notif.message,
-      type: notif.notification_type,
-      actionUrl: notif.action_url
-    }));
+    if (unreadNotifications.length > 0) {
+      setToastQueue(prev => [...prev, ...unreadNotifications]);
+    }
+  }, [notifications]); // Remove toastQueue from dependencies to prevent infinite loop
 
-    setToasts(prev => {
-      const existingIds = new Set(prev.map(t => t.id));
-      const trulyNew = newToasts.filter(t => !existingIds.has(t.id));
-      return [...prev, ...trulyNew];
-    });
-  }, [notifications]);
-
-  const removeToast = (id: string) => {
-    setToasts(prev => prev.filter(toast => toast.id !== id));
+  const handleToastClose = (notificationId: string) => {
+    markAsRead(notificationId);
+    setToastQueue(prev => prev.filter(id => id !== notificationId));
   };
 
   return (
-    <div className="fixed top-20 right-4 z-50 space-y-2">
-      {toasts.map((toast, index) => (
-        <div 
-          key={toast.id} 
-          style={{ 
-            transform: `translateY(${index * 90}px)`,
-            zIndex: 50 - index 
-          }}
-          className="absolute top-0 right-0"
-        >
+    <div className="fixed top-4 right-4 z-50 space-y-2">
+      {toastQueue.map(notificationId => {
+        const notification = notifications.find(n => n.id === notificationId);
+        if (!notification) return null;
+
+        return (
           <NotificationToast
-            id={toast.id}
-            title={toast.title}
-            message={toast.message}
-            type={toast.type}
-            onClose={removeToast}
-            onAction={toast.actionUrl ? () => window.location.href = toast.actionUrl! : undefined}
-            actionLabel={toast.actionUrl ? 'View' : undefined}
+            key={notification.id}
+            notification={notification}
+            onClose={() => handleToastClose(notification.id)}
           />
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 };
