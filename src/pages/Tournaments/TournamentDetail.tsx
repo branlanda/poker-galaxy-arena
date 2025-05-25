@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTournaments } from '@/hooks/useTournaments';
@@ -225,7 +226,7 @@ export default function TournamentDetail() {
                           >
                             <p className="font-medium text-white">{registration.player_name}</p>
                             <p className="text-sm text-gray-400">
-                              {t('tournaments.registered', 'Registered')}: {new Date(registration.registered_at).toLocaleDateString()}
+                              {t('tournaments.registered', 'Registered')}: {new Date(registration.registration_time || registration.created_at).toLocaleDateString()}
                             </p>
                           </div>
                         ))}
