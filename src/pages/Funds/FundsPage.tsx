@@ -10,11 +10,12 @@ import DepositTab from './DepositTab';
 import WithdrawTab from './WithdrawTab';
 import LedgerTable from './LedgerTable';
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Info } from "lucide-react";
+import { Info, Shield } from "lucide-react";
 import { WalletConnect } from '@/components/wallet/WalletConnect';
 import { useWalletStore } from '@/stores/wallet';
 import PaymentIntegration from '@/components/payments/PaymentIntegration';
 import KycVerification from '@/components/kyc/KycVerification';
+import SecurityDashboard from '@/components/security/SecurityDashboard';
 
 const FundsPage = () => {
   const { data: balance, isLoading: isBalanceLoading, error: balanceError } = useBalance();
@@ -89,6 +90,10 @@ const FundsPage = () => {
           <TabsTrigger value="deposit">Depositar</TabsTrigger>
           <TabsTrigger value="withdraw">Retirar</TabsTrigger>
           <TabsTrigger value="kyc">Verificación KYC</TabsTrigger>
+          <TabsTrigger value="security">
+            <Shield className="h-4 w-4 mr-2" />
+            Seguridad
+          </TabsTrigger>
         </TabsList>
         
         <TabsContent value="payments">
@@ -105,6 +110,10 @@ const FundsPage = () => {
         
         <TabsContent value="kyc">
           <KycVerification />
+        </TabsContent>
+        
+        <TabsContent value="security">
+          <SecurityDashboard />
         </TabsContent>
       </Tabs>
       
