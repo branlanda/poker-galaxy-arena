@@ -6,7 +6,7 @@ import { useUserMocks } from '@/hooks/useUserMocks';
 import UserTable from '@/components/admin/UserTable';
 import { useUsersStore } from '@/stores/users';
 import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { Search, UserPlus, Download, FileText } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';

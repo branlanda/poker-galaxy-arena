@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { usePokerGame } from '@/hooks/usePokerGame';
 import { Card, GamePhase, PlayerAction, PlayerState } from '@/types/poker';
@@ -7,7 +8,7 @@ import { ActionControls } from './ActionControls';
 import { CommunityCards } from './CommunityCards';
 import { BuyInDialog } from './BuyInDialog';
 import { GameInfo } from './GameInfo';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { Loader2, Eye, EyeOff } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { toast } from '@/hooks/use-toast';

@@ -30,7 +30,7 @@ const UserTable: React.FC<UserTableProps> = ({ onUserSelect }) => {
     }
     
     // Filter by KYC level
-    if (filters.kycLevel && user.kycLevel !== filters.kycLevel) {
+    if (filters.kyc !== undefined && user.kyc !== filters.kyc) {
       return false;
     }
     
@@ -58,10 +58,10 @@ const UserTable: React.FC<UserTableProps> = ({ onUserSelect }) => {
                 <TableCell>{user.email}</TableCell>
                 <TableCell>{user.country}</TableCell>
                 <TableCell>
-                  <KycBadge level={user.kycLevel} />
+                  <KycBadge level={user.kyc} />
                 </TableCell>
                 <TableCell>
-                  {new Date(user.createdAt).toLocaleDateString()}
+                  {new Date(user.registeredAt).toLocaleDateString()}
                 </TableCell>
                 <TableCell>
                   <div className="flex gap-2">

@@ -2,7 +2,7 @@
 import { User, useUsersStore } from '@/stores/users';
 import { useTranslation } from '@/hooks/useTranslation';
 import KycBadge from './KycBadge';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { X, Check, Ban, Flag, AlertTriangle, Shield, Download, Eye } from 'lucide-react';
 import {
   Drawer,
@@ -19,10 +19,11 @@ import { useAdmin } from '@/hooks/useAdmin';
 
 interface UserDrawerProps {
   user: User;
+  open: boolean;
   onClose: () => void;
 }
 
-const UserDrawer = ({ user, onClose }: UserDrawerProps) => {
+const UserDrawer = ({ user, open, onClose }: UserDrawerProps) => {
   const { t } = useTranslation();
   const { banUser, unbanUser, approveKyc, resetUserFunds } = useUsersStore();
   const { toast } = useToast();
@@ -88,7 +89,7 @@ const UserDrawer = ({ user, onClose }: UserDrawerProps) => {
   };
 
   return (
-    <Drawer open={true} onOpenChange={(open) => {
+    <Drawer open={open} onOpenChange={(open) => {
       if (!open) onClose();
     }}>
       <DrawerContent className="bg-[#081624] text-gray-100">

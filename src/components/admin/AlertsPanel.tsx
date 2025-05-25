@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { AlertCircle, ArrowUp, AlertTriangle, UserX, AlertOctagon } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Alert } from '@/stores/alerts';
 import { useAdmin } from '@/hooks/useAdmin';

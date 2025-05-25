@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Bell } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { useNotifications } from '@/hooks/useNotifications';
 import { NotificationsPanel } from '@/components/profile/NotificationsPanel';
 import { useAuth } from '@/stores/auth';

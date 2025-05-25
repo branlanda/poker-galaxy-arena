@@ -1,7 +1,7 @@
 
 import { LobbyTable } from '@/types/lobby';
 import { useTranslation } from '@/hooks/useTranslation';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { ChevronLeft, Info, Users, Clock } from 'lucide-react';
 import { TableTypeBadge } from '../lobby/table-card/TableTypeBadge';
 import { TableStatusBadge } from '../lobby/table-card/TableStatusBadge';

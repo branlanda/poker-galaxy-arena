@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, PlayerState } from '@/types/poker';
 import { PokerCard } from './PokerCard';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
   DollarSign,

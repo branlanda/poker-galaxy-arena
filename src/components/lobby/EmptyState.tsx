@@ -1,5 +1,5 @@
 
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Search, RefreshCcw } from 'lucide-react';
 import { motion } from 'framer-motion';

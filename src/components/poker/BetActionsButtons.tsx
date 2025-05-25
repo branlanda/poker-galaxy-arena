@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { PlayerAction } from '@/types/lobby';
 
 interface BetActionsButtonsProps {

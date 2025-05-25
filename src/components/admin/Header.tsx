@@ -4,7 +4,7 @@ import { LanguageSelector } from '@/components/language/LanguageSelector';
 import { useAuth } from '@/stores/auth';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Bell, UserCircle, Settings } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
