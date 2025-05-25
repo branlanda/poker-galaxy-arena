@@ -4,7 +4,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useAuthSync } from '@/hooks/useAuthSync';
 import { Toaster } from '@/components/ui/toaster';
-import AppLayout from '@/components/layout/AppLayout';
+import { AppLayout } from '@/components/layout/AppLayout';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 
 // Pages
@@ -24,7 +24,7 @@ import NotFound from '@/pages/NotFound';
 
 // Admin Routes
 import AdminRoutes from '@/router/AdminRoutes';
-import TournamentsRoutes from '@/router/TournamentsRoutes';
+import { TournamentsRoutes } from '@/router/TournamentsRoutes';
 
 const queryClient = new QueryClient({
   defaultOptions: {
