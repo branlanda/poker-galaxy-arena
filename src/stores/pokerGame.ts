@@ -1,8 +1,8 @@
-
 import { create } from 'zustand';
 import { supabase } from '@/lib/supabase';
 import { GameAction, GameState, PlayerState, PlayerAction } from '@/types/poker';
 import { toast } from '@/hooks/use-toast';
+import { PokerGameEngine, GameResult } from '@/utils/poker/gameEngine';
 
 interface PokerGameStore {
   // State
@@ -12,6 +12,7 @@ interface PokerGameStore {
   isLoading: boolean;
   error: string | null;
   playerHandVisible: boolean;
+  gameEngine: PokerGameEngine | null;
   
   // Actions
   initializeGame: (tableId: string) => Promise<void>;
@@ -21,6 +22,8 @@ interface PokerGameStore {
   sitDown: (gameId: string, playerId: string, seatNumber: number, buyIn: number) => Promise<void>;
   leaveTable: (playerId: string) => Promise<void>;
   togglePlayerHandVisibility: () => void;
+  startNewHand: () => Promise<void>;
+  processGameAction: (playerId: string, action: PlayerAction, amount?: number) => Promise<void>;
 }
 
 // Helper to map DB response to our frontend model
@@ -81,6 +84,7 @@ export const usePokerGameStore = create<PokerGameStore>((set, get) => {
     isLoading: false,
     error: null,
     playerHandVisible: true,
+    gameEngine: null,
     
     initializeGame: async (tableId: string) => {
       try {
@@ -149,8 +153,19 @@ export const usePokerGameStore = create<PokerGameStore>((set, get) => {
           isLoading: false
         });
         
+        // After loading game and players, initialize game engine
+        const { game, players } = get();
+        if (game && players.length > 0) {
+          const engine = new PokerGameEngine(game, players);
+          set({ gameEngine: engine });
+        }
+        
+        set({ isLoading: false });
+        
         // Set up real-time subscriptions
-        get().subscribeToGame(gameId);
+        if (gameId) {
+          get().subscribeToGame(gameId);
+        }
         
       } catch (error: any) {
         console.error('Error initializing game:', error);
@@ -257,30 +272,181 @@ export const usePokerGameStore = create<PokerGameStore>((set, get) => {
       actionsChannel = null;
     },
     
-    performAction: async (playerId: string, action: PlayerAction, amount: number = 0) => {
+    startNewHand: async () => {
       try {
-        const { game } = get();
-        if (!game) {
-          throw new Error('No active game');
+        const { gameEngine, game } = get();
+        if (!gameEngine || !game) {
+          throw new Error('Game engine not initialized');
         }
         
-        const { error } = await supabase.rpc('perform_game_action', {
-          p_game_id: game.id,
-          p_player_id: playerId,
-          p_action: action,
-          p_amount: amount
+        // Start new hand using game engine
+        gameEngine.startNewHand();
+        
+        // Update local state
+        const updatedGame = gameEngine.getGameState();
+        const updatedPlayers = gameEngine.getPlayers();
+        
+        set({ 
+          game: updatedGame,
+          players: updatedPlayers
         });
         
-        if (error) throw error;
+        // Update database
+        await supabase
+          .from('table_games')
+          .update({
+            phase: updatedGame.phase,
+            pot: updatedGame.pot,
+            current_bet: updatedGame.currentBet,
+            dealer_seat: updatedGame.dealerSeat,
+            active_seat: updatedGame.activeSeat,
+            community_cards: updatedGame.communityCards
+          })
+          .eq('id', game.id);
+        
+        // Update player states
+        for (const player of updatedPlayers) {
+          await supabase
+            .from('table_player_states')
+            .update({
+              status: player.status,
+              stack: player.stack,
+              current_bet: player.currentBet,
+              hole_cards: player.holeCards,
+              is_dealer: player.isDealer,
+              is_small_blind: player.isSmallBlind,
+              is_big_blind: player.isBigBlind
+            })
+            .eq('game_id', game.id)
+            .eq('player_id', player.playerId);
+        }
+        
+        toast({
+          title: 'New Hand Started',
+          description: 'Cards have been dealt. Good luck!',
+        });
         
       } catch (error: any) {
-        console.error('Error performing action:', error);
+        console.error('Error starting new hand:', error);
         toast({
-          title: 'Action Failed',
-          description: error.message || 'Failed to perform action',
+          title: 'Error Starting Hand',
+          description: error.message || 'Failed to start new hand',
           variant: 'destructive',
         });
       }
+    },
+    
+    processGameAction: async (playerId: string, action: PlayerAction, amount?: number) => {
+      try {
+        const { gameEngine, game } = get();
+        if (!gameEngine || !game) {
+          throw new Error('Game engine not initialized');
+        }
+        
+        // Process action using game engine
+        const success = gameEngine.processAction(playerId, action, amount);
+        if (!success) {
+          throw new Error('Invalid action');
+        }
+        
+        // Update local state
+        const updatedGame = gameEngine.getGameState();
+        const updatedPlayers = gameEngine.getPlayers();
+        
+        set({ 
+          game: updatedGame,
+          players: updatedPlayers
+        });
+        
+        // Record action in database
+        await supabase
+          .from('table_actions')
+          .insert({
+            game_id: game.id,
+            player_id: playerId,
+            action,
+            amount: amount || 0
+          });
+        
+        // Update game state in database
+        await supabase
+          .from('table_games')
+          .update({
+            phase: updatedGame.phase,
+            pot: updatedGame.pot,
+            current_bet: updatedGame.currentBet,
+            active_seat: updatedGame.activeSeat,
+            community_cards: updatedGame.communityCards
+          })
+          .eq('id', game.id);
+        
+        // Update player states
+        for (const player of updatedPlayers) {
+          await supabase
+            .from('table_player_states')
+            .update({
+              status: player.status,
+              stack: player.stack,
+              current_bet: player.currentBet
+            })
+            .eq('game_id', game.id)
+            .eq('player_id', player.playerId);
+        }
+        
+        // Check for showdown
+        if (updatedGame.phase === 'SHOWDOWN') {
+          await get().handleShowdown();
+        }
+        
+      } catch (error: any) {
+        console.error('Error processing game action:', error);
+        throw error;
+      }
+    },
+    
+    handleShowdown: async () => {
+      try {
+        const { gameEngine, game } = get();
+        if (!gameEngine || !game) return;
+        
+        const result: GameResult = gameEngine.processShowdown();
+        
+        // Update player stacks
+        const updatedPlayers = gameEngine.getPlayers();
+        set({ players: updatedPlayers });
+        
+        // Update database with results
+        for (const player of updatedPlayers) {
+          await supabase
+            .from('table_player_states')
+            .update({
+              stack: player.stack
+            })
+            .eq('game_id', game.id)
+            .eq('player_id', player.playerId);
+        }
+        
+        // Show results
+        result.winners.forEach(winner => {
+          toast({
+            title: 'Hand Complete',
+            description: `${winner.playerId} wins ${winner.winAmount} with ${winner.handRank.name}`,
+            duration: 5000,
+          });
+        });
+        
+        // Auto-start next hand after delay
+        setTimeout(() => {
+          get().startNewHand();
+        }, 5000);
+        
+      } catch (error: any) {
+        console.error('Error handling showdown:', error);
+      }
+    },
+    
+    performAction: async (playerId: string, action: PlayerAction, amount?: number) => {
+      await get().processGameAction(playerId, action, amount);
     },
     
     sitDown: async (gameId: string, playerId: string, seatNumber: number, buyIn: number) => {

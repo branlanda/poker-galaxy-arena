@@ -12,40 +12,65 @@ interface ActionControlsProps {
 }
 
 export function ActionControls({ playerState, currentBet, onAction }: ActionControlsProps) {
-  const [betAmount, setBetAmount] = useState(currentBet * 2);
+  const [betAmount, setBetAmount] = useState(() => {
+    const minRaise = currentBet * 2;
+    return Math.min(minRaise, playerState.stack);
+  });
   const [isRaising, setIsRaising] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   
-  const toCall = currentBet - playerState.currentBet;
-  const canCheck = toCall === 0;
-  const canCall = toCall > 0 && toCall <= playerState.stack;
-  const canRaise = playerState.stack > toCall;
+  const callAmount = Math.max(0, currentBet - playerState.currentBet);
+  const canCheck = callAmount === 0;
+  const canCall = callAmount > 0 && callAmount <= playerState.stack;
+  const canRaise = playerState.stack > callAmount;
+  const minRaise = currentBet > 0 ? currentBet * 2 : 1;
+  const maxBet = playerState.stack;
   
-  const handleAction = async (action: PlayerAction) => {
-    switch(action) {
-      case 'FOLD':
-      case 'CHECK':
-        await onAction(action);
-        break;
-      case 'CALL':
-        await onAction(action, toCall);
-        break;
-      case 'BET':
-      case 'RAISE':
-        if (isRaising) {
-          await onAction(action, betAmount);
-          setIsRaising(false);
-        } else {
-          setIsRaising(true);
-        }
-        break;
-      case 'ALL_IN':
-        await onAction(action, playerState.stack);
-        break;
+  const handleAction = async (action: PlayerAction, amount?: number) => {
+    if (isProcessing) return;
+    
+    try {
+      setIsProcessing(true);
+      
+      switch(action) {
+        case 'FOLD':
+        case 'CHECK':
+          await onAction(action);
+          break;
+        case 'CALL':
+          await onAction(action, callAmount);
+          break;
+        case 'BET':
+        case 'RAISE':
+          if (isRaising) {
+            await onAction(action, amount || betAmount);
+            setIsRaising(false);
+          } else {
+            setIsRaising(true);
+            return; // Don't set processing to false yet
+          }
+          break;
+        case 'ALL_IN':
+          await onAction(action, playerState.stack);
+          break;
+      }
+    } catch (error) {
+      console.error('Action failed:', error);
+    } finally {
+      setIsProcessing(false);
     }
   };
   
   const handleCancelRaise = () => {
     setIsRaising(false);
+    setIsProcessing(false);
+  };
+  
+  const isValidBet = (amount: number): boolean => {
+    if (amount <= 0) return false;
+    if (amount > playerState.stack) return false;
+    if (currentBet > 0 && amount < minRaise) return false;
+    return true;
   };
   
   return (
@@ -55,6 +80,7 @@ export function ActionControls({ playerState, currentBet, onAction }: ActionCont
           <Button 
             variant="outline" 
             onClick={() => handleAction('FOLD')}
+            disabled={isProcessing}
             className="font-medium text-red-500 hover:bg-red-500/10 hover:text-red-400"
           >
             Fold
@@ -64,6 +90,7 @@ export function ActionControls({ playerState, currentBet, onAction }: ActionCont
             <Button 
               variant="outline" 
               onClick={() => handleAction('CHECK')}
+              disabled={isProcessing}
               className="font-medium"
             >
               Check
@@ -74,9 +101,10 @@ export function ActionControls({ playerState, currentBet, onAction }: ActionCont
             <Button 
               variant="secondary" 
               onClick={() => handleAction('CALL')}
+              disabled={isProcessing}
               className="font-medium"
             >
-              Call {toCall}
+              Call {callAmount}
             </Button>
           )}
           
@@ -84,6 +112,7 @@ export function ActionControls({ playerState, currentBet, onAction }: ActionCont
             <Button 
               variant="default" 
               onClick={() => handleAction('RAISE')}
+              disabled={isProcessing}
               className="font-medium"
             >
               Raise
@@ -94,6 +123,7 @@ export function ActionControls({ playerState, currentBet, onAction }: ActionCont
             <Button 
               variant="default" 
               onClick={() => handleAction('BET')}
+              disabled={isProcessing}
               className="font-medium"
             >
               Bet
@@ -103,6 +133,7 @@ export function ActionControls({ playerState, currentBet, onAction }: ActionCont
           <Button 
             variant="accent"
             onClick={() => handleAction('ALL_IN')}
+            disabled={isProcessing}
             className="font-medium"
           >
             All-In ({playerState.stack})
@@ -116,21 +147,25 @@ export function ActionControls({ playerState, currentBet, onAction }: ActionCont
             </label>
             <div className="flex items-center gap-2">
               <Slider
-                defaultValue={[betAmount]}
-                min={currentBet > 0 ? currentBet * 2 : 1}
-                max={playerState.stack}
+                value={[betAmount]}
+                min={minRaise}
+                max={maxBet}
                 step={1}
                 onValueChange={(values) => setBetAmount(values[0])}
                 className="flex-1"
               />
               <Input
                 type="number"
-                min={currentBet > 0 ? currentBet * 2 : 1}
-                max={playerState.stack}
+                min={minRaise}
+                max={maxBet}
                 value={betAmount}
                 onChange={(e) => setBetAmount(Number(e.target.value))}
-                className="w-20 text-center"
+                className="w-24 text-center"
               />
+            </div>
+            <div className="flex justify-between text-xs text-gray-400">
+              <span>Min: {minRaise}</span>
+              <span>Max: {maxBet}</span>
             </div>
           </div>
           
@@ -138,16 +173,18 @@ export function ActionControls({ playerState, currentBet, onAction }: ActionCont
             <Button
               variant="outline"
               onClick={handleCancelRaise}
+              disabled={isProcessing}
               className="font-medium"
             >
               Cancel
             </Button>
             <Button
               variant="default"
-              onClick={() => handleAction(currentBet > 0 ? 'RAISE' : 'BET')}
+              onClick={() => handleAction(currentBet > 0 ? 'RAISE' : 'BET', betAmount)}
+              disabled={isProcessing || !isValidBet(betAmount)}
               className="font-medium"
             >
-              Confirm {currentBet > 0 ? 'Raise' : 'Bet'}
+              {isProcessing ? 'Processing...' : `Confirm ${currentBet > 0 ? 'Raise' : 'Bet'}`}
             </Button>
           </div>
         </div>
