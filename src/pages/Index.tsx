@@ -15,7 +15,10 @@ import {
   User,
   ArrowRight,
   Star,
-  Clock
+  Clock,
+  Twitter,
+  Facebook,
+  MessageCircle
 } from 'lucide-react';
 
 export default function Index() {
@@ -34,6 +37,23 @@ export default function Index() {
             <p className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto">
               {t('welcomeMessage', 'Welcome to the ultimate online poker experience. Join thousands of players in exciting games and tournaments.')}
             </p>
+            
+            {/* Social Media Icons */}
+            <div className="flex justify-center space-x-4 mb-8">
+              <a href="#" className="text-emerald hover:text-emerald/80 transition-colors">
+                <span className="sr-only">Twitter</span>
+                <Twitter className="h-6 w-6" />
+              </a>
+              <a href="#" className="text-emerald hover:text-emerald/80 transition-colors">
+                <span className="sr-only">Facebook</span>
+                <Facebook className="h-6 w-6" />
+              </a>
+              <a href="#" className="text-emerald hover:text-emerald/80 transition-colors">
+                <span className="sr-only">Discord</span>
+                <MessageCircle className="h-6 w-6" />
+              </a>
+            </div>
+            
             <div className="flex gap-4 justify-center">
               <Button size="lg" className="px-8 py-4">
                 <Link to="/login" className="flex items-center">
