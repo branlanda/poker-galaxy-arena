@@ -13,6 +13,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Info } from "lucide-react";
 import { WalletConnect } from '@/components/wallet/WalletConnect';
 import { useWalletStore } from '@/stores/wallet';
+import PaymentIntegration from '@/components/payments/PaymentIntegration';
+import KycVerification from '@/components/kyc/KycVerification';
 
 const FundsPage = () => {
   const { data: balance, isLoading: isBalanceLoading, error: balanceError } = useBalance();
@@ -75,22 +77,34 @@ const FundsPage = () => {
           <Alert variant="default" className="bg-muted/50 border-none p-3">
             <Info className="w-4 h-4" />
             <AlertDescription>
-              Depósitos y retiros de fondos seguros a través de USDT (TRC20)
+              Sistema de pagos real integrado con Stripe y CoinPal para máxima seguridad
             </AlertDescription>
           </Alert>
         </Card>
       </div>
       
-      <Tabs defaultValue="deposit" className="mb-8">
+      <Tabs defaultValue="payments" className="mb-8">
         <TabsList className="mb-4">
+          <TabsTrigger value="payments">Pagos</TabsTrigger>
           <TabsTrigger value="deposit">Depositar</TabsTrigger>
           <TabsTrigger value="withdraw">Retirar</TabsTrigger>
+          <TabsTrigger value="kyc">Verificación KYC</TabsTrigger>
         </TabsList>
+        
+        <TabsContent value="payments">
+          <PaymentIntegration />
+        </TabsContent>
+        
         <TabsContent value="deposit">
           <DepositTab />
         </TabsContent>
+        
         <TabsContent value="withdraw">
           <WithdrawTab />
+        </TabsContent>
+        
+        <TabsContent value="kyc">
+          <KycVerification />
         </TabsContent>
       </Tabs>
       
