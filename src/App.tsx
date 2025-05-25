@@ -1,137 +1,176 @@
-
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useState, useEffect } from 'react';
+import {
+  BrowserRouter as Router,
+  Route,
+  Routes,
+  Navigate
+} from 'react-router-dom';
+import { useAuth } from '@/stores/auth';
 import { useAuthSync } from '@/hooks/useAuthSync';
 import { Toaster } from '@/components/ui/toaster';
 import { AppLayout } from '@/components/layout/AppLayout';
-import ProtectedRoute from '@/components/auth/ProtectedRoute';
-
-// Pages
 import Index from '@/pages/Index';
 import Login from '@/pages/auth/Login';
 import SignUp from '@/pages/auth/SignUp';
-import ForgotPassword from '@/pages/auth/ForgotPassword';
-import ResetPassword from '@/pages/auth/ResetPassword';
-import AccountRecoveryPage from '@/pages/auth/AccountRecoveryPage';
-import LobbyPage from '@/pages/Lobby/LobbyPage';
-import FundsPage from '@/pages/Funds/FundsPage';
-import GameRoom from '@/pages/Game/GameRoom';
-import ProfilePage from '@/pages/profile/ProfilePage';
-import Settings from '@/pages/settings/Settings';
-import SecuritySettingsPage from '@/pages/settings/SecuritySettings';
-import NotFound from '@/pages/NotFound';
-
-// Gamification Pages
-import AchievementsPage from '@/pages/Gamification/AchievementsPage';
+import Lobby from '@/pages/Lobby';
+import Funds from '@/pages/Funds';
+import SettingsPage from '@/pages/SettingsPage';
 import LeaderboardsPage from '@/pages/Gamification/LeaderboardsPage';
+import TournamentsPage from '@/pages/TournamentsPage';
+import Table from '@/pages/Table';
+import Admin from '@/pages/Admin';
+import ProfilePage from '@/pages/profile/ProfilePage';
 
-// Admin Routes
-import AdminRoutes from '@/router/AdminRoutes';
-import { TournamentsRoutes } from '@/router/TournamentsRoutes';
+function ProtectedRoute({ children }: { children: JSX.Element }) {
+  const { session } = useAuth();
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutes
-      retry: 1,
-    },
-  },
-});
+  if (!session) {
+    return <Navigate to="/login" replace />;
+  }
 
-const AppContent = () => {
+  return children;
+}
+
+function AdminRoute({ children }: { children: JSX.Element }) {
+  const { isAdmin, session } = useAuth();
+
+  if (!session) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (!isAdmin) {
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
+}
+
+function AuthRoute({ children }: { children: JSX.Element }) {
+  const { session } = useAuth();
+
+  if (session) {
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
+}
+
+function App() {
   useAuthSync();
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+
+  useEffect(() => {
+    const handleOnlineStatus = () => setIsOnline(navigator.onLine);
+
+    window.addEventListener('online', handleOnlineStatus);
+    window.addEventListener('offline', handleOnlineStatus);
+
+    return () => {
+      window.removeEventListener('online', handleOnlineStatus);
+      window.removeEventListener('offline', handleOnlineStatus);
+    };
+  }, []);
 
   return (
     <Router>
+      {!isOnline && (
+        <div className="fixed top-0 left-0 w-full bg-red-500 text-white text-center py-2 z-50">
+          You are currently offline. Some features may not be available.
+        </div>
+      )}
       <Routes>
-        {/* Public routes */}
-        <Route path="/" element={<Index />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<SignUp />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/auth/reset-password" element={<ResetPassword />} />
-        <Route path="/auth/recovery" element={<AccountRecoveryPage />} />
-
-        {/* Protected routes */}
-        <Route path="/lobby" element={
-          <ProtectedRoute>
-            <AppLayout>
-              <LobbyPage />
-            </AppLayout>
-          </ProtectedRoute>
-        } />
-        
-        <Route path="/funds" element={
-          <ProtectedRoute>
-            <AppLayout>
-              <FundsPage />
-            </AppLayout>
-          </ProtectedRoute>
-        } />
-        
-        <Route path="/game/:gameId" element={
-          <ProtectedRoute>
-            <GameRoom />
-          </ProtectedRoute>
-        } />
-        
-        <Route path="/profile" element={
-          <ProtectedRoute>
-            <AppLayout>
-              <ProfilePage />
-            </AppLayout>
-          </ProtectedRoute>
-        } />
-        
-        <Route path="/settings" element={
-          <ProtectedRoute>
-            <AppLayout>
-              <Settings />
-            </AppLayout>
-          </ProtectedRoute>
-        } />
-
-        <Route path="/settings/security" element={
-          <ProtectedRoute>
-            <AppLayout>
-              <SecuritySettingsPage />
-            </AppLayout>
-          </ProtectedRoute>
-        } />
-
-        {/* Gamification Routes */}
-        <Route path="/achievements" element={
-          <ProtectedRoute>
-            <AchievementsPage />
-          </ProtectedRoute>
-        } />
-
-        <Route path="/leaderboards" element={
-          <ProtectedRoute>
-            <LeaderboardsPage />
-          </ProtectedRoute>
-        } />
-
-        {/* Admin Routes */}
-        <Route path="/admin/*" element={<AdminRoutes />} />
-        
-        {/* Tournament Routes */}
-        <Route path="/tournaments/*" element={<TournamentsRoutes />} />
-
-        {/* 404 */}
-        <Route path="*" element={<NotFound />} />
+        <Route path="/" element={<AppLayout><Index /></AppLayout>} />
+        <Route
+          path="/login"
+          element={
+            <AuthRoute>
+              <Login />
+            </AuthRoute>
+          }
+        />
+        <Route
+          path="/signup"
+          element={
+            <AuthRoute>
+              <SignUp />
+            </AuthRoute>
+          }
+        />
+        <Route
+          path="/lobby"
+          element={
+            <ProtectedRoute>
+              <AppLayout><Lobby /></AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/funds"
+          element={
+            <ProtectedRoute>
+              <AppLayout><Funds /></AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute>
+              <AppLayout><SettingsPage /></AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/leaderboards"
+          element={
+            <ProtectedRoute>
+              <AppLayout><LeaderboardsPage /></AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/tournaments"
+          element={
+            <ProtectedRoute>
+              <AppLayout><TournamentsPage /></AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/table/:id"
+          element={
+            <ProtectedRoute>
+              <AppLayout><Table /></AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/game/:id"
+          element={
+            <ProtectedRoute>
+              <AppLayout><Table /></AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <AdminRoute>
+              <AppLayout><Admin /></AppLayout>
+            </AdminRoute>
+          }
+        />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <ProfilePage />
+              </ProtectedRoute>
+            }
+          />
       </Routes>
       <Toaster />
     </Router>
-  );
-};
-
-function App() {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <AppContent />
-    </QueryClientProvider>
   );
 }
 

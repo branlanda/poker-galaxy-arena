@@ -123,6 +123,42 @@ export type Database = {
         }
         Relationships: []
       }
+      avatar_collection: {
+        Row: {
+          created_at: string | null
+          id: string
+          image_url: string
+          is_nft: boolean | null
+          name: string
+          nft_contract_address: string | null
+          nft_token_id: string | null
+          rarity: string | null
+          unlock_requirement: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          image_url: string
+          is_nft?: boolean | null
+          name: string
+          nft_contract_address?: string | null
+          nft_token_id?: string | null
+          rarity?: string | null
+          unlock_requirement?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          image_url?: string
+          is_nft?: boolean | null
+          name?: string
+          nft_contract_address?: string | null
+          nft_token_id?: string | null
+          rarity?: string | null
+          unlock_requirement?: string | null
+        }
+        Relationships: []
+      }
       cash_tables: {
         Row: {
           big_blind: number
@@ -465,6 +501,45 @@ export type Database = {
           status?: string
           updated_at?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      game_history: {
+        Row: {
+          buy_in: number | null
+          duration: unknown | null
+          game_type: string
+          id: string
+          metadata: Json | null
+          played_at: string | null
+          player_id: string
+          position: number | null
+          result: number | null
+          table_name: string | null
+        }
+        Insert: {
+          buy_in?: number | null
+          duration?: unknown | null
+          game_type: string
+          id?: string
+          metadata?: Json | null
+          played_at?: string | null
+          player_id: string
+          position?: number | null
+          result?: number | null
+          table_name?: string | null
+        }
+        Update: {
+          buy_in?: number | null
+          duration?: unknown | null
+          game_type?: string
+          id?: string
+          metadata?: Json | null
+          played_at?: string | null
+          player_id?: string
+          position?: number | null
+          result?: number | null
+          table_name?: string | null
         }
         Relationships: []
       }
@@ -1461,6 +1536,35 @@ export type Database = {
         }
         Relationships: []
       }
+      player_avatars: {
+        Row: {
+          acquired_at: string | null
+          avatar_id: string
+          id: string
+          player_id: string
+        }
+        Insert: {
+          acquired_at?: string | null
+          avatar_id: string
+          id?: string
+          player_id: string
+        }
+        Update: {
+          acquired_at?: string | null
+          avatar_id?: string
+          id?: string
+          player_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "player_avatars_avatar_id_fkey"
+            columns: ["avatar_id"]
+            isOneToOne: false
+            referencedRelation: "avatar_collection"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       player_cosmetics: {
         Row: {
           acquired_at: string | null
@@ -1593,6 +1697,66 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
         ]
+      }
+      player_statistics: {
+        Row: {
+          average_position: number | null
+          biggest_loss: number | null
+          biggest_win: number | null
+          created_at: string | null
+          current_level: number | null
+          games_lost: number | null
+          games_won: number | null
+          hands_played: number | null
+          id: string
+          player_id: string
+          total_losses: number | null
+          total_winnings: number | null
+          total_xp: number | null
+          tournaments_played: number | null
+          tournaments_won: number | null
+          updated_at: string | null
+          win_rate: number | null
+        }
+        Insert: {
+          average_position?: number | null
+          biggest_loss?: number | null
+          biggest_win?: number | null
+          created_at?: string | null
+          current_level?: number | null
+          games_lost?: number | null
+          games_won?: number | null
+          hands_played?: number | null
+          id?: string
+          player_id: string
+          total_losses?: number | null
+          total_winnings?: number | null
+          total_xp?: number | null
+          tournaments_played?: number | null
+          tournaments_won?: number | null
+          updated_at?: string | null
+          win_rate?: number | null
+        }
+        Update: {
+          average_position?: number | null
+          biggest_loss?: number | null
+          biggest_win?: number | null
+          created_at?: string | null
+          current_level?: number | null
+          games_lost?: number | null
+          games_won?: number | null
+          hands_played?: number | null
+          id?: string
+          player_id?: string
+          total_losses?: number | null
+          total_winnings?: number | null
+          total_xp?: number | null
+          tournaments_played?: number | null
+          tournaments_won?: number | null
+          updated_at?: string | null
+          win_rate?: number | null
+        }
+        Relationships: []
       }
       player_tournament_history: {
         Row: {
@@ -2637,6 +2801,24 @@ export type Database = {
           roi: number
           itm: number
           score: number
+        }[]
+      }
+      get_player_statistics: {
+        Args: { player_uuid: string }
+        Returns: {
+          total_games_played: number
+          total_hands: number
+          win_rate: number
+          biggest_pot: number
+          total_winnings: number
+          average_position: number
+          best_hand: string
+          favorite_game: string
+          tournament_wins: number
+          rank_position: number
+          rank: number
+          level: number
+          xp: number
         }[]
       }
       perform_game_action: {
