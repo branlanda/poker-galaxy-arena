@@ -21,18 +21,14 @@ import { MobileNav } from "./MobileNav";
 export function Navbar() {
   const { user, logout } = useAuth();
   const { t } = useTranslation();
-  const { theme, setTheme } = useTheme();
+  const { theme, toggleTheme } = useTheme();
   const [open, setOpen] = useState(false);
   const location = useLocation();
-
-  const toggleTheme = () => {
-    setTheme(theme === "dark" ? "light" : "dark");
-  };
 
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <nav className="sticky top-0 z-30 w-full backdrop-blur-sm border-b bg-navy/95 shadow-sm border-emerald/20">
+    <nav className="sticky top-0 z-30 w-full backdrop-blur-sm border-b bg-navy/95 dark:bg-navy/95 shadow-sm border-emerald/20">
       <div className="container flex h-16 items-center justify-between">
         <div className="flex items-center gap-2">
           <Sheet open={open} onOpenChange={setOpen}>
@@ -56,7 +52,7 @@ export function Navbar() {
           <Link 
             to="/" 
             className={`text-sm font-medium transition-colors hover:text-emerald ${
-              isActive('/') ? 'text-emerald' : 'text-gray-300'
+              isActive('/') ? 'text-emerald' : 'text-gray-300 dark:text-gray-300'
             }`}
           >
             {t('common.welcome', 'Home')}
@@ -64,7 +60,7 @@ export function Navbar() {
           <Link 
             to="/lobby" 
             className={`text-sm font-medium transition-colors hover:text-emerald flex items-center gap-1 ${
-              isActive('/lobby') ? 'text-emerald' : 'text-gray-300'
+              isActive('/lobby') ? 'text-emerald' : 'text-gray-300 dark:text-gray-300'
             }`}
           >
             <Users className="h-4 w-4" />
@@ -73,7 +69,7 @@ export function Navbar() {
           <Link 
             to="/tournaments" 
             className={`text-sm font-medium transition-colors hover:text-emerald flex items-center gap-1 ${
-              isActive('/tournaments') ? 'text-emerald' : 'text-gray-300'
+              isActive('/tournaments') ? 'text-emerald' : 'text-gray-300 dark:text-gray-300'
             }`}
           >
             <Trophy className="h-4 w-4" />
@@ -82,7 +78,7 @@ export function Navbar() {
           <Link 
             to="/leaderboards" 
             className={`text-sm font-medium transition-colors hover:text-emerald flex items-center gap-1 ${
-              isActive('/leaderboards') ? 'text-emerald' : 'text-gray-300'
+              isActive('/leaderboards') ? 'text-emerald' : 'text-gray-300 dark:text-gray-300'
             }`}
           >
             <Target className="h-4 w-4" />
@@ -92,7 +88,7 @@ export function Navbar() {
             <Link 
               to="/achievements" 
               className={`text-sm font-medium transition-colors hover:text-emerald flex items-center gap-1 ${
-                isActive('/achievements') ? 'text-emerald' : 'text-gray-300'
+                isActive('/achievements') ? 'text-emerald' : 'text-gray-300 dark:text-gray-300'
               }`}
             >
               <Trophy className="h-4 w-4" />
@@ -105,8 +101,8 @@ export function Navbar() {
           <Button
             variant="ghost"
             size="icon"
-            aria-label="Toggle Theme"
-            className="mr-2"
+            aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+            className="mr-2 text-gray-300 hover:text-emerald hover:bg-emerald/10 transition-colors"
             onClick={toggleTheme}
           >
             {theme === "dark" ? (
