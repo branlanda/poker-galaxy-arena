@@ -5,29 +5,108 @@ import { Leaderboard, LeaderboardEntry } from '@/types/gamification';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from '@/hooks/useTranslation';
 
+// Mock player data structure for leaderboards
+interface LeaderboardPlayer {
+  id: string;
+  alias: string;
+  avatarUrl?: string;
+  level: number;
+  stats?: {
+    earnings?: number;
+    tournamentsWon?: number;
+    handsPlayed?: number;
+    monthlyEarnings?: number;
+  };
+}
+
 export function useLeaderboards() {
-  const [leaderboards, setLeaderboards] = useState<Leaderboard[]>([]);
+  const [leaderboards, setLeaderboards] = useState<Record<string, LeaderboardPlayer[]>>({});
   const [leaderboardEntries, setLeaderboardEntries] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const { t } = useTranslation();
+  
+  // Generate mock leaderboard data
+  const generateMockLeaderboards = () => {
+    const mockPlayers: LeaderboardPlayer[] = [
+      {
+        id: '1',
+        alias: 'PokerPro2024',
+        avatarUrl: '',
+        level: 15,
+        stats: {
+          earnings: 25000,
+          tournamentsWon: 12,
+          handsPlayed: 15000,
+          monthlyEarnings: 8500
+        }
+      },
+      {
+        id: '2',
+        alias: 'ChipMaster',
+        avatarUrl: '',
+        level: 12,
+        stats: {
+          earnings: 18500,
+          tournamentsWon: 8,
+          handsPlayed: 12000,
+          monthlyEarnings: 6200
+        }
+      },
+      {
+        id: '3',
+        alias: 'BluffKing',
+        avatarUrl: '',
+        level: 10,
+        stats: {
+          earnings: 15000,
+          tournamentsWon: 5,
+          handsPlayed: 9500,
+          monthlyEarnings: 4800
+        }
+      },
+      {
+        id: '4',
+        alias: 'RiverRat',
+        avatarUrl: '',
+        level: 8,
+        stats: {
+          earnings: 12000,
+          tournamentsWon: 3,
+          handsPlayed: 8000,
+          monthlyEarnings: 3500
+        }
+      },
+      {
+        id: '5',
+        alias: 'FoldMaster',
+        avatarUrl: '',
+        level: 6,
+        stats: {
+          earnings: 8500,
+          tournamentsWon: 2,
+          handsPlayed: 6500,
+          monthlyEarnings: 2200
+        }
+      }
+    ];
+
+    return {
+      earnings: [...mockPlayers].sort((a, b) => (b.stats?.earnings || 0) - (a.stats?.earnings || 0)),
+      tournaments: [...mockPlayers].sort((a, b) => (b.stats?.tournamentsWon || 0) - (a.stats?.tournamentsWon || 0)),
+      hands: [...mockPlayers].sort((a, b) => (b.stats?.handsPlayed || 0) - (a.stats?.handsPlayed || 0)),
+      monthly: [...mockPlayers].sort((a, b) => (b.stats?.monthlyEarnings || 0) - (a.stats?.monthlyEarnings || 0))
+    };
+  };
   
   // Fetch all active leaderboards
   const fetchLeaderboards = async () => {
     setLoading(true);
     
     try {
-      const { data, error } = await supabase
-        .from('leaderboards')
-        .select('*')
-        .eq('is_active', true)
-        .order('category');
-      
-      if (error) {
-        throw error;
-      }
-      
-      setLeaderboards(data || []);
+      // For now, use mock data since we don't have actual leaderboard data
+      const mockData = generateMockLeaderboards();
+      setLeaderboards(mockData);
     } catch (error: any) {
       console.error('Error fetching leaderboards:', error);
       toast({
