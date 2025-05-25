@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { Twitter, Facebook, MessageCircle } from 'lucide-react';
 import Logo from '@/assets/Logo';
 
 const Footer: React.FC = () => {
@@ -14,26 +15,17 @@ const Footer: React.FC = () => {
               The premier destination for peer-to-peer online poker. Fair games, fast payouts, and a vibrant community.
             </p>
             <div className="flex space-x-3">
-              <a href="#" className="text-emerald hover:text-emerald/80">
+              <a href="#" className="text-emerald hover:text-emerald/80 transition-colors">
                 <span className="sr-only">Twitter</span>
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
-                  <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path>
-                </svg>
+                <Twitter className="h-5 w-5" />
               </a>
-              <a href="#" className="text-emerald hover:text-emerald/80">
+              <a href="#" className="text-emerald hover:text-emerald/80 transition-colors">
+                <span className="sr-only">Facebook</span>
+                <Facebook className="h-5 w-5" />
+              </a>
+              <a href="#" className="text-emerald hover:text-emerald/80 transition-colors">
                 <span className="sr-only">Discord</span>
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
-                  <path d="M18 8a3 3 0 0 0-3-3H9a3 3 0 0 0-3 3v8a3 3 0 0 0 3 3h6a3 3 0 0 0 3-3z"></path>
-                  <circle cx="11" cy="10" r="1"></circle>
-                  <circle cx="13" cy="14" r="1"></circle>
-                </svg>
-              </a>
-              <a href="#" className="text-emerald hover:text-emerald/80">
-                <span className="sr-only">Telegram</span>
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
-                  <path d="m22 2-7 20-4-9-9-4Z"></path>
-                  <path d="M22 2 11 13"></path>
-                </svg>
+                <MessageCircle className="h-5 w-5" />
               </a>
             </div>
           </div>
@@ -42,7 +34,7 @@ const Footer: React.FC = () => {
             <h3 className="text-gold font-medium text-lg mb-4">Quick Links</h3>
             <ul className="space-y-2">
               <li><Link to="/lobby" className="text-gray-300 hover:text-emerald">Lobby</Link></li>
-              <li><Link to="/tournament" className="text-gray-300 hover:text-emerald">Tournaments</Link></li>
+              <li><Link to="/tournaments" className="text-gray-300 hover:text-emerald">Tournaments</Link></li>
               <li><Link to="/funds" className="text-gray-300 hover:text-emerald">Funds</Link></li>
               <li><Link to="/vip" className="text-gray-300 hover:text-emerald">VIP Program</Link></li>
             </ul>
