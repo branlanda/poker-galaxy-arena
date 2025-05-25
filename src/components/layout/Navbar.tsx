@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useToast } from "@/hooks/use-toast"
 import { useNavigate } from 'react-router-dom';
-import { Moon, Sun, Menu, BarChart3 } from 'lucide-react';
+import { Moon, Sun, Menu, BarChart3, BookOpen } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 
 export function Navbar() {
@@ -52,6 +52,10 @@ export function Navbar() {
           <div className="hidden md:flex items-center space-x-8">
             <Link to="/" className="text-gray-300 hover:text-emerald transition-colors">
               {t('common.home', 'Inicio')}
+            </Link>
+            <Link to="/how-to-play" className="text-gray-300 hover:text-emerald transition-colors flex items-center">
+              <BookOpen className="h-4 w-4 mr-1" />
+              Cómo Jugar
             </Link>
             {session && (
               <Link
@@ -115,6 +119,10 @@ export function Navbar() {
               <div className="absolute top-16 right-0 bg-navy rounded-md shadow-lg p-4 w-48 z-50 border border-emerald/20">
                 <Link to="/" className="block text-gray-300 hover:text-emerald transition-colors py-2">
                   {t('common.home', 'Inicio')}
+                </Link>
+                <Link to="/how-to-play" className="block text-gray-300 hover:text-emerald transition-colors py-2 flex items-center">
+                  <BookOpen className="h-4 w-4 mr-2" />
+                  Cómo Jugar
                 </Link>
                 {session && (
                   <Link

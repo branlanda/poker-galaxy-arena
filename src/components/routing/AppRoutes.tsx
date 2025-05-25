@@ -14,6 +14,7 @@ import HandHistoryPage from '@/pages/HandHistoryPage';
 import { SharedHandPage } from '@/pages/SharedHandPage';
 import { TermsOfServicePage } from '@/pages/TermsOfServicePage';
 import { PrivacyPolicyPage } from '@/pages/PrivacyPolicyPage';
+import HowToPlayPage from '@/pages/HowToPlay/HowToPlayPage';
 
 export function AppRoutes() {
   return (
@@ -36,6 +37,7 @@ export function AppRoutes() {
       />
       <Route path="/terms" element={<TermsOfServicePage />} />
       <Route path="/privacy" element={<PrivacyPolicyPage />} />
+      <Route path="/how-to-play" element={<HowToPlayPage />} />
       <Route
         path="/"
         element={
