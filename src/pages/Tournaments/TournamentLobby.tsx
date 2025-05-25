@@ -1,11 +1,10 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTournaments } from '@/hooks/useTournaments';
 import { TournamentCard } from '@/components/tournaments/TournamentCard';
 import { TournamentFiltersPanel } from '@/components/tournaments/TournamentFiltersPanel';
 import { TournamentCreateDialog } from './TournamentCreateDialog';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Plus, Search, RefreshCw, ArrowLeft, Users, Target } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';

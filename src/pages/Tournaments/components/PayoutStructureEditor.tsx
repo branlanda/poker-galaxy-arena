@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { Plus, Minus } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 

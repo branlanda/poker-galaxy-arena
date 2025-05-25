@@ -3,7 +3,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { TournamentRegistration, TournamentTable } from '@/types/tournaments';
 import { Card, CardContent } from '@/components/ui/card';
 import { BadgeInfo, LayoutGrid, ZoomIn, ZoomOut } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
 interface TournamentBracketProps {

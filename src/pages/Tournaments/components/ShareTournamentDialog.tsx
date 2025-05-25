@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Tournament } from '@/types/tournaments';
@@ -9,7 +8,7 @@ import {
   DialogTitle,
   DialogDescription
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Copy, Facebook, Twitter, Link, Check } from 'lucide-react';

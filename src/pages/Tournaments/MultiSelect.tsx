@@ -1,9 +1,8 @@
-
 import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Check, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 
 interface Option {
   value: string;
