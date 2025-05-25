@@ -1,8 +1,10 @@
+
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/stores/auth';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,7 +19,7 @@ import { Moon, Sun, Menu, BarChart3 } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 
 export function Navbar() {
-  const { session, user, signOut } = useAuth();
+  const { session, user, logout } = useAuth();
   const { t } = useTranslation();
   const { toast } = useToast()
   const navigate = useNavigate();
@@ -25,7 +27,7 @@ export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleSignOut = async () => {
-    await signOut();
+    await logout();
     toast({
       title: "Logged out",
       description: "You have been successfully logged out.",
@@ -40,7 +42,7 @@ export function Navbar() {
           {/* Logo */}
           <Link to="/" className="flex items-center font-bold text-xl text-white">
             <Avatar className="mr-2 w-8 h-8">
-              <AvatarImage src={user?.user_metadata?.avatar_url} />
+              <AvatarImage src={user?.avatarUrl} />
               <AvatarFallback>{user?.email?.charAt(0).toUpperCase()}</AvatarFallback>
             </Avatar>
             EtherPoker
@@ -73,7 +75,7 @@ export function Navbar() {
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src={user?.user_metadata?.avatar_url} alt={user?.email} />
+                      <AvatarImage src={user?.avatarUrl} alt={user?.email} />
                       <AvatarFallback>{user?.email?.charAt(0).toUpperCase()}</AvatarFallback>
                     </Avatar>
                   </Button>
