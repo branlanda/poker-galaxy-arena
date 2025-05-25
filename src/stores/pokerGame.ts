@@ -1,3 +1,4 @@
+
 import { create } from 'zustand';
 import { supabase } from '@/lib/supabase';
 import { GameAction, GameState, PlayerState, PlayerAction } from '@/types/poker';
@@ -24,6 +25,7 @@ interface PokerGameStore {
   togglePlayerHandVisibility: () => void;
   startNewHand: () => Promise<void>;
   processGameAction: (playerId: string, action: PlayerAction, amount?: number) => Promise<void>;
+  handleShowdown: () => Promise<void>;
 }
 
 // Helper to map DB response to our frontend model
