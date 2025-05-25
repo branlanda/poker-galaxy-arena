@@ -4,11 +4,13 @@ import {
   BrowserRouter as Router,
   Route,
   Routes,
-  Navigate
+  Navigate,
+  useLocation
 } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useAuth } from '@/stores/auth';
 import { useAuthSync } from '@/hooks/useAuthSync';
+import { useUserPresence } from '@/hooks/useUserPresence';
 import { Toaster } from '@/components/ui/toaster';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { NotificationToastContainer } from '@/components/notifications/NotificationToastContainer';
@@ -67,6 +69,36 @@ function AuthRoute({ children }: { children: JSX.Element }) {
   }
 
   return children;
+}
+
+// Componente separado para manejar la presencia global
+function GlobalPresenceTracker() {
+  const { user } = useAuth();
+  const { updatePresence } = useUserPresence();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (!user?.id) return;
+
+    // Determinar el tipo de juego basado en la ruta actual
+    let gameType: string | undefined;
+    let tableId: string | undefined;
+
+    if (location.pathname.startsWith('/game/') || location.pathname.startsWith('/table/')) {
+      const pathSegments = location.pathname.split('/');
+      tableId = pathSegments[2];
+      gameType = 'Poker';
+    } else if (location.pathname.startsWith('/tournaments/')) {
+      gameType = 'Tournament';
+    } else if (location.pathname === '/lobby') {
+      gameType = 'Lobby';
+    }
+
+    // Actualizar presencia basada en la ubicación actual
+    updatePresence(true, tableId, gameType);
+  }, [location.pathname, user?.id, updatePresence]);
+
+  return null;
 }
 
 function App() {
@@ -190,36 +222,6 @@ function App() {
       </Router>
     </QueryClientProvider>
   );
-}
-
-// Componente separado para manejar la presencia global
-function GlobalPresenceTracker() {
-  const { user } = useAuth();
-  const { updatePresence } = useUserPresence();
-  const location = useLocation();
-
-  useEffect(() => {
-    if (!user?.id) return;
-
-    // Determinar el tipo de juego basado en la ruta actual
-    let gameType: string | undefined;
-    let tableId: string | undefined;
-
-    if (location.pathname.startsWith('/game/') || location.pathname.startsWith('/table/')) {
-      const pathSegments = location.pathname.split('/');
-      tableId = pathSegments[2];
-      gameType = 'Poker';
-    } else if (location.pathname.startsWith('/tournaments/')) {
-      gameType = 'Tournament';
-    } else if (location.pathname === '/lobby') {
-      gameType = 'Lobby';
-    }
-
-    // Actualizar presencia basada en la ubicación actual
-    updatePresence(true, tableId, gameType);
-  }, [location.pathname, user?.id, updatePresence]);
-
-  return null;
 }
 
 export default App;
