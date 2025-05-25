@@ -1,18 +1,19 @@
+
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import LoginPage from '@/pages/LoginPage';
-import RegisterPage from '@/pages/RegisterPage';
-import HomePage from '@/pages/HomePage';
+import LoginPage from '@/pages/auth/Login';
+import RegisterPage from '@/pages/auth/SignUp';
+import HomePage from '@/pages/Index';
 import ProfilePage from '@/pages/profile/ProfilePage';
-import GameRoom from '@/pages/GameRoom';
-import AdminPage from '@/pages/AdminPage';
+import GameRoom from '@/pages/Game/GameRoom';
+import AdminPage from '@/pages/Admin/Dashboard';
 import { ProtectedRoute } from './ProtectedRoute';
 import { AuthRoute } from './AuthRoute';
 import { AdminRoute } from './AdminRoute';
-import { TermsOfServicePage } from '@/pages/TermsOfServicePage';
-import { PrivacyPolicyPage } from '@/pages/PrivacyPolicyPage';
 import HandHistoryPage from '@/pages/HandHistoryPage';
 import { SharedHandPage } from '@/pages/SharedHandPage';
+import { TermsOfServicePage } from '@/pages/TermsOfServicePage';
+import { PrivacyPolicyPage } from '@/pages/PrivacyPolicyPage';
 
 export function AppRoutes() {
   return (
