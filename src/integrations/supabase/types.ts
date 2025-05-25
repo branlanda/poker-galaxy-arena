@@ -652,6 +652,8 @@ export type Database = {
       }
       friends: {
         Row: {
+          blocked_at: string | null
+          blocked_by: string | null
           created_at: string | null
           friend_id: string
           id: string
@@ -660,6 +662,8 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          blocked_at?: string | null
+          blocked_by?: string | null
           created_at?: string | null
           friend_id: string
           id?: string
@@ -668,6 +672,8 @@ export type Database = {
           user_id: string
         }
         Update: {
+          blocked_at?: string | null
+          blocked_by?: string | null
           created_at?: string | null
           friend_id?: string
           id?: string
@@ -715,6 +721,63 @@ export type Database = {
           table_name?: string | null
         }
         Relationships: []
+      }
+      game_invitations: {
+        Row: {
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          invitation_type: string
+          message: string | null
+          recipient_id: string
+          responded_at: string | null
+          sender_id: string
+          status: string
+          table_id: string | null
+          tournament_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          invitation_type: string
+          message?: string | null
+          recipient_id: string
+          responded_at?: string | null
+          sender_id: string
+          status?: string
+          table_id?: string | null
+          tournament_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          invitation_type?: string
+          message?: string | null
+          recipient_id?: string
+          responded_at?: string | null
+          sender_id?: string
+          status?: string
+          table_id?: string | null
+          tournament_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_invitations_table_id_fkey"
+            columns: ["table_id"]
+            isOneToOne: false
+            referencedRelation: "lobby_tables"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "game_invitations_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments_new"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       hand_audit: {
         Row: {
@@ -2906,6 +2969,47 @@ export type Database = {
         }
         Relationships: []
       }
+      user_presence: {
+        Row: {
+          created_at: string | null
+          current_game_type: string | null
+          current_table_id: string | null
+          id: string
+          is_online: boolean | null
+          last_seen: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          current_game_type?: string | null
+          current_table_id?: string | null
+          id?: string
+          is_online?: boolean | null
+          last_seen?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          current_game_type?: string | null
+          current_table_id?: string | null
+          id?: string
+          is_online?: boolean | null
+          last_seen?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_presence_current_table_id_fkey"
+            columns: ["current_table_id"]
+            isOneToOne: false
+            referencedRelation: "lobby_tables"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       wallet_accounts: {
         Row: {
           balance: number
@@ -2971,6 +3075,20 @@ export type Database = {
         Args: { content: string }
         Returns: string
       }
+      get_friends_with_status: {
+        Args: { p_user_id: string }
+        Returns: {
+          friend_id: string
+          friend_alias: string
+          friend_avatar_url: string
+          is_online: boolean
+          current_table_id: string
+          current_game_type: string
+          last_seen: string
+          friendship_status: string
+          became_friends_at: string
+        }[]
+      }
       get_player_leaderboard: {
         Args: { range_interval: unknown; result_limit?: number }
         Returns: {
@@ -3020,6 +3138,14 @@ export type Database = {
           p_channel_id: string
           p_player_id: string
           p_is_typing: boolean
+        }
+        Returns: undefined
+      }
+      update_user_presence: {
+        Args: {
+          p_is_online?: boolean
+          p_table_id?: string
+          p_game_type?: string
         }
         Returns: undefined
       }

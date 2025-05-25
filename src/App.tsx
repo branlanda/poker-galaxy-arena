@@ -88,6 +88,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <Router>
+        <GlobalPresenceTracker />
         {!isOnline && (
           <div className="fixed top-0 left-0 w-full bg-red-500 text-white text-center py-2 z-50">
             You are currently offline. Some features may not be available.
@@ -189,6 +190,36 @@ function App() {
       </Router>
     </QueryClientProvider>
   );
+}
+
+// Componente separado para manejar la presencia global
+function GlobalPresenceTracker() {
+  const { user } = useAuth();
+  const { updatePresence } = useUserPresence();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (!user?.id) return;
+
+    // Determinar el tipo de juego basado en la ruta actual
+    let gameType: string | undefined;
+    let tableId: string | undefined;
+
+    if (location.pathname.startsWith('/game/') || location.pathname.startsWith('/table/')) {
+      const pathSegments = location.pathname.split('/');
+      tableId = pathSegments[2];
+      gameType = 'Poker';
+    } else if (location.pathname.startsWith('/tournaments/')) {
+      gameType = 'Tournament';
+    } else if (location.pathname === '/lobby') {
+      gameType = 'Lobby';
+    }
+
+    // Actualizar presencia basada en la ubicación actual
+    updatePresence(true, tableId, gameType);
+  }, [location.pathname, user?.id, updatePresence]);
+
+  return null;
 }
 
 export default App;
