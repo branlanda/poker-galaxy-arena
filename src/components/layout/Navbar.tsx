@@ -23,10 +23,11 @@ import {
   Calendar
 } from 'lucide-react';
 import { MobileNav } from './MobileNav';
+import { NotificationButton } from './NotificationButton';
 import { useTranslation } from '@/hooks/useTranslation';
 
 export function Navbar() {
-  const { user, session, signOut } = useAuth();
+  const { user, session, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
@@ -51,7 +52,7 @@ export function Navbar() {
   }, [isMobileNavOpen]);
 
   const handleLogout = async () => {
-    await signOut();
+    await logout();
     navigate('/');
   };
 
@@ -122,6 +123,9 @@ export function Navbar() {
           <div className="flex items-center space-x-4">
             {session ? (
               <>
+                {/* Notification Button */}
+                <NotificationButton />
+
                 {/* Mobile Navigation Toggle */}
                 <Button
                   variant="ghost"
@@ -137,7 +141,7 @@ export function Navbar() {
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                       <Avatar className="h-8 w-8">
-                        <AvatarImage src={user?.avatarUrl} alt={user?.alias || user?.email} />
+                        <AvatarImage src={user?.avatar_url} alt={user?.alias || user?.email} />
                         <AvatarFallback>
                           {(user?.alias || user?.email)?.charAt(0).toUpperCase() || 'U'}
                         </AvatarFallback>

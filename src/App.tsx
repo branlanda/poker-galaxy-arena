@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import {
   BrowserRouter as Router,
@@ -10,6 +9,7 @@ import { useAuth } from '@/stores/auth';
 import { useAuthSync } from '@/hooks/useAuthSync';
 import { Toaster } from '@/components/ui/toaster';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { NotificationToastContainer } from '@/components/notifications/NotificationToastContainer';
 import Index from '@/pages/Index';
 import Login from '@/pages/auth/Login';
 import SignUp from '@/pages/auth/SignUp';
@@ -171,6 +171,7 @@ function App() {
           />
       </Routes>
       <Toaster />
+      <NotificationToastContainer />
     </Router>
   );
 }

@@ -3,15 +3,13 @@ import React, { useState } from 'react';
 import { Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNotifications } from '@/hooks/useNotifications';
-import { NotificationsPanel } from '@/components/profile/NotificationsPanel';
-import { TournamentNotificationsPanel } from '@/components/tournaments/TournamentNotificationsPanel';
+import { NotificationPanel } from '@/components/notifications/NotificationPanel';
 import { useAuth } from '@/stores/auth';
 
 export const NotificationButton: React.FC = () => {
   const { user } = useAuth();
   const { unreadCount } = useNotifications();
   const [showPanel, setShowPanel] = useState(false);
-  const [showTournamentPanel, setShowTournamentPanel] = useState(false);
   
   if (!user) return null;
 
@@ -32,14 +30,9 @@ export const NotificationButton: React.FC = () => {
         )}
       </Button>
       
-      <NotificationsPanel
+      <NotificationPanel
         open={showPanel}
         onClose={() => setShowPanel(false)}
-      />
-      
-      <TournamentNotificationsPanel
-        open={showTournamentPanel}
-        onClose={() => setShowTournamentPanel(false)}
       />
     </>
   );
