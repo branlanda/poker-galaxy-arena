@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
@@ -6,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Shield, QrCode, Copy, Check } from 'lucide-react';
-import QRCode from 'qrcode';
+import * as QRCode from 'qrcode';
 
 interface TwoFactorAuthProps {
   onSetupComplete?: () => void;
