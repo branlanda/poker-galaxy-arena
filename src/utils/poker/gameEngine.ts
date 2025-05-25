@@ -7,7 +7,7 @@ import { ActionProcessor } from './engine/actionProcessor';
 import { ShowdownProcessor } from './engine/showdownProcessor';
 import { GameResult } from './engine/types';
 
-export { GameResult } from './engine/types';
+export type { GameResult } from './engine/types';
 
 export class PokerGameEngine {
   private game: GameState;
