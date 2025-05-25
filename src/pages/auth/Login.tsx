@@ -7,15 +7,20 @@ import { Input } from '@/components/ui/input';
 import { useAuth } from '@/stores/auth';
 import { useToast } from '@/hooks/use-toast';
 import { AlertCircle } from 'lucide-react';
+import TwoFactorAuth from '@/components/auth/TwoFactorAuth';
+import { useAccountSecurity } from '@/hooks/useAccountSecurity';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showTwoFactor, setShowTwoFactor] = useState(false);
+  const [tempSession, setTempSession] = useState<any>(null);
   const navigate = useNavigate();
   const user = useAuth((s) => s.user);
   const { toast } = useToast();
+  const { reportSuspiciousActivity } = useAccountSecurity();
 
   // If user is already logged in, redirect to lobby
   useEffect(() => {
@@ -42,7 +47,13 @@ const Login = () => {
       });
 
       if (error) {
-        // Handle specific error cases
+        // Track failed login attempts
+        await reportSuspiciousActivity('FAILED_LOGIN', { 
+          email, 
+          error: error.message,
+          timestamp: new Date().toISOString()
+        });
+
         if (error.message.includes('Invalid login credentials')) {
           throw new Error('Email o contraseña incorrectos. Verifica tus datos.');
         }
@@ -56,6 +67,21 @@ const Login = () => {
       }
 
       if (data.user) {
+        // Check if user has 2FA enabled
+        const has2FA = data.user.user_metadata?.two_factor_enabled;
+        
+        if (has2FA) {
+          setTempSession(data.session);
+          setShowTwoFactor(true);
+          return;
+        }
+
+        // Check if email is verified
+        if (!data.user.email_confirmed_at) {
+          await supabase.auth.signOut();
+          throw new Error('Tu email no ha sido verificado. Revisa tu bandeja de entrada y confirma tu cuenta.');
+        }
+
         toast({
           title: "¡Sesión iniciada exitosamente!",
         });
@@ -74,6 +100,24 @@ const Login = () => {
       setLoading(false);
     }
   };
+
+  const handleTwoFactorVerified = () => {
+    toast({
+      title: "¡Sesión iniciada exitosamente!",
+    });
+    navigate('/lobby');
+  };
+
+  if (showTwoFactor) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-navy p-4">
+        <TwoFactorAuth
+          mode="verify"
+          onSetupComplete={handleTwoFactorVerified}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-navy p-4">

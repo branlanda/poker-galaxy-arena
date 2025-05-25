@@ -1,168 +1,119 @@
 
-import React, { useState, useEffect, Suspense } from 'react';
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
-import { useAuth } from '@/stores/auth';
-import LoginPage from './pages/auth/Login';
-import SignUpPage from './pages/auth/SignUp';
-import ForgotPasswordPage from './pages/auth/ForgotPassword';
-import ResetPasswordPage from './pages/auth/ResetPassword';
-import DashboardPage from './pages/Index';
-import FundsPage from './pages/Funds/FundsPage';
-import ProfilePage from './pages/profile/ProfilePage';
-import SettingsPage from './pages/settings/Settings';
-import LobbyPage from './pages/Lobby/LobbyPage';
-import GameRoom from './pages/Game/GameRoom';
-import ProtectedRoute from './components/auth/ProtectedRoute';
-import { useAuthSync } from './hooks/useAuthSync';
-import NotFound from './pages/NotFound';
-import AdminRoutes from './router/AdminRoutes';
-import { Web3Provider } from './providers/Web3Provider';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Toaster } from "@/components/ui/toaster";
-import { AppLayout } from './components/layout/AppLayout';
-import { TournamentLobby, TournamentDetail } from './pages/Tournaments';
-import { AchievementsPage, LeaderboardsPage } from './pages/Gamification';
+import { useAuthSync } from '@/hooks/useAuthSync';
+import { Toaster } from '@/components/ui/toaster';
+import AppLayout from '@/components/layout/AppLayout';
+import ProtectedRoute from '@/components/auth/ProtectedRoute';
 
-// Create a client
+// Pages
+import Index from '@/pages/Index';
+import Login from '@/pages/auth/Login';
+import SignUp from '@/pages/auth/SignUp';
+import ForgotPassword from '@/pages/auth/ForgotPassword';
+import ResetPassword from '@/pages/auth/ResetPassword';
+import AccountRecoveryPage from '@/pages/auth/AccountRecoveryPage';
+import LobbyPage from '@/pages/Lobby/LobbyPage';
+import FundsPage from '@/pages/Funds/FundsPage';
+import GameRoom from '@/pages/Game/GameRoom';
+import ProfilePage from '@/pages/profile/ProfilePage';
+import Settings from '@/pages/settings/Settings';
+import SecuritySettingsPage from '@/pages/settings/SecuritySettings';
+import NotFound from '@/pages/NotFound';
+
+// Admin Routes
+import AdminRoutes from '@/router/AdminRoutes';
+import TournamentsRoutes from '@/router/TournamentsRoutes';
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 60 * 1000,
+      staleTime: 1000 * 60 * 5, // 5 minutes
       retry: 1,
     },
   },
 });
 
-// Loading component for Suspense fallback
-const LoadingSpinner = () => (
-  <div className="flex h-screen w-full items-center justify-center bg-navy">
-    <div className="text-center">
-      <div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald border-t-transparent mx-auto"></div>
-      <p className="mt-4 text-gray-400">Loading...</p>
-    </div>
-  </div>
-);
-
-function App() {
-  const [loading, setLoading] = useState(true);
-  const { setUser } = useAuth();
-
-  // Use the AuthSync hook to keep authentication state in sync
+const AppContent = () => {
   useAuthSync();
 
-  useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-    setLoading(false);
-  }, [setUser]);
+  return (
+    <Router>
+      <Routes>
+        {/* Public routes */}
+        <Route path="/" element={<Index />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<SignUp />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/auth/reset-password" element={<ResetPassword />} />
+        <Route path="/auth/recovery" element={<AccountRecoveryPage />} />
 
-  if (loading) {
-    return <LoadingSpinner />;
-  }
+        {/* Protected routes */}
+        <Route path="/lobby" element={
+          <ProtectedRoute>
+            <AppLayout>
+              <LobbyPage />
+            </AppLayout>
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/funds" element={
+          <ProtectedRoute>
+            <AppLayout>
+              <FundsPage />
+            </AppLayout>
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/game/:gameId" element={
+          <ProtectedRoute>
+            <GameRoom />
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/profile" element={
+          <ProtectedRoute>
+            <AppLayout>
+              <ProfilePage />
+            </AppLayout>
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/settings" element={
+          <ProtectedRoute>
+            <AppLayout>
+              <Settings />
+            </AppLayout>
+          </ProtectedRoute>
+        } />
 
+        <Route path="/settings/security" element={
+          <ProtectedRoute>
+            <AppLayout>
+              <SecuritySettingsPage />
+            </AppLayout>
+          </ProtectedRoute>
+        } />
+
+        {/* Admin Routes */}
+        <Route path="/admin/*" element={<AdminRoutes />} />
+        
+        {/* Tournament Routes */}
+        <Route path="/tournaments/*" element={<TournamentsRoutes />} />
+
+        {/* 404 */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+      <Toaster />
+    </Router>
+  );
+};
+
+function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <Web3Provider>
-        <Router>
-          <Suspense fallback={<LoadingSpinner />}>
-            <Routes>
-              {/* Auth routes - No layout wrapper */}
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/signup" element={<SignUpPage />} />
-              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-              <Route path="/reset-password" element={<ResetPasswordPage />} />
-              
-              {/* Game room has its own specific layout */}
-              <Route path="/game/:tableId" element={
-                <ProtectedRoute>
-                  <GameRoom />
-                </ProtectedRoute>
-              } />
-              
-              {/* Admin routes with admin layout */}
-              <Route path="/admin/*" element={<AdminRoutes />} />
-              
-              {/* Redirect /users to /admin/users */}
-              <Route path="/users" element={<Navigate to="/admin/users" replace />} />
-              
-              {/* All other routes with standard layout and consistent breadcrumbs */}
-              <Route path="/" element={
-                <AppLayout showBreadcrumbs={false}>
-                  <DashboardPage />
-                </AppLayout>
-              } />
-              
-              <Route path="/lobby" element={
-                <AppLayout>
-                  <LobbyPage />
-                </AppLayout>
-              } />
-              
-              <Route path="/profile" element={
-                <AppLayout>
-                  <ProtectedRoute>
-                    <ProfilePage />
-                  </ProtectedRoute>
-                </AppLayout>
-              } />
-              
-              <Route path="/settings" element={
-                <AppLayout>
-                  <ProtectedRoute>
-                    <SettingsPage />
-                  </ProtectedRoute>
-                </AppLayout>
-              } />
-              
-              <Route path="/funds" element={
-                <AppLayout>
-                  <ProtectedRoute>
-                    <FundsPage />
-                  </ProtectedRoute>
-                </AppLayout>
-              } />
-              
-              {/* Tournament routes */}
-              <Route path="/tournaments" element={
-                <AppLayout>
-                  <TournamentLobby />
-                </AppLayout>
-              } />
-              
-              <Route path="/tournaments/:id" element={
-                <AppLayout>
-                  <TournamentDetail />
-                </AppLayout>
-              } />
-              
-              {/* Gamification routes */}
-              <Route path="/achievements" element={
-                <AppLayout>
-                  <ProtectedRoute>
-                    <AchievementsPage />
-                  </ProtectedRoute>
-                </AppLayout>
-              } />
-              
-              <Route path="/leaderboards" element={
-                <AppLayout>
-                  <LeaderboardsPage />
-                </AppLayout>
-              } />
-              
-              {/* 404 route */}
-              <Route path="*" element={
-                <AppLayout>
-                  <NotFound />
-                </AppLayout>
-              } />
-            </Routes>
-          </Suspense>
-        </Router>
-        <Toaster />
-      </Web3Provider>
+      <AppContent />
     </QueryClientProvider>
   );
 }

@@ -7,6 +7,8 @@ import { Input } from '@/components/ui/input';
 import { useAuth } from '@/stores/auth';
 import { useToast } from '@/hooks/use-toast';
 import { AlertCircle } from 'lucide-react';
+import EmailVerification from '@/components/auth/EmailVerification';
+import { useAccountSecurity } from '@/hooks/useAccountSecurity';
 
 const SignUp = () => {
   const [email, setEmail] = useState('');
@@ -14,10 +16,13 @@ const SignUp = () => {
   const [alias, setAlias] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showEmailVerification, setShowEmailVerification] = useState(false);
+  const [userEmail, setUserEmail] = useState('');
   const navigate = useNavigate();
   const user = useAuth((s) => s.user);
   const setUser = useAuth((s) => s.setUser);
   const { toast } = useToast();
+  const { checkMultipleAccounts, reportSuspiciousActivity } = useAccountSecurity();
 
   // If user is already logged in, redirect to lobby
   useEffect(() => {
@@ -44,21 +49,31 @@ const SignUp = () => {
       setError("La contraseña debe tener al menos 6 caracteres");
       return;
     }
+
+    // Check for multiple accounts
+    const hasMultipleAccounts = await checkMultipleAccounts(email);
+    if (hasMultipleAccounts) {
+      await reportSuspiciousActivity('MULTIPLE_ACCOUNT_ATTEMPT', { email, alias });
+      setError("Se ha detectado actividad sospechosa. Tu registro está siendo revisado.");
+      return;
+    }
     
     setLoading(true);
     
     try {
-      // Create auth user first
+      // Create auth user first - email verification is required
       const { data: authData, error: authError } = await supabase.auth.signUp({ 
         email, 
         password,
         options: {
           emailRedirectTo: `${window.location.origin}/lobby`,
+          data: {
+            alias: alias
+          }
         }
       });
       
       if (authError) {
-        // Handle specific error cases
         if (authError.message.includes('rate limit')) {
           throw new Error('Has enviado demasiados emails. Por favor espera unos minutos antes de intentar de nuevo.');
         }
@@ -68,10 +83,17 @@ const SignUp = () => {
         throw authError;
       }
       
-      if (authData.user && authData.session) {
-        // User is logged in immediately
+      if (authData.user && !authData.session) {
+        // User created but needs email confirmation
+        setUserEmail(email);
+        setShowEmailVerification(true);
+        toast({
+          title: "¡Registro exitoso!",
+          description: "Por favor verifica tu email para activar tu cuenta.",
+        });
+      } else if (authData.user && authData.session) {
+        // User is logged in immediately (email confirmation disabled)
         try {
-          // Create player profile
           const { error: profileError } = await supabase
             .from('players')
             .insert([{ 
@@ -82,14 +104,12 @@ const SignUp = () => {
             
           if (profileError) {
             console.error("Profile creation error:", profileError);
-            // Don't throw here, user is already created
             toast({
               title: "Cuenta creada pero hubo un problema con el perfil",
               variant: "destructive",
             });
           }
           
-          // Update user state
           setUser({
             id: authData.user.id,
             email: authData.user.email || undefined,
@@ -108,12 +128,6 @@ const SignUp = () => {
           });
           navigate('/lobby');
         }
-      } else if (authData.user) {
-        // User created but needs email confirmation
-        toast({
-          title: "¡Registro exitoso! Revisa tu email para confirmar tu cuenta.",
-        });
-        setError("Revisa tu email y haz clic en el enlace de confirmación para activar tu cuenta.");
       }
     } catch (error: any) {
       console.error("Signup error:", error);
@@ -128,6 +142,56 @@ const SignUp = () => {
       setLoading(false);
     }
   };
+
+  const handleEmailVerified = async () => {
+    try {
+      // Create player profile after email verification
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { error: profileError } = await supabase
+          .from('players')
+          .insert([{ 
+            user_id: user.id, 
+            alias,
+            show_public_stats: true
+          }]);
+          
+        if (profileError) {
+          console.error("Profile creation error:", profileError);
+        }
+        
+        setUser({
+          id: user.id,
+          email: user.email || undefined,
+          alias,
+          showInLeaderboard: true
+        });
+        
+        toast({
+          title: "¡Cuenta activada exitosamente!",
+        });
+        navigate('/lobby');
+      }
+    } catch (error: any) {
+      console.error("Post-verification error:", error);
+      toast({
+        title: "Error",
+        description: "Hubo un problema al activar tu cuenta",
+        variant: "destructive",
+      });
+    }
+  };
+
+  if (showEmailVerification) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-navy p-4">
+        <EmailVerification
+          email={userEmail}
+          onVerified={handleEmailVerified}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-navy p-4">

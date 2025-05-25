@@ -12,10 +12,18 @@ export function useAuthSync() {
     // Set up auth state listener FIRST to prevent missing auth events
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth state changed:', event, session?.user?.email);
+        
         // Only synchronous state updates here
         setSession(session);
         
         if (session?.user) {
+          // Check if user email is verified for security
+          if (!session.user.email_confirmed_at && event === 'SIGNED_IN') {
+            console.warn('User logged in with unverified email');
+            // In production, you might want to force sign out here
+          }
+
           // Initial minimal user update
           const minimalUser = {
             id: session.user.id,
@@ -53,6 +61,20 @@ export function useAuthSync() {
                 
                 // Set admin status
                 setAdmin(playerData?.role === 'ADMIN');
+              }
+
+              // Log successful authentication for security monitoring
+              if (event === 'SIGNED_IN') {
+                await supabase.from('audit_logs').insert({
+                  user_id: session.user.id,
+                  action: 'USER_LOGIN',
+                  description: 'User logged in successfully',
+                  metadata: { 
+                    email: session.user.email,
+                    timestamp: new Date().toISOString(),
+                    user_agent: navigator.userAgent
+                  }
+                });
               }
             } catch (error) {
               console.error('Error fetching user data:', error);
