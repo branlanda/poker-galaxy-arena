@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTournaments } from '@/hooks/useTournaments';
@@ -293,7 +292,6 @@ export default function TournamentDetail() {
           {/* Registration/Action Card */}
           <TournamentRegistration 
             tournament={selectedTournament}
-            isRegistered={tournamentRegistrations?.some(reg => reg.player_id === user?.id) || false}
           />
 
           {/* Tournament Chat */}
@@ -305,7 +303,10 @@ export default function TournamentDetail() {
               </CardTitle>
             </CardHeader>
             <CardContent className="p-0">
-              <TournamentChat tournamentId={selectedTournament.id} />
+              <TournamentChat 
+                tournamentId={selectedTournament.id} 
+                tournamentName={selectedTournament.name}
+              />
             </CardContent>
           </Card>
         </div>
