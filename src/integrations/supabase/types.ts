@@ -195,27 +195,200 @@ export type Database = {
         }
         Relationships: []
       }
+      chat_banned_words: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          replacement: string | null
+          severity: string | null
+          word: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          replacement?: string | null
+          severity?: string | null
+          word: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          replacement?: string | null
+          severity?: string | null
+          word?: string
+        }
+        Relationships: []
+      }
+      chat_channels: {
+        Row: {
+          channel_type: string
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          max_message_length: number | null
+          name: string
+          table_id: string | null
+        }
+        Insert: {
+          channel_type: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_message_length?: number | null
+          name: string
+          table_id?: string | null
+        }
+        Update: {
+          channel_type?: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_message_length?: number | null
+          name?: string
+          table_id?: string | null
+        }
+        Relationships: []
+      }
       chat_messages: {
         Row: {
           channel_id: string
           created_at: string
+          edited_at: string | null
           id: string
+          is_deleted: boolean | null
+          is_system_message: boolean | null
+          mentions: Json | null
           message: string
           player_id: string
+          reply_to_message_id: string | null
         }
         Insert: {
           channel_id?: string
           created_at?: string
+          edited_at?: string | null
           id?: string
+          is_deleted?: boolean | null
+          is_system_message?: boolean | null
+          mentions?: Json | null
           message: string
           player_id: string
+          reply_to_message_id?: string | null
         }
         Update: {
           channel_id?: string
           created_at?: string
+          edited_at?: string | null
           id?: string
+          is_deleted?: boolean | null
+          is_system_message?: boolean | null
+          mentions?: Json | null
           message?: string
           player_id?: string
+          reply_to_message_id?: string | null
+        }
+        Relationships: []
+      }
+      chat_moderation: {
+        Row: {
+          action_taken: string | null
+          created_at: string | null
+          id: string
+          message_id: string | null
+          moderator_id: string | null
+          notes: string | null
+          reason: string
+          reporter_id: string | null
+          resolved_at: string | null
+        }
+        Insert: {
+          action_taken?: string | null
+          created_at?: string | null
+          id?: string
+          message_id?: string | null
+          moderator_id?: string | null
+          notes?: string | null
+          reason: string
+          reporter_id?: string | null
+          resolved_at?: string | null
+        }
+        Update: {
+          action_taken?: string | null
+          created_at?: string | null
+          id?: string
+          message_id?: string | null
+          moderator_id?: string | null
+          notes?: string | null
+          reason?: string
+          reporter_id?: string | null
+          resolved_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_moderation_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "chat_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_typing_indicators: {
+        Row: {
+          channel_id: string
+          id: string
+          is_typing: boolean | null
+          player_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          channel_id: string
+          id?: string
+          is_typing?: boolean | null
+          player_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          channel_id?: string
+          id?: string
+          is_typing?: boolean | null
+          player_id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      chat_user_preferences: {
+        Row: {
+          channel_id: string | null
+          created_at: string | null
+          emoji_enabled: boolean | null
+          id: string
+          is_muted: boolean | null
+          notification_enabled: boolean | null
+          player_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          channel_id?: string | null
+          created_at?: string | null
+          emoji_enabled?: boolean | null
+          id?: string
+          is_muted?: boolean | null
+          notification_enabled?: boolean | null
+          player_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          channel_id?: string | null
+          created_at?: string | null
+          emoji_enabled?: boolean | null
+          id?: string
+          is_muted?: boolean | null
+          notification_enabled?: boolean | null
+          player_id?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -2794,6 +2967,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      filter_chat_message: {
+        Args: { content: string }
+        Returns: string
+      }
       get_player_leaderboard: {
         Args: { range_interval: unknown; result_limit?: number }
         Returns: {
@@ -2835,6 +3012,14 @@ export type Database = {
           p_credit_account: number
           p_debit_account: number
           p_amount: number
+        }
+        Returns: undefined
+      }
+      update_typing_indicator: {
+        Args: {
+          p_channel_id: string
+          p_player_id: string
+          p_is_typing: boolean
         }
         Returns: undefined
       }
