@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import { useTranslation } from '@/hooks/useTranslation';
 import { LobbyTable } from '@/types/lobby';
 import { useJoinTable } from '@/hooks/useJoinTable';

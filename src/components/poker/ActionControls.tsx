@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { PlayerState, PlayerAction } from '@/types/poker';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Input } from '@/components/ui/input';
 

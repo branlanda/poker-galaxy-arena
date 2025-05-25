@@ -9,7 +9,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import { Plus } from 'lucide-react';
 import { TableSettingsForm } from './TableSettingsForm';
 import { useTableForm } from '@/hooks/useTableForm';

@@ -1,6 +1,6 @@
 
 import { useTranslation } from '@/hooks/useTranslation';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { RefreshCcw, ArrowLeft, Home, Trophy, Target, Users } from 'lucide-react';
 import { CreateTableDialog } from '@/components/lobby/CreateTableDialog';
 import { useAuth } from '@/stores/auth';

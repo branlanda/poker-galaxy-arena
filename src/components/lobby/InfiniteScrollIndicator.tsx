@@ -1,8 +1,7 @@
-
 import { useTranslation } from '@/hooks/useTranslation';
 import { LoaderCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 
 interface InfiniteScrollIndicatorProps {
   bottomRef: React.RefObject<HTMLDivElement>;

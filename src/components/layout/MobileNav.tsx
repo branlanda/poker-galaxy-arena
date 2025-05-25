@@ -1,7 +1,7 @@
 
 import { Link } from "react-router-dom";
 import { useAuth } from "@/stores/auth";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
 import { LogOut, Home, Users, Trophy, Target, User, Settings, DollarSign } from "lucide-react";
 import { Separator } from "@/components/ui/separator";

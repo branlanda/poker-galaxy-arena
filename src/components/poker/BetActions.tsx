@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useGameStore } from '@/stores/game';
 import { useBetActions } from '@/hooks/useBetActions';
 import { PlayerAction } from '@/types/lobby';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
 
