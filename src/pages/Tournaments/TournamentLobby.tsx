@@ -11,7 +11,6 @@ import { Plus, Search, RefreshCw, Users, Target } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useAuth } from '@/stores/auth';
 import { Link } from 'react-router-dom';
-import { AppLayout } from '@/components/layout/AppLayout';
 
 export default function TournamentLobby() {
   const { t } = useTranslation();
@@ -53,56 +52,43 @@ export default function TournamentLobby() {
 
   if (error) {
     return (
-      <AppLayout>
-        <div className="flex items-center justify-center min-h-[50vh]">
-          <div className="text-center">
-            <h2 className="text-xl font-semibold text-white mb-2">
-              {t('tournaments.errorLoading', 'Error loading tournaments')}
-            </h2>
-            <p className="text-gray-400 mb-4">{error}</p>
-            <Button onClick={refreshTournaments}>
-              <RefreshCw className="h-4 w-4 mr-2" />
-              {t('common.refresh', 'Retry')}
-            </Button>
-          </div>
+      <div className="flex items-center justify-center min-h-[50vh]">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold text-white mb-2">
+            {t('tournaments.errorLoading', 'Error loading tournaments')}
+          </h2>
+          <p className="text-gray-400 mb-4">{error}</p>
+          <Button onClick={refreshTournaments}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            {t('common.refresh', 'Retry')}
+          </Button>
         </div>
-      </AppLayout>
+      </div>
     );
   }
 
   return (
-    <AppLayout>
-      {/* Header with navigation */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-3xl font-bold text-emerald">
-            {t('tournaments.lobby', 'Tournaments')}
-          </h1>
-          <p className="text-gray-400 mt-1">
-            {t('tournaments.description', 'Compete in exciting tournaments with guaranteed prize pools')}
-          </p>
-        </div>
-        
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm">
-            <Link to="/lobby" className="flex items-center">
-              <Users className="h-4 w-4 mr-2" />
-              {t('lobby.title', 'Lobby')}
-            </Link>
+    <div className="space-y-6">
+      {/* Action buttons */}
+      <div className="flex justify-end gap-2">
+        <Button variant="outline" size="sm">
+          <Link to="/lobby" className="flex items-center">
+            <Users className="h-4 w-4 mr-2" />
+            {t('lobby.title', 'Lobby')}
+          </Link>
+        </Button>
+        <Button variant="outline" size="sm">
+          <Link to="/leaderboards" className="flex items-center">
+            <Target className="h-4 w-4 mr-2" />
+            {t('leaderboards.title', 'Leaderboards')}
+          </Link>
+        </Button>
+        {user && (
+          <Button onClick={() => setShowCreateDialog(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            {t('tournaments.createTournament', 'Create Tournament')}
           </Button>
-          <Button variant="outline" size="sm">
-            <Link to="/leaderboards" className="flex items-center">
-              <Target className="h-4 w-4 mr-2" />
-              {t('leaderboards.title', 'Leaderboards')}
-            </Link>
-          </Button>
-          {user && (
-            <Button onClick={() => setShowCreateDialog(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              {t('tournaments.createTournament', 'Create Tournament')}
-            </Button>
-          )}
-        </div>
+        )}
       </div>
 
       <div className="flex flex-col lg:flex-row gap-6">
@@ -180,6 +166,6 @@ export default function TournamentLobby() {
         onClose={() => setShowCreateDialog(false)}
         onTournamentCreated={handleTournamentCreated}
       />
-    </AppLayout>
+    </div>
   );
 }
