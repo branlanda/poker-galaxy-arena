@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { Calendar, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
