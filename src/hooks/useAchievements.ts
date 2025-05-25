@@ -6,9 +6,36 @@ import { Achievement, PlayerAchievement } from '@/types/gamification';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from '@/hooks/useTranslation';
 
+// Extended types for the UI
+interface UIAchievement extends Achievement {
+  completed: boolean;
+  progress?: number;
+  target?: number;
+  title: string;
+  xpReward: number;
+}
+
+interface UserProgress {
+  level: number;
+  currentXP: number;
+  nextLevelXP: number;
+}
+
+interface DailyMission {
+  id: string;
+  title: string;
+  description: string;
+  progress: number;
+  target: number;
+  xpReward: number;
+  timeRemaining: string;
+}
+
 export function useAchievements() {
-  const [achievements, setAchievements] = useState<Achievement[]>([]);
+  const [achievements, setAchievements] = useState<UIAchievement[]>([]);
   const [playerAchievements, setPlayerAchievements] = useState<PlayerAchievement[]>([]);
+  const [userProgress, setUserProgress] = useState<UserProgress>({ level: 1, currentXP: 0, nextLevelXP: 1000 });
+  const [dailyMissions, setDailyMissions] = useState<DailyMission[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const { toast } = useToast();
@@ -45,34 +72,52 @@ export function useAchievements() {
       }
       
       // Process and merge data
-      setAchievements(achievementsData || []);
-      
-      // If player doesn't have records for all achievements, create them with default values
       const playerAchievementsMap = new Map((playerData || []).map(pa => [pa.achievement_id, pa]));
       
       const mergedAchievements = (achievementsData || []).map(achievement => {
         const playerAchievement = playerAchievementsMap.get(achievement.id);
         
-        if (playerAchievement) {
-          return {
-            ...playerAchievement,
-            achievement
-          };
-        } else {
-          // Create default player achievement if it doesn't exist
-          return {
-            id: `temp-${achievement.id}`,
-            player_id: user.id,
-            achievement_id: achievement.id,
-            progress: 0,
-            completed: false,
-            created_at: new Date().toISOString(),
-            achievement
-          };
-        }
+        return {
+          ...achievement,
+          title: achievement.name,
+          xpReward: achievement.points,
+          completed: playerAchievement?.completed || false,
+          progress: playerAchievement?.progress || 0,
+          target: 100, // Default target
+        };
       });
       
-      setPlayerAchievements(mergedAchievements);
+      setAchievements(mergedAchievements);
+      setPlayerAchievements(playerData || []);
+      
+      // Set mock user progress
+      setUserProgress({
+        level: 5,
+        currentXP: 750,
+        nextLevelXP: 1000
+      });
+      
+      // Set mock daily missions
+      setDailyMissions([
+        {
+          id: '1',
+          title: 'Play 5 Hands',
+          description: 'Complete 5 poker hands',
+          progress: 3,
+          target: 5,
+          xpReward: 100,
+          timeRemaining: '12h 30m'
+        },
+        {
+          id: '2',
+          title: 'Win a Game',
+          description: 'Win at least one poker game',
+          progress: 0,
+          target: 1,
+          xpReward: 200,
+          timeRemaining: '23h 45m'
+        }
+      ]);
       
     } catch (error: any) {
       console.error('Error fetching achievements:', error);
@@ -92,8 +137,8 @@ export function useAchievements() {
     
     try {
       // Check if achievement is completed and unclaimed
-      const achievement = playerAchievements.find(
-        a => a.achievement_id === achievementId && a.completed && !a.completed_at // Using completed_at to check if reward is claimed
+      const achievement = achievements.find(
+        a => a.id === achievementId && a.completed
       );
       
       if (!achievement) {
@@ -103,16 +148,6 @@ export function useAchievements() {
           variant: 'destructive',
         });
         return;
-      }
-      
-      // Claim the reward on the server (this would typically be handled by a secure RPC function or edge function)
-      const { error } = await supabase.rpc('claim_achievement_reward', {
-        p_achievement_id: achievementId,
-        p_player_id: user.id
-      });
-      
-      if (error) {
-        throw error;
       }
       
       // Refresh achievements to show updated state
@@ -148,6 +183,8 @@ export function useAchievements() {
   return {
     achievements,
     playerAchievements,
+    userProgress,
+    dailyMissions,
     loading,
     refreshAchievements,
     claimAchievementReward

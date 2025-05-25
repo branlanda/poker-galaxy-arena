@@ -1,3 +1,4 @@
+
 import { create } from 'zustand';
 import { supabase } from '@/lib/supabase';
 
@@ -16,6 +17,8 @@ interface AuthState {
   setUser: (u: User | null) => void;
   setSession: (s: any | null) => void;
   setAdmin: (is: boolean) => void;
+  signIn: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string, alias: string) => Promise<void>;
   updateUserProfile: (data: Partial<User>) => Promise<void>;
   logout: () => Promise<void>;
 }
@@ -37,6 +40,74 @@ export const useAuth = create<AuthState>((set, get) => ({
   },
   setAdmin: (is) => {
     set({ isAdmin: is });
+  },
+  signIn: async (email: string, password: string) => {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) throw error;
+
+    if (data.user) {
+      // Fetch user profile
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', data.user.id)
+        .single();
+
+      const user: User = {
+        id: data.user.id,
+        email: data.user.email,
+        alias: profile?.alias,
+        avatarUrl: profile?.avatar_url,
+        showInLeaderboard: profile?.show_public_stats,
+      };
+
+      set({ user, session: data.session });
+      localStorage.setItem('user', JSON.stringify(user));
+    }
+  },
+  signUp: async (email: string, password: string, alias: string) => {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          alias: alias,
+        }
+      }
+    });
+
+    if (error) throw error;
+
+    if (data.user) {
+      // Create profile
+      await supabase
+        .from('profiles')
+        .insert({
+          id: data.user.id,
+          alias: alias,
+        });
+
+      // Create player record
+      await supabase
+        .from('players')
+        .insert({
+          user_id: data.user.id,
+          alias: alias,
+        });
+
+      const user: User = {
+        id: data.user.id,
+        email: data.user.email,
+        alias: alias,
+      };
+
+      set({ user, session: data.session });
+      localStorage.setItem('user', JSON.stringify(user));
+    }
   },
   updateUserProfile: async (data) => {
     const { user } = get();
