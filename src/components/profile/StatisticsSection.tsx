@@ -2,11 +2,11 @@
 import React from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Trophy, Star, Users, Calendar } from 'lucide-react';
-import { PlayerStatistics } from '@/hooks/useUserProfile';
+import { PlayerStatistics } from '@/hooks/usePlayerStatistics';
 import { TournamentStatsSection } from '@/components/tournaments/TournamentStatsSection';
 
 interface StatisticsSectionProps {
-  stats: PlayerStatistics;
+  stats: PlayerStatistics | null;
   loading?: boolean;
 }
 
@@ -22,6 +22,14 @@ export const StatisticsSection: React.FC<StatisticsSectionProps> = ({
         {[...Array(6)].map((_, i) => (
           <div key={i} className="h-24 bg-navy/70 rounded-md animate-pulse"></div>
         ))}
+      </div>
+    );
+  }
+
+  if (!stats) {
+    return (
+      <div className="text-center py-8 text-gray-400">
+        <p>No statistics available</p>
       </div>
     );
   }

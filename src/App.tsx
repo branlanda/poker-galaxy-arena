@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import {
   BrowserRouter as Router,
@@ -12,13 +13,13 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import Index from '@/pages/Index';
 import Login from '@/pages/auth/Login';
 import SignUp from '@/pages/auth/SignUp';
-import Lobby from '@/pages/Lobby';
-import Funds from '@/pages/Funds';
-import SettingsPage from '@/pages/SettingsPage';
+import Lobby from '@/pages/Lobby/LobbyPage';
+import Funds from '@/pages/Funds/FundsPage';
+import SettingsPage from '@/pages/settings/Settings';
 import LeaderboardsPage from '@/pages/Gamification/LeaderboardsPage';
-import TournamentsPage from '@/pages/TournamentsPage';
-import Table from '@/pages/Table';
-import Admin from '@/pages/Admin';
+import TournamentsPage from '@/pages/Tournaments';
+import Table from '@/pages/Game/GameRoom';
+import Admin from '@/pages/Admin/Dashboard';
 import ProfilePage from '@/pages/profile/ProfilePage';
 
 function ProtectedRoute({ children }: { children: JSX.Element }) {

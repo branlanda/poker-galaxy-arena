@@ -1,247 +1,203 @@
-import { useState } from "react"
-import { Link } from "react-router-dom"
 
-import { siteConfig } from "@/config/site"
-import { cn } from "@/lib/utils"
-import { useAuth } from "@/stores/auth"
-import { useTranslation } from "@/hooks/useTranslation"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
+import { useState, useRef, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { useAuth } from '@/stores/auth';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-  navigationMenuTriggerStyle,
-} from "@/components/ui/navigation-menu"
-import { Moon, Sun, Menu, User } from "lucide-react"
-import { useTheme } from "@/components/providers"
+} from '@/components/ui/dropdown-menu';
+import { 
+  Trophy, 
+  Settings, 
+  LogOut, 
+  Menu, 
+  X, 
+  User,
+  Gamepad2,
+  DollarSign,
+  Calendar
+} from 'lucide-react';
+import { MobileNav } from './MobileNav';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export function Navbar() {
-  const { t } = useTranslation()
-  const { theme, setTheme } = useTheme()
-  const { user, session, signOut } = useAuth()
-  const [showMobileMenu, setShowMobileMenu] = useState(false)
+  const { user, session, signOut } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { t } = useTranslation();
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+  const mobileNavRef = useRef<HTMLDivElement>(null);
 
-  const toggleMobileMenu = () => {
-    setShowMobileMenu(!showMobileMenu)
-  }
+  // Close mobile nav when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (mobileNavRef.current && !mobileNavRef.current.contains(event.target as Node)) {
+        setIsMobileNavOpen(false);
+      }
+    }
+
+    if (isMobileNavOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isMobileNavOpen]);
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/');
+  };
+
+  const isActive = (path: string) => location.pathname === path;
 
   return (
-    <div className="border-b">
-      <div className="container flex items-center gap-6 h-16">
-        <Link className="flex items-center font-semibold" to="/">
-          <span className="text-2xl">{siteConfig.name}</span>
-        </Link>
-        <NavigationMenu className="hidden lg:flex gap-4">
-          <NavigationMenuList>
-            <NavigationMenuItem>
-              <NavigationMenuTrigger>
-                {t("lobby.title", "Lobby")}
-              </NavigationMenuTrigger>
-              <NavigationMenuContent>
-                <ul className="grid gap-3 p-6 md:w-[400px] lg:w-[500px] lg:grid-cols-2">
-                  <li>
-                    <NavigationMenuLink>
-                      {t("lobby.joinTable", "Join an existing table")}
-                    </NavigationMenuLink>
-                  </li>
-                </ul>
-              </NavigationMenuContent>
-            </NavigationMenuItem>
-            <NavigationMenuItem>
-              <NavigationMenuTrigger>
-                {t("tournaments.lobby", "Tournaments")}</NavigationMenuTrigger>
-              <NavigationMenuContent>
-                <ul className="grid gap-3 p-6 md:w-[400px] lg:w-[500px] lg:grid-cols-2">
-                  <li>
-                    <NavigationMenuLink>
-                      {t("tournaments.description", "Compete for prizes")}</NavigationMenuLink>
-                  </li>
-                </ul>
-              </NavigationMenuContent>
-            </NavigationMenuItem>
-            <NavigationMenuItem>
-              <NavigationMenuTrigger>
-                {t("funds.title", "Funds")}</NavigationMenuTrigger>
-              <NavigationMenuContent>
-                <ul className="grid gap-3 p-6 md:w-[400px] lg:w-[500px] lg:grid-cols-2">
-                  <li>
-                    <NavigationMenuLink>
-                      {t("funds.deposit", "Deposit funds")}</NavigationMenuLink>
-                  </li>
-                </ul>
-              </NavigationMenuContent>
-            </NavigationMenuItem>
-            <NavigationMenuItem>
-              <Link to="/profile" className={navigationMenuTriggerStyle()}>
-                <User className="h-4 w-4 mr-1" />
-                {t('common.profile', 'Profile')}
-              </Link>
-            </NavigationMenuItem>
-          </NavigationMenuList>
-        </NavigationMenu>
-        <div className="ml-auto flex items-center space-x-4">
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() =>
-              setTheme(theme === "light" ? "dark" : "light")
-            }
-          >
-            {theme === "light" ? <Moon /> : <Sun />}
-          </Button>
-          {!session ? (
-            <>
-              <Link to="/login">
-                <Button size="sm" variant="outline">
-                  {t("auth.signIn", "Sign In")}
-                </Button>
-              </Link>
-              <Link to="/signup">
-                <Button size="sm">{t("auth.signUp", "Sign Up")}</Button>
-              </Link>
-            </>
-          ) : (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="h-8 w-8 p-0">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={user?.avatarUrl} alt={user?.alias || user?.email} />
-                    <AvatarFallback>{(user?.alias || user?.email)?.charAt(0)}</AvatarFallback>
-                  </Avatar>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="bg-secondary border">
-                <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <Link to="/profile">Profile</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Link to="/funds">Funds</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => signOut()}>
-                  Logout
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+    <nav className="bg-navy/95 backdrop-blur-sm border-b border-emerald/20 sticky top-0 z-50">
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-between h-16">
+          {/* Logo */}
+          <Link to="/" className="flex items-center space-x-2">
+            <div className="w-8 h-8 bg-emerald rounded-full flex items-center justify-center">
+              <span className="text-navy font-bold text-sm">P</span>
+            </div>
+            <span className="text-white font-bold text-xl">PokerPro</span>
+          </Link>
+
+          {/* Desktop Navigation */}
+          {session && (
+            <div className="hidden md:flex items-center space-x-1">
+              <Button 
+                variant={isActive('/lobby') ? 'default' : 'ghost'} 
+                size="sm" 
+                asChild
+              >
+                <Link to="/lobby" className="flex items-center">
+                  <Gamepad2 className="h-4 w-4 mr-2" />
+                  {t('nav.lobby', 'Lobby')}
+                </Link>
+              </Button>
+              
+              <Button 
+                variant={isActive('/tournaments') ? 'default' : 'ghost'} 
+                size="sm" 
+                asChild
+              >
+                <Link to="/tournaments" className="flex items-center">
+                  <Calendar className="h-4 w-4 mr-2" />
+                  {t('nav.tournaments', 'Tournaments')}
+                </Link>
+              </Button>
+              
+              <Button 
+                variant={isActive('/leaderboards') ? 'default' : 'ghost'} 
+                size="sm" 
+                asChild
+              >
+                <Link to="/leaderboards" className="flex items-center">
+                  <Trophy className="h-4 w-4 mr-2" />
+                  {t('nav.leaderboards', 'Leaderboards')}
+                </Link>
+              </Button>
+              
+              <Button 
+                variant={isActive('/funds') ? 'default' : 'ghost'} 
+                size="sm" 
+                asChild
+              >
+                <Link to="/funds" className="flex items-center">
+                  <DollarSign className="h-4 w-4 mr-2" />
+                  {t('nav.funds', 'Funds')}
+                </Link>
+              </Button>
+            </div>
           )}
-          <Button
-            size="icon"
-            variant="ghost"
-            className="lg:hidden"
-            onClick={toggleMobileMenu}
-          >
-            <Menu className="h-4 w-4" />
-          </Button>
+
+          {/* User Menu / Auth Buttons */}
+          <div className="flex items-center space-x-4">
+            {session ? (
+              <>
+                {/* Mobile Navigation Toggle */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="md:hidden"
+                  onClick={() => setIsMobileNavOpen(!isMobileNavOpen)}
+                >
+                  {isMobileNavOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+                </Button>
+
+                {/* User Dropdown */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={user?.avatarUrl} alt={user?.alias || user?.email} />
+                        <AvatarFallback>
+                          {(user?.alias || user?.email)?.charAt(0).toUpperCase() || 'U'}
+                        </AvatarFallback>
+                      </Avatar>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56" align="end">
+                    <div className="flex items-center justify-start gap-2 p-2">
+                      <div className="flex flex-col space-y-1 leading-none">
+                        <p className="font-medium">
+                          {user?.alias || 'Anonymous Player'}
+                        </p>
+                        <p className="w-[200px] truncate text-sm text-muted-foreground">
+                          {user?.email}
+                        </p>
+                      </div>
+                    </div>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link to="/profile" className="flex items-center">
+                        <User className="mr-2 h-4 w-4" />
+                        <span>{t('nav.profile', 'Profile')}</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/settings" className="flex items-center">
+                        <Settings className="mr-2 h-4 w-4" />
+                        <span>{t('nav.settings', 'Settings')}</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleLogout}>
+                      <LogOut className="mr-2 h-4 w-4" />
+                      <span>{t('auth.logout', 'Logout')}</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
+            ) : (
+              <div className="flex items-center space-x-2">
+                <Button variant="ghost" size="sm" asChild>
+                  <Link to="/login">{t('auth.login', 'Login')}</Link>
+                </Button>
+                <Button size="sm" asChild>
+                  <Link to="/signup">{t('auth.signup', 'Sign Up')}</Link>
+                </Button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
-      {showMobileMenu && (
-        <MobileMenu
-          t={t}
-          theme={theme}
-          setTheme={setTheme}
-          user={user}
-          session={session}
-          signOut={signOut}
-          toggleMobileMenu={toggleMobileMenu}
+
+      {/* Mobile Navigation */}
+      {session && (
+        <MobileNav 
+          isOpen={isMobileNavOpen} 
+          onClose={() => setIsMobileNavOpen(false)}
+          ref={mobileNavRef}
         />
       )}
-    </div>
-  )
-}
-
-interface MobileMenuProps {
-  t: any
-  theme: string
-  setTheme: (theme: string) => void
-  user: any
-  session: any
-  signOut: () => void
-  toggleMobileMenu: () => void
-}
-
-function MobileMenu({
-  t,
-  theme,
-  setTheme,
-  user,
-  session,
-  signOut,
-  toggleMobileMenu,
-}: MobileMenuProps) {
-  return (
-    <div className="border-b lg:hidden">
-      <div className="container flex flex-col gap-4 p-4">
-        <Button
-          size="sm"
-          variant="ghost"
-          className="justify-start"
-          onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-        >
-          {theme === "light" ? <Moon /> : <Sun />}
-          <span className="ml-2">{t("theme", "Theme")}</span>
-        </Button>
-        <Link to="/lobby">
-          <Button size="sm" variant="ghost" className="justify-start">
-            {t("lobby.title", "Lobby")}
-          </Button>
-        </Link>
-        <Link to="/tournaments">
-          <Button size="sm" variant="ghost" className="justify-start">
-            {t("tournaments.lobby", "Tournaments")}
-          </Button>
-        </Link>
-        <Link to="/funds">
-          <Button size="sm" variant="ghost" className="justify-start">
-            {t("funds.title", "Funds")}
-          </Button>
-        </Link>
-        <Link to="/profile">
-          <Button size="sm" variant="ghost" className="justify-start">
-            {t("common.profile", "Profile")}
-          </Button>
-        </Link>
-        {!session ? (
-          <>
-            <Link to="/login">
-              <Button size="sm" variant="outline" className="justify-start">
-                {t("auth.signIn", "Sign In")}
-              </Button>
-            </Link>
-            <Link to="/signup">
-              <Button size="sm" className="justify-start">
-                {t("auth.signUp", "Sign Up")}
-              </Button>
-            </Link>
-          </>
-        ) : (
-          <>
-            <Button
-              size="sm"
-              variant="ghost"
-              className="justify-start"
-              onClick={() => signOut()}
-            >
-              {t("auth.signOut", "Sign Out")}
-            </Button>
-          </>
-        )}
-        <Button size="sm" variant="ghost" onClick={toggleMobileMenu}>
-          {t("common.close", "Close")}
-        </Button>
-      </div>
-    </div>
-  )
+    </nav>
+  );
 }
