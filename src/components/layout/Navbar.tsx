@@ -141,7 +141,7 @@ export function Navbar() {
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                       <Avatar className="h-8 w-8">
-                        <AvatarImage src={user?.avatar_url} alt={user?.alias || user?.email} />
+                        <AvatarImage src={user?.avatarUrl} alt={user?.alias || user?.email} />
                         <AvatarFallback>
                           {(user?.alias || user?.email)?.charAt(0).toUpperCase() || 'U'}
                         </AvatarFallback>
@@ -195,12 +195,10 @@ export function Navbar() {
       </div>
 
       {/* Mobile Navigation */}
-      {session && (
-        <MobileNav 
-          isOpen={isMobileNavOpen} 
-          onClose={() => setIsMobileNavOpen(false)}
-          ref={mobileNavRef}
-        />
+      {session && isMobileNavOpen && (
+        <div ref={mobileNavRef} className="md:hidden">
+          <MobileNav setOpen={setIsMobileNavOpen} />
+        </div>
       )}
     </nav>
   );
