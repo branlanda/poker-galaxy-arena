@@ -1,303 +1,200 @@
 
-import React, { useEffect, useState } from 'react';
-import { useTranslation } from '@/hooks/useTranslation';
-import { useAchievements } from '@/hooks/useAchievements';
-import { PlayerAchievement, PlayerLevel } from '@/types/gamification';
-import { AchievementsSection } from '@/components/profile/AchievementsSection';
+import React from 'react';
+import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useAuth } from '@/stores/auth';
-import { Badge } from '@/components/ui/badge';
-import { Award, Calendar, Star, Trophy } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { 
+  Trophy, 
+  Star, 
+  Target, 
+  Award,
+  Clock,
+  TrendingUp
+} from 'lucide-react';
+import { useTranslation } from '@/hooks/useTranslation';
+import { useAchievements } from '@/hooks/useAchievements';
 
-export function AchievementsPage() {
+const AchievementsPage: React.FC = () => {
   const { t } = useTranslation();
-  const { user } = useAuth();
-  const { achievements, playerAchievements, loading: achievementsLoading, refreshAchievements } = useAchievements();
-  const [playerLevel, setPlayerLevel] = useState<PlayerLevel | null>(null);
-  const [activeMissions, setActiveMissions] = useState<any[]>([]);
-  const [loadingMissions, setLoadingMissions] = useState(true);
+  const { 
+    achievements, 
+    userProgress, 
+    dailyMissions, 
+    loading 
+  } = useAchievements();
 
-  useEffect(() => {
-    if (user) {
-      refreshAchievements();
-      fetchPlayerLevel();
-      fetchActiveMissions();
-    }
-  }, [user]);
-
-  const fetchPlayerLevel = async () => {
-    if (!user) return;
-    
-    try {
-      const { data, error } = await supabase
-        .from('player_levels')
-        .select('*, level_definition:level_definitions(*)')
-        .eq('player_id', user.id)
-        .single();
-      
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error fetching player level:', error);
-        return;
-      }
-      
-      if (data) {
-        setPlayerLevel(data);
-      } else {
-        // If no level data found, fetch the level 1 definition
-        const { data: levelDef } = await supabase
-          .from('level_definitions')
-          .select('*')
-          .eq('level', 1)
-          .single();
-          
-        setPlayerLevel({
-          id: 'new',
-          player_id: user.id,
-          current_level: 1,
-          current_xp: 0,
-          total_xp_earned: 0,
-          updated_at: new Date().toISOString(),
-          level_definition: levelDef || null
-        });
-      }
-    } catch (err) {
-      console.error('Error in fetchPlayerLevel:', err);
-    }
-  };
-
-  const fetchActiveMissions = async () => {
-    if (!user) return;
-    
-    setLoadingMissions(true);
-    
-    try {
-      const { data, error } = await supabase
-        .from('player_missions')
-        .select(`
-          id,
-          player_id,
-          mission_id,
-          progress,
-          completed_at,
-          expires_at,
-          daily_missions (
-            id,
-            name,
-            description,
-            reward_xp,
-            reward_chips,
-            requirements
-          )
-        `)
-        .eq('player_id', user.id)
-        .is('completed_at', null)
-        .gte('expires_at', new Date().toISOString());
-      
-      if (error) {
-        console.error('Error fetching missions:', error);
-        return;
-      }
-      
-      setActiveMissions(data || []);
-    } catch (err) {
-      console.error('Error in fetchActiveMissions:', err);
-    } finally {
-      setLoadingMissions(false);
-    }
-  };
-
-  // Calculate XP progress percentage to next level
-  const calculateProgress = (): number => {
-    if (!playerLevel || !playerLevel.level_definition) return 0;
-    
-    const currentLevel = playerLevel.current_level;
-    const nextLevelXp = playerLevel.level_definition.xp_required;
-    const prevLevelXp = currentLevel > 1 ? 
-      (playerLevel.level_definition.xp_required - (nextLevelXp * 0.75)) : 0;
-    
-    const currentLevelProgress = playerLevel.current_xp - prevLevelXp;
-    const levelRange = nextLevelXp - prevLevelXp;
-    
-    return Math.min(100, Math.max(0, (currentLevelProgress / levelRange) * 100));
-  };
-
-  const completedAchievementsCount = playerAchievements?.filter(a => a.completed).length || 0;
-  const totalAchievementsCount = achievements?.length || 0;
-  
-  const renderLevelCard = () => {
-    if (!playerLevel) {
-      return (
-        <Card className="bg-navy/20 border-navy/50">
-          <CardContent className="pt-6 text-center">
-            <div className="h-4 w-32 bg-navy/30 rounded-md mx-auto animate-pulse"></div>
-          </CardContent>
-        </Card>
-      );
-    }
-    
+  if (loading) {
     return (
-      <Card className="bg-gradient-to-r from-emerald/10 to-blue-500/10 border-emerald/20">
-        <CardContent className="pt-6">
-          <div className="flex justify-between items-center mb-4">
-            <div className="flex items-center gap-2">
-              <Star className="h-6 w-6 text-amber-400" />
-              <span className="text-xl font-bold">{t('achievements.level')} {playerLevel.current_level}</span>
-            </div>
-            <Badge variant="outline" className="bg-emerald/20 text-emerald border-emerald/40">
-              {playerLevel.level_definition?.title || `${t('achievements.level')} ${playerLevel.current_level}`}
-            </Badge>
-          </div>
-
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span>{t('achievements.currentXP')}: {playerLevel.current_xp} XP</span>
-              <span>
-                {playerLevel.level_definition?.xp_required} XP {t('achievements.toNextLevel')}
-              </span>
-            </div>
-            <Progress value={calculateProgress()} className="h-2 bg-navy/50" />
-            
-            <div className="mt-4 text-sm text-muted-foreground">
-              {t('achievements.totalXP')}: {playerLevel.total_xp_earned} XP
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <AppLayout>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="w-8 h-8 border-4 border-t-emerald rounded-full animate-spin"></div>
+        </div>
+      </AppLayout>
     );
-  };
-
-  const renderMissionsCard = () => {
-    if (loadingMissions) {
-      return (
-        <Card className="bg-navy/20 border-navy/50 h-64">
-          <CardHeader>
-            <CardTitle>{t('achievements.dailyMissions')}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {[1, 2, 3].map(i => (
-              <div key={i} className="h-12 bg-navy/30 rounded-md animate-pulse" />
-            ))}
-          </CardContent>
-        </Card>
-      );
-    }
-    
-    return (
-      <Card className="bg-navy/20 border-navy/50">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="h-5 w-5 text-emerald" />
-            {t('achievements.dailyMissions')}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {activeMissions.length > 0 ? (
-            <div className="space-y-4">
-              {activeMissions.map(mission => {
-                const missionData = mission.daily_missions;
-                if (!missionData) return null;
-                
-                return (
-                  <div key={mission.id} className="border border-navy/50 rounded-md p-3 bg-navy/30">
-                    <div className="flex justify-between">
-                      <h4 className="font-medium">{missionData.name}</h4>
-                      <Badge variant="outline" className="bg-emerald/10 text-emerald border-emerald/30">
-                        +{missionData.reward_xp} XP
-                      </Badge>
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-1">{missionData.description}</p>
-                    <div className="mt-2">
-                      <div className="flex justify-between text-xs mt-1 mb-1">
-                        <span>Progress</span>
-                        <span>{Math.round(mission.progress * 100)}%</span>
-                      </div>
-                      <Progress value={mission.progress * 100} className="h-1.5 bg-navy/40" />
-                    </div>
-                    {missionData.reward_chips > 0 && (
-                      <div className="text-xs text-amber-400 mt-1">
-                        {t('achievements.alsoEarn')} {missionData.reward_chips} chips
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="text-center py-8">
-              <Calendar className="h-8 w-8 mx-auto text-gray-400 mb-2" />
-              <p className="text-muted-foreground">
-                {t('achievements.noActiveMissions')}
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">
-                {t('achievements.checkBackLater')}
-              </p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    );
-  };
+  }
 
   return (
-    <div className="container py-6 max-w-5xl">
-      <div className="flex flex-col md:flex-row justify-between items-start mb-8 gap-4">
-        <div>
-          <h1 className="text-3xl font-bold">{t('achievements.title')}</h1>
-          <p className="text-muted-foreground">{t('achievements.description')}</p>
+    <AppLayout>
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="text-center">
+          <h1 className="text-4xl font-bold text-emerald mb-4">
+            {t('achievements.title', 'Achievements & Missions')}
+          </h1>
+          <p className="text-xl text-gray-400">
+            {t('achievements.description', 'Complete challenges and earn rewards')}
+          </p>
         </div>
 
-        <div className="flex gap-2 items-center bg-emerald/10 px-4 py-2 rounded-md">
-          <Trophy className="h-5 w-5 text-emerald" />
-          <span>
-            {completedAchievementsCount} / {totalAchievementsCount} {t('achievements.unlocked')}
-          </span>
-        </div>
-      </div>
+        {/* Player Level Progress */}
+        <Card className="bg-gradient-to-r from-emerald/20 to-gold/20 border-emerald/30">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-2xl font-bold text-white">
+                  {t('achievements.level', 'Level')} {userProgress?.level || 1}
+                </h2>
+                <p className="text-gray-300">
+                  {userProgress?.currentXP || 0} / {userProgress?.nextLevelXP || 1000} XP
+                </p>
+              </div>
+              <Award className="h-12 w-12 text-gold" />
+            </div>
+            <Progress 
+              value={(userProgress?.currentXP || 0) / (userProgress?.nextLevelXP || 1000) * 100} 
+              className="h-3 mb-2" 
+            />
+            <p className="text-sm text-gray-400">
+              {(userProgress?.nextLevelXP || 1000) - (userProgress?.currentXP || 0)} XP {t('achievements.toNextLevel', 'to next level')}
+            </p>
+          </CardContent>
+        </Card>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="md:col-span-2">
-          {renderLevelCard()}
-        </div>
-        <div>
-          {renderMissionsCard()}
-        </div>
-      </div>
-
-      <div className="mt-8">
-        <Tabs defaultValue="all">
-          <TabsList className="mb-4">
-            <TabsTrigger value="all">{t('achievements.all')}</TabsTrigger>
-            <TabsTrigger value="unlocked">{t('achievements.unlocked')}</TabsTrigger>
-            <TabsTrigger value="locked">{t('achievements.locked')}</TabsTrigger>
+        <Tabs defaultValue="achievements" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-2 bg-navy-light">
+            <TabsTrigger value="achievements" className="data-[state=active]:bg-emerald">
+              <Trophy className="h-4 w-4 mr-2" />
+              {t('achievements.all', 'All Achievements')}
+            </TabsTrigger>
+            <TabsTrigger value="missions" className="data-[state=active]:bg-emerald">
+              <Target className="h-4 w-4 mr-2" />
+              {t('achievements.dailyMissions', 'Daily Missions')}
+            </TabsTrigger>
           </TabsList>
-          
-          <TabsContent value="all">
-            <AchievementsSection 
-              achievements={playerAchievements || []} 
-              loading={achievementsLoading}
-            />
+
+          <TabsContent value="achievements">
+            {achievements.length > 0 ? (
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {achievements.map((achievement) => (
+                  <Card 
+                    key={achievement.id} 
+                    className={`border transition-all hover:border-emerald/50 ${
+                      achievement.completed ? 'bg-emerald/10 border-emerald/30' : 'bg-navy/50 border-gray-600'
+                    }`}
+                  >
+                    <CardHeader>
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="text-white">{achievement.title}</CardTitle>
+                        {achievement.completed && <Star className="h-5 w-5 text-gold fill-gold" />}
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-gray-300 mb-4">{achievement.description}</p>
+                      
+                      {achievement.progress !== undefined && (
+                        <div className="mb-4">
+                          <Progress 
+                            value={(achievement.progress / achievement.target) * 100} 
+                            className="h-2 mb-1" 
+                          />
+                          <p className="text-xs text-gray-400">
+                            {achievement.progress} / {achievement.target}
+                          </p>
+                        </div>
+                      )}
+
+                      <div className="flex items-center justify-between">
+                        <Badge variant={achievement.completed ? 'default' : 'secondary'}>
+                          {achievement.xpReward} XP
+                        </Badge>
+                        {achievement.completed && (
+                          <Badge className="bg-emerald">
+                            {t('achievements.unlocked', 'Unlocked')}
+                          </Badge>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <Card className="bg-navy/50 border-gray-600">
+                <CardContent className="p-12 text-center">
+                  <Trophy className="h-16 w-16 text-gray-500 mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold text-white mb-2">No Achievements Yet</h3>
+                  <p className="text-gray-400 mb-6">
+                    {t('achievements.playToUnlock', 'Play games and complete challenges to unlock achievements')}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
-          
-          <TabsContent value="unlocked">
-            <AchievementsSection 
-              achievements={(playerAchievements || []).filter(a => a.completed)} 
-              loading={achievementsLoading}
-            />
-          </TabsContent>
-          
-          <TabsContent value="locked">
-            <AchievementsSection 
-              achievements={(playerAchievements || []).filter(a => !a.completed)} 
-              loading={achievementsLoading}
-            />
+
+          <TabsContent value="missions">
+            {dailyMissions.length > 0 ? (
+              <div className="space-y-4">
+                {dailyMissions.map((mission) => (
+                  <Card key={mission.id} className="bg-navy/50 border-gray-600">
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <h3 className="text-lg font-semibold text-white mb-2">{mission.title}</h3>
+                          <p className="text-gray-300 mb-3">{mission.description}</p>
+                          
+                          <div className="mb-3">
+                            <Progress 
+                              value={(mission.progress / mission.target) * 100} 
+                              className="h-2 mb-1" 
+                            />
+                            <p className="text-sm text-gray-400">
+                              {mission.progress} / {mission.target}
+                            </p>
+                          </div>
+                        </div>
+                        
+                        <div className="ml-6 text-right">
+                          <Badge className="bg-emerald mb-2">{mission.xpReward} XP</Badge>
+                          <div className="flex items-center text-gray-400 text-sm">
+                            <Clock className="h-4 w-4 mr-1" />
+                            {mission.timeRemaining}
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <Card className="bg-navy/50 border-gray-600">
+                <CardContent className="p-12 text-center">
+                  <Target className="h-16 w-16 text-gray-500 mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold text-white mb-2">
+                    {t('achievements.noActiveMissions', 'No Active Missions')}
+                  </h3>
+                  <p className="text-gray-400">
+                    {t('achievements.checkBackLater', 'Check back later for new missions')}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
         </Tabs>
       </div>
-    </div>
+    </AppLayout>
   );
-}
+};
 
 export default AchievementsPage;

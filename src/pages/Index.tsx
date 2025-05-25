@@ -1,8 +1,10 @@
+
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/stores/auth';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import StarfallEffect from '@/components/effects/StarfallEffect';
 import { 
   Play, 
   Trophy, 
@@ -22,8 +24,9 @@ export default function Index() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-navy flex items-center justify-center">
-        <div className="max-w-6xl mx-auto px-4 text-center">
+      <div className="min-h-screen bg-navy flex items-center justify-center relative">
+        <StarfallEffect />
+        <div className="max-w-6xl mx-auto px-4 text-center relative z-10">
           <div className="mb-12">
             <h1 className="text-6xl font-bold text-emerald mb-6">
               Poker Galaxy
@@ -102,9 +105,10 @@ export default function Index() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
+    <div className="max-w-7xl mx-auto px-4 py-8 relative">
+      <StarfallEffect />
       {/* Welcome Section */}
-      <div className="text-center mb-12">
+      <div className="text-center mb-12 relative z-10">
         <h1 className="text-4xl font-bold text-emerald mb-4">
           {t('common.welcome', 'Welcome back')}, {user.alias || user.email}!
         </h1>
@@ -136,7 +140,7 @@ export default function Index() {
       </div>
 
       {/* Main Dashboard Grid */}
-      <div className="grid lg:grid-cols-3 gap-8">
+      <div className="grid lg:grid-cols-3 gap-8 relative z-10">
         {/* Primary Actions */}
         <div className="lg:col-span-2 space-y-6">
           <div className="grid md:grid-cols-2 gap-6">
@@ -280,7 +284,9 @@ export default function Index() {
               </div>
               <div className="mt-4 pt-4 border-t border-gray-600">
                 <Button variant="ghost" size="sm" className="w-full text-emerald hover:bg-emerald/10">
-                  View Full History
+                  <Link to="/profile" className="w-full">
+                    View Full History
+                  </Link>
                 </Button>
               </div>
             </CardContent>

@@ -1,99 +1,55 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { supabase } from '@/lib/supabase';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { useAuth } from '@/stores/auth';
+import { useTranslation } from '@/hooks/useTranslation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useAuth } from '@/stores/auth';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
-import { AlertCircle } from 'lucide-react';
-import TwoFactorAuth from '@/components/auth/TwoFactorAuth';
-import { useAccountSecurity } from '@/hooks/useAccountSecurity';
+import { AuthLayout } from '@/components/layout/AuthLayout';
+import { ArrowLeft, Mail, Lock } from 'lucide-react';
 
-const Login = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+const loginSchema = z.object({
+  email: z.string().email('Please enter a valid email address'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+});
+
+type LoginFormData = z.infer<typeof loginSchema>;
+
+export default function Login() {
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [showTwoFactor, setShowTwoFactor] = useState(false);
-  const [tempSession, setTempSession] = useState<any>(null);
-  const navigate = useNavigate();
-  const user = useAuth((s) => s.user);
+  const { signIn } = useAuth();
   const { toast } = useToast();
-  const { reportSuspiciousActivity } = useAccountSecurity();
+  const { t } = useTranslation();
+  const navigate = useNavigate();
 
-  // If user is already logged in, redirect to lobby
-  useEffect(() => {
-    if (user) {
-      navigate('/lobby', { replace: true });
-    }
-  }, [user, navigate]);
+  const form = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+  });
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    
-    if (!email || !password) {
-      setError("Email y contraseña son requeridos");
-      return;
-    }
-    
+  const onSubmit = async (data: LoginFormData) => {
     setLoading(true);
-    
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
-        password: password,
-      });
-
-      if (error) {
-        // Track failed login attempts
-        await reportSuspiciousActivity('FAILED_LOGIN', { 
-          email, 
-          error: error.message,
-          timestamp: new Date().toISOString()
-        });
-
-        if (error.message.includes('Invalid login credentials')) {
-          throw new Error('Email o contraseña incorrectos. Verifica tus datos.');
-        }
-        if (error.message.includes('Email not confirmed')) {
-          throw new Error('Tu email no ha sido confirmado. Revisa tu bandeja de entrada.');
-        }
-        if (error.message.includes('Too many requests')) {
-          throw new Error('Demasiados intentos de login. Espera unos minutos antes de intentar de nuevo.');
-        }
-        throw error;
-      }
-
-      if (data.user) {
-        // Check if user has 2FA enabled
-        const has2FA = data.user.user_metadata?.two_factor_enabled;
-        
-        if (has2FA) {
-          setTempSession(data.session);
-          setShowTwoFactor(true);
-          return;
-        }
-
-        // Check if email is verified
-        if (!data.user.email_confirmed_at) {
-          await supabase.auth.signOut();
-          throw new Error('Tu email no ha sido verificado. Revisa tu bandeja de entrada y confirma tu cuenta.');
-        }
-
-        toast({
-          title: "¡Sesión iniciada exitosamente!",
-        });
-        navigate('/lobby');
-      }
-    } catch (error: any) {
-      console.error("Login error:", error);
-      const errorMessage = error.message || "Error al iniciar sesión";
-      setError(errorMessage);
+      await signIn(data.email, data.password);
       toast({
-        title: "Error",
-        description: errorMessage,
+        title: "Welcome back!",
+        description: "You have successfully signed in.",
+      });
+      navigate('/');
+    } catch (error: any) {
+      console.error('Login error:', error);
+      toast({
+        title: "Sign in failed",
+        description: error.message || "Please check your credentials and try again.",
         variant: "destructive",
       });
     } finally {
@@ -101,95 +57,104 @@ const Login = () => {
     }
   };
 
-  const handleTwoFactorVerified = () => {
-    toast({
-      title: "¡Sesión iniciada exitosamente!",
-    });
-    navigate('/lobby');
-  };
-
-  if (showTwoFactor) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-navy p-4">
-        <TwoFactorAuth
-          mode="verify"
-          onSetupComplete={handleTwoFactorVerified}
-        />
-      </div>
-    );
-  }
-
   return (
-    <div className="flex min-h-screen items-center justify-center bg-navy p-4">
-      <div className="w-full max-w-md space-y-8 rounded-xl bg-navy/50 p-8 shadow-lg backdrop-blur-md border border-emerald/20">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-emerald">Bienvenido</h1>
-          <p className="text-gray-400 mt-2">Inicia sesión para acceder a tu dashboard de poker</p>
-        </div>
-        
-        {error && (
-          <div className="bg-red-900/20 border border-red-500/50 rounded-md p-3 flex items-start gap-3">
-            <AlertCircle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
-            <p className="text-sm text-red-200">{error}</p>
-          </div>
-        )}
-        
-        <form onSubmit={handleLogin} className="space-y-6">
-          <div className="space-y-2">
-            <label htmlFor="email" className="block text-sm font-medium text-gray-200">Email</label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="tu@ejemplo.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="w-full"
-              disabled={loading}
-              autoComplete="email"
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <label htmlFor="password" className="block text-sm font-medium text-gray-200">Contraseña</label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="w-full"
-              disabled={loading}
-              autoComplete="current-password"
-            />
-          </div>
-          
-          <Button 
-            type="submit" 
-            variant="primary" 
-            loading={loading}
-            fullWidth
-          >
-            {loading ? "Iniciando sesión..." : "Iniciar Sesión"}
+    <AuthLayout>
+      <div className="space-y-6">
+        {/* Back Button */}
+        <div className="flex items-center">
+          <Button variant="ghost" size="sm" asChild>
+            <Link to="/" className="flex items-center text-emerald hover:text-emerald/80">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Home
+            </Link>
           </Button>
-        </form>
-        
-        <div className="text-center text-gray-400 text-sm mt-6">
-          ¿No tienes una cuenta?{" "}
-          <Link to="/signup" className="text-emerald hover:underline">
-            Registrarse
-          </Link>
         </div>
-        
-        <div className="text-center text-gray-400 text-sm">
-          <Link to="/forgot-password" className="text-emerald hover:underline">
-            ¿Olvidaste tu contraseña?
-          </Link>
-        </div>
-      </div>
-    </div>
-  );
-};
 
-export default Login;
+        <Card className="bg-navy border-emerald/20">
+          <CardHeader className="space-y-1">
+            <CardTitle className="text-2xl text-center text-emerald">
+              {t('auth.signIn', 'Sign In')}
+            </CardTitle>
+            <CardDescription className="text-center text-gray-400">
+              Enter your credentials to access your account
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-white">{t('auth.email', 'Email')}</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                          <Input 
+                            placeholder="Enter your email" 
+                            className="pl-10" 
+                            {...field} 
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-white">{t('auth.password', 'Password')}</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                          <Input 
+                            type="password" 
+                            placeholder="Enter your password" 
+                            className="pl-10" 
+                            {...field} 
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="flex items-center justify-between">
+                  <Link 
+                    to="/forgot-password" 
+                    className="text-sm text-emerald hover:text-emerald/80 hover:underline"
+                  >
+                    {t('auth.forgotPassword', 'Forgot Password?')}
+                  </Link>
+                </div>
+
+                <Button 
+                  type="submit" 
+                  className="w-full bg-emerald hover:bg-emerald/90" 
+                  loading={loading}
+                >
+                  {t('auth.signIn', 'Sign In')}
+                </Button>
+              </form>
+            </Form>
+
+            <div className="mt-6 text-center">
+              <p className="text-gray-400">
+                {t('auth.dontHaveAccount', "Don't have an account?")}{' '}
+                <Link to="/signup" className="text-emerald hover:text-emerald/80 hover:underline">
+                  {t('auth.signUp', 'Sign Up')}
+                </Link>
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </AuthLayout>
+  );
+}

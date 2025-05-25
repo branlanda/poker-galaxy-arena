@@ -22,6 +22,10 @@ import Settings from '@/pages/settings/Settings';
 import SecuritySettingsPage from '@/pages/settings/SecuritySettings';
 import NotFound from '@/pages/NotFound';
 
+// Gamification Pages
+import AchievementsPage from '@/pages/Gamification/AchievementsPage';
+import LeaderboardsPage from '@/pages/Gamification/LeaderboardsPage';
+
 // Admin Routes
 import AdminRoutes from '@/router/AdminRoutes';
 import { TournamentsRoutes } from '@/router/TournamentsRoutes';
@@ -93,6 +97,19 @@ const AppContent = () => {
             <AppLayout>
               <SecuritySettingsPage />
             </AppLayout>
+          </ProtectedRoute>
+        } />
+
+        {/* Gamification Routes */}
+        <Route path="/achievements" element={
+          <ProtectedRoute>
+            <AchievementsPage />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/leaderboards" element={
+          <ProtectedRoute>
+            <LeaderboardsPage />
           </ProtectedRoute>
         } />
 
