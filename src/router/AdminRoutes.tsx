@@ -11,6 +11,8 @@ import KpiExport from '@/pages/Admin/KpiExport';
 import UserDetail from '@/pages/Admin/UserDetail';
 import AuditLogs from '@/pages/Admin/AuditLogs';
 import ChatModeration from '@/pages/Admin/ChatModeration';
+import InfrastructurePage from '@/pages/Admin/InfrastructurePage';
+import SupportPage from '@/pages/Admin/SupportPage';
 
 const AdminRoutes = () => {
   return (
@@ -32,6 +34,8 @@ const AdminRoutes = () => {
         <Route path="export" element={<KpiExport />} />
         <Route path="audit" element={<AuditLogs />} />
         <Route path="chat" element={<ChatModeration />} />
+        <Route path="infrastructure" element={<InfrastructurePage />} />
+        <Route path="support" element={<SupportPage />} />
       </Route>
     </Routes>
   );
