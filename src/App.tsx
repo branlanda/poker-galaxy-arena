@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import {
   BrowserRouter as Router,
@@ -5,6 +6,7 @@ import {
   Routes,
   Navigate
 } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useAuth } from '@/stores/auth';
 import { useAuthSync } from '@/hooks/useAuthSync';
 import { Toaster } from '@/components/ui/toaster';
@@ -21,6 +23,17 @@ import TournamentsPage from '@/pages/Tournaments';
 import Table from '@/pages/Game/GameRoom';
 import Admin from '@/pages/Admin/Dashboard';
 import ProfilePage from '@/pages/profile/ProfilePage';
+
+// Create a client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 function ProtectedRoute({ children }: { children: JSX.Element }) {
   const { session } = useAuth();
@@ -73,106 +86,108 @@ function App() {
   }, []);
 
   return (
-    <Router>
-      {!isOnline && (
-        <div className="fixed top-0 left-0 w-full bg-red-500 text-white text-center py-2 z-50">
-          You are currently offline. Some features may not be available.
-        </div>
-      )}
-      <Routes>
-        <Route path="/" element={<AppLayout><Index /></AppLayout>} />
-        <Route
-          path="/login"
-          element={
-            <AuthRoute>
-              <Login />
-            </AuthRoute>
-          }
-        />
-        <Route
-          path="/signup"
-          element={
-            <AuthRoute>
-              <SignUp />
-            </AuthRoute>
-          }
-        />
-        <Route
-          path="/lobby"
-          element={
-            <ProtectedRoute>
-              <AppLayout><Lobby /></AppLayout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/funds"
-          element={
-            <ProtectedRoute>
-              <AppLayout><Funds /></AppLayout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/settings"
-          element={
-            <ProtectedRoute>
-              <AppLayout><SettingsPage /></AppLayout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/leaderboards"
-          element={
-            <ProtectedRoute>
-              <AppLayout><LeaderboardsPage /></AppLayout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/tournaments"
-          element={
-            <ProtectedRoute>
-              <AppLayout><TournamentsPage /></AppLayout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/table/:id"
-          element={
-            <ProtectedRoute>
-              <AppLayout><Table /></AppLayout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/game/:id"
-          element={
-            <ProtectedRoute>
-              <AppLayout><Table /></AppLayout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin"
-          element={
-            <AdminRoute>
-              <AppLayout><Admin /></AppLayout>
-            </AdminRoute>
-          }
-        />
+    <QueryClientProvider client={queryClient}>
+      <Router>
+        {!isOnline && (
+          <div className="fixed top-0 left-0 w-full bg-red-500 text-white text-center py-2 z-50">
+            You are currently offline. Some features may not be available.
+          </div>
+        )}
+        <Routes>
+          <Route path="/" element={<AppLayout><Index /></AppLayout>} />
           <Route
-            path="/profile"
+            path="/login"
+            element={
+              <AuthRoute>
+                <Login />
+              </AuthRoute>
+            }
+          />
+          <Route
+            path="/signup"
+            element={
+              <AuthRoute>
+                <SignUp />
+              </AuthRoute>
+            }
+          />
+          <Route
+            path="/lobby"
             element={
               <ProtectedRoute>
-                <ProfilePage />
+                <AppLayout><Lobby /></AppLayout>
               </ProtectedRoute>
             }
           />
-      </Routes>
-      <Toaster />
-      <NotificationToastContainer />
-    </Router>
+          <Route
+            path="/funds"
+            element={
+              <ProtectedRoute>
+                <AppLayout><Funds /></AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <ProtectedRoute>
+                <AppLayout><SettingsPage /></AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/leaderboards"
+            element={
+              <ProtectedRoute>
+                <AppLayout><LeaderboardsPage /></AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/tournaments"
+            element={
+              <ProtectedRoute>
+                <AppLayout><TournamentsPage /></AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/table/:id"
+            element={
+              <ProtectedRoute>
+                <AppLayout><Table /></AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/game/:id"
+            element={
+              <ProtectedRoute>
+                <AppLayout><Table /></AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <AdminRoute>
+                <AppLayout><Admin /></AppLayout>
+              </AdminRoute>
+            }
+          />
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <ProfilePage />
+                </ProtectedRoute>
+              }
+            />
+        </Routes>
+        <Toaster />
+        <NotificationToastContainer />
+      </Router>
+    </QueryClientProvider>
   );
 }
 
