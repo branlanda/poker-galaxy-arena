@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/stores/auth';
 import { toast } from '@/hooks/use-toast';
+import { useTournamentNotifications } from '@/hooks/useTournamentNotifications';
 
 export interface Notification {
   id: string;
@@ -21,8 +22,25 @@ export function useNotifications() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>('');
   const { user } = useAuth();
+  const tournamentNotifications = useTournamentNotifications();
   
-  const unreadCount = notifications.filter(n => !n.is_read).length;
+  // Combine regular notifications with tournament notifications
+  const allNotifications = [
+    ...notifications,
+    ...tournamentNotifications.notifications.map(tn => ({
+      id: tn.id,
+      player_id: tn.player_id || '',
+      title: tn.title,
+      message: tn.message,
+      notification_type: tn.notification_type,
+      is_read: tn.is_read,
+      created_at: tn.created_at,
+      action_url: undefined,
+      expires_at: undefined
+    }))
+  ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  
+  const unreadCount = allNotifications.filter(n => !n.is_read).length;
   
   const fetchNotifications = async () => {
     if (!user) return;
@@ -55,6 +73,12 @@ export function useNotifications() {
   const markAsRead = async (id: string) => {
     if (!user) return;
     
+    // Check if it's a tournament notification
+    const isTournamentNotification = tournamentNotifications.notifications.find(tn => tn.id === id);
+    if (isTournamentNotification) {
+      return tournamentNotifications.markAsRead(id);
+    }
+    
     try {
       const { error: updateError } = await supabase
         .from('notifications')
@@ -84,6 +108,7 @@ export function useNotifications() {
     if (!user) return;
     
     try {
+      // Mark regular notifications as read
       const { error: updateError } = await supabase
         .from('notifications')
         .update({ is_read: true })
@@ -91,6 +116,12 @@ export function useNotifications() {
         .eq('is_read', false);
         
       if (updateError) throw updateError;
+      
+      // Mark tournament notifications as read
+      const unreadTournamentNotifications = tournamentNotifications.notifications.filter(tn => !tn.is_read);
+      for (const notification of unreadTournamentNotifications) {
+        await tournamentNotifications.markAsRead(notification.id);
+      }
       
       setNotifications(prevNotifications => 
         prevNotifications.map(notification => ({ ...notification, is_read: true }))
@@ -111,8 +142,8 @@ export function useNotifications() {
   }, [user]);
   
   return {
-    notifications,
-    loading,
+    notifications: allNotifications,
+    loading: loading || tournamentNotifications.loading,
     error,
     unreadCount,
     fetchNotifications,

@@ -131,6 +131,50 @@ export function useTournaments() {
     }
   };
 
+  const createTournamentNotification = async (
+    tournamentId: string,
+    type: 'tournament_starting' | 'tournament_started' | 'player_eliminated' | 'blind_level_change' | 'break_started' | 'break_ended' | 'final_table' | 'tournament_completed',
+    title: string,
+    message: string,
+    playerId?: string,
+    data?: any
+  ) => {
+    try {
+      const { error } = await supabase
+        .from('tournament_notifications')
+        .insert({
+          tournament_id: tournamentId,
+          player_id: playerId || null,
+          notification_type: type,
+          title,
+          message,
+          data: data || {}
+        });
+
+      if (error) throw error;
+    } catch (err: any) {
+      console.error('Error creating tournament notification:', err);
+    }
+  };
+
+  const notifyTournamentStarting = async (tournament: Tournament) => {
+    await createTournamentNotification(
+      tournament.id,
+      'tournament_starting',
+      'Tournament Starting Soon',
+      `${tournament.name} is starting in 5 minutes!`
+    );
+  };
+
+  const notifyBlindLevelChange = async (tournament: Tournament, newLevel: number) => {
+    await createTournamentNotification(
+      tournament.id,
+      'blind_level_change',
+      'Blind Level Increased',
+      `Blinds have increased to level ${newLevel} in ${tournament.name}`
+    );
+  };
+
   const refreshTournaments = () => {
     fetchTournaments();
   };
@@ -152,6 +196,9 @@ export function useTournaments() {
     fetchTournamentById,
     fetchTournamentRegistrations,
     fetchTournamentTables,
-    refreshTournaments
+    refreshTournaments,
+    createTournamentNotification,
+    notifyTournamentStarting,
+    notifyBlindLevelChange
   };
 }

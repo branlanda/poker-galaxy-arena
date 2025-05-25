@@ -3,6 +3,7 @@ import React from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Trophy, Star, Users, Calendar } from 'lucide-react';
 import { PlayerStatistics } from '@/hooks/useUserProfile';
+import { TournamentStatsSection } from '@/components/tournaments/TournamentStatsSection';
 
 interface StatisticsSectionProps {
   stats: PlayerStatistics;
@@ -59,19 +60,31 @@ export const StatisticsSection: React.FC<StatisticsSectionProps> = ({
   ];
   
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-      {statCards.map((stat, index) => (
-        <div 
-          key={index}
-          className="bg-navy/70 p-4 rounded-lg border border-emerald/10 flex flex-col"
-        >
-          <div className="flex items-center mb-2">
-            <div className="mr-2">{stat.icon}</div>
-            <div className="text-gray-400 text-sm">{stat.label}</div>
-          </div>
-          <div className="text-lg font-bold text-white">{stat.value}</div>
+    <div className="space-y-8">
+      {/* Cash Game Statistics */}
+      <div>
+        <h3 className="text-lg font-semibold text-white mb-4">{t('profile.cashGameStats', 'Cash Game Statistics')}</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {statCards.map((stat, index) => (
+            <div 
+              key={index}
+              className="bg-navy/70 p-4 rounded-lg border border-emerald/10 flex flex-col"
+            >
+              <div className="flex items-center mb-2">
+                <div className="mr-2">{stat.icon}</div>
+                <div className="text-gray-400 text-sm">{stat.label}</div>
+              </div>
+              <div className="text-lg font-bold text-white">{stat.value}</div>
+            </div>
+          ))}
         </div>
-      ))}
+      </div>
+
+      {/* Tournament Statistics */}
+      <div>
+        <h3 className="text-lg font-semibold text-white mb-4">{t('profile.tournamentStats', 'Tournament Statistics')}</h3>
+        <TournamentStatsSection />
+      </div>
     </div>
   );
 };
