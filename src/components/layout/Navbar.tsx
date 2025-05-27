@@ -41,17 +41,14 @@ export function Navbar() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center font-bold text-xl text-white">
-            <Avatar className="mr-2 w-8 h-8">
-              <AvatarImage src={user?.avatarUrl} />
-              <AvatarFallback>{user?.email?.charAt(0).toUpperCase()}</AvatarFallback>
-            </Avatar>
-            EtherPoker
+            <span className="text-2xl mr-2">🎰</span>
+            Poker Galaxy
           </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
             <Link to="/" className="text-gray-300 hover:text-emerald transition-colors">
-              {t('common.home', 'Inicio')}
+              {t('common.home', 'Home')}
             </Link>
             {session && (
               <Link to="/lobby" className="text-gray-300 hover:text-emerald transition-colors flex items-center">
@@ -62,19 +59,19 @@ export function Navbar() {
             {session && (
               <Link to="/tournaments" className="text-gray-300 hover:text-emerald transition-colors flex items-center">
                 <Trophy className="h-4 w-4 mr-1" />
-                Torneos
+                Tournaments
               </Link>
             )}
             <Link to="/how-to-play" className="text-gray-300 hover:text-emerald transition-colors flex items-center">
               <BookOpen className="h-4 w-4 mr-1" />
-              Cómo Jugar
+              How to Play
             </Link>
             {session && (
               <Link
                 to="/profile"
                 className="text-gray-300 hover:text-emerald transition-colors flex items-center"
               >
-                {t('common.profile', 'Perfil')}
+                {t('common.profile', 'Profile')}
               </Link>
             )}
             {session && (
@@ -83,7 +80,7 @@ export function Navbar() {
                 className="text-gray-300 hover:text-emerald transition-colors flex items-center"
               >
                 <BarChart3 className="h-4 w-4 mr-1" />
-                Historial
+                History
               </Link>
             )}
             {session ? (
@@ -99,14 +96,14 @@ export function Navbar() {
                 <DropdownMenuContent className="w-56 mr-2">
                   <DropdownMenuLabel>{user?.email}</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => navigate('/profile')}>Perfil</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/profile')}>Profile</DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate('/achievements')}>
                     <Target className="h-4 w-4 mr-2" />
-                    Logros
+                    🏆 Achievements
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate('/leaderboards')}>
                     <Trophy className="h-4 w-4 mr-2" />
-                    Clasificaciones
+                    📊 Leaderboards
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate('/admin')}>Admin</DropdownMenuItem>
                   <DropdownMenuSeparator />
@@ -137,7 +134,7 @@ export function Navbar() {
             {mobileMenuOpen && (
               <div className="absolute top-16 right-0 bg-navy rounded-md shadow-lg p-4 w-48 z-50 border border-emerald/20">
                 <Link to="/" className="block text-gray-300 hover:text-emerald transition-colors py-2">
-                  {t('common.home', 'Inicio')}
+                  {t('common.home', 'Home')}
                 </Link>
                 {session && (
                   <Link to="/lobby" className="block text-gray-300 hover:text-emerald transition-colors py-2 flex items-center">
@@ -148,19 +145,19 @@ export function Navbar() {
                 {session && (
                   <Link to="/tournaments" className="block text-gray-300 hover:text-emerald transition-colors py-2 flex items-center">
                     <Trophy className="h-4 w-4 mr-2" />
-                    Torneos
+                    Tournaments
                   </Link>
                 )}
                 <Link to="/how-to-play" className="block text-gray-300 hover:text-emerald transition-colors py-2 flex items-center">
                   <BookOpen className="h-4 w-4 mr-2" />
-                  Cómo Jugar
+                  How to Play
                 </Link>
                 {session && (
                   <Link
                     to="/profile"
                     className="block text-gray-300 hover:text-emerald transition-colors py-2"
                   >
-                    {t('common.profile', 'Perfil')}
+                    {t('common.profile', 'Profile')}
                   </Link>
                 )}
                 {session && (
@@ -168,7 +165,7 @@ export function Navbar() {
                     to="/hand-history"
                     className="block text-gray-300 hover:text-emerald transition-colors py-2"
                   >
-                    Historial
+                    History
                   </Link>
                 )}
                 {session ? (
