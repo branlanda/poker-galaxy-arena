@@ -32,14 +32,14 @@ export const HandHistoryFilters: React.FC<HandHistoryFiltersProps> = ({
       <CardHeader>
         <CardTitle className="text-white flex items-center">
           <Filter className="h-5 w-5 mr-2" />
-          Filtros de Historial
+          Hand History Filters
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Date Range */}
           <div className="space-y-2">
-            <Label className="text-white">Fecha Desde</Label>
+            <Label className="text-white">From Date</Label>
             <Input
               type="date"
               value={filters.dateFrom || ''}
@@ -49,7 +49,7 @@ export const HandHistoryFilters: React.FC<HandHistoryFiltersProps> = ({
           </div>
           
           <div className="space-y-2">
-            <Label className="text-white">Fecha Hasta</Label>
+            <Label className="text-white">To Date</Label>
             <Input
               type="date"
               value={filters.dateTo || ''}
@@ -60,16 +60,16 @@ export const HandHistoryFilters: React.FC<HandHistoryFiltersProps> = ({
 
           {/* Game Type */}
           <div className="space-y-2">
-            <Label className="text-white">Tipo de Juego</Label>
+            <Label className="text-white">Game Type</Label>
             <Select
               value={filters.gameType || 'ALL'}
               onValueChange={(value) => updateFilter('gameType', value)}
             >
               <SelectTrigger className="bg-navy/50 border-emerald/20 text-white">
-                <SelectValue placeholder="Todos" />
+                <SelectValue placeholder="All" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="ALL">Todos</SelectItem>
+                <SelectItem value="ALL">All</SelectItem>
                 <SelectItem value="TEXAS_HOLDEM">Texas Hold'em</SelectItem>
                 <SelectItem value="OMAHA">Omaha</SelectItem>
                 <SelectItem value="SEVEN_CARD_STUD">Seven Card Stud</SelectItem>
@@ -79,18 +79,18 @@ export const HandHistoryFilters: React.FC<HandHistoryFiltersProps> = ({
 
           {/* Table Type */}
           <div className="space-y-2">
-            <Label className="text-white">Tipo de Mesa</Label>
+            <Label className="text-white">Table Type</Label>
             <Select
               value={filters.tableType || 'ALL'}
               onValueChange={(value) => updateFilter('tableType', value)}
             >
               <SelectTrigger className="bg-navy/50 border-emerald/20 text-white">
-                <SelectValue placeholder="Todos" />
+                <SelectValue placeholder="All" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="ALL">Todos</SelectItem>
+                <SelectItem value="ALL">All</SelectItem>
                 <SelectItem value="CASH">Cash Game</SelectItem>
-                <SelectItem value="TOURNAMENT">Torneo</SelectItem>
+                <SelectItem value="TOURNAMENT">Tournament</SelectItem>
                 <SelectItem value="SIT_N_GO">Sit & Go</SelectItem>
               </SelectContent>
             </Select>
@@ -98,7 +98,7 @@ export const HandHistoryFilters: React.FC<HandHistoryFiltersProps> = ({
 
           {/* Result Filter */}
           <div className="space-y-2">
-            <Label className="text-white">Resultado</Label>
+            <Label className="text-white">Result</Label>
             <Select
               value={filters.result || 'ALL'}
               onValueChange={(value) => updateFilter('result', value as any)}
@@ -107,16 +107,16 @@ export const HandHistoryFilters: React.FC<HandHistoryFiltersProps> = ({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="ALL">Todos</SelectItem>
-                <SelectItem value="WINS">Solo Ganancias</SelectItem>
-                <SelectItem value="LOSSES">Solo Pérdidas</SelectItem>
+                <SelectItem value="ALL">All</SelectItem>
+                <SelectItem value="WINS">Wins Only</SelectItem>
+                <SelectItem value="LOSSES">Losses Only</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           {/* Pot Range */}
           <div className="space-y-2">
-            <Label className="text-white">Bote Mínimo</Label>
+            <Label className="text-white">Minimum Pot</Label>
             <Input
               type="number"
               placeholder="0"
@@ -127,10 +127,10 @@ export const HandHistoryFilters: React.FC<HandHistoryFiltersProps> = ({
           </div>
 
           <div className="space-y-2">
-            <Label className="text-white">Bote Máximo</Label>
+            <Label className="text-white">Maximum Pot</Label>
             <Input
               type="number"
-              placeholder="Sin límite"
+              placeholder="No limit"
               value={filters.maxPot || ''}
               onChange={(e) => updateFilter('maxPot', e.target.value ? Number(e.target.value) : undefined)}
               className="bg-navy/50 border-emerald/20 text-white"
@@ -139,9 +139,9 @@ export const HandHistoryFilters: React.FC<HandHistoryFiltersProps> = ({
 
           {/* Table Name */}
           <div className="space-y-2">
-            <Label className="text-white">Nombre de Mesa</Label>
+            <Label className="text-white">Table Name</Label>
             <Input
-              placeholder="Buscar mesa..."
+              placeholder="Search table..."
               value={filters.tableName || ''}
               onChange={(e) => updateFilter('tableName', e.target.value || undefined)}
               className="bg-navy/50 border-emerald/20 text-white"
@@ -152,11 +152,11 @@ export const HandHistoryFilters: React.FC<HandHistoryFiltersProps> = ({
         <div className="flex gap-2 pt-4">
           <Button onClick={onApplyFilters} className="bg-emerald text-white hover:bg-emerald/80">
             <Filter className="h-4 w-4 mr-2" />
-            Aplicar Filtros
+            Apply Filters
           </Button>
           <Button onClick={onResetFilters} variant="outline" className="border-emerald/20 text-white hover:bg-emerald/10">
             <RotateCcw className="h-4 w-4 mr-2" />
-            Limpiar
+            Clear
           </Button>
         </div>
       </CardContent>
