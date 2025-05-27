@@ -4,10 +4,11 @@ import SecuritySettings from '@/components/auth/SecuritySettings';
 import KycVerification from '@/components/kyc/KycVerification';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Shield, FileCheck } from 'lucide-react';
+import { AppLayout } from '@/components/layout/AppLayout';
 
 const SecuritySettingsPage: React.FC = () => {
   return (
-    <div className="container mx-auto px-4 py-8">
+    <AppLayout>
       <div className="max-w-4xl mx-auto">
         <div className="mb-6">
           <h1 className="text-3xl font-bold">Configuración de Seguridad</h1>
@@ -37,7 +38,7 @@ const SecuritySettingsPage: React.FC = () => {
           </TabsContent>
         </Tabs>
       </div>
-    </div>
+    </AppLayout>
   );
 };
 

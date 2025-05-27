@@ -16,6 +16,7 @@ import { useWalletStore } from '@/stores/wallet';
 import PaymentIntegration from '@/components/payments/PaymentIntegration';
 import KycVerification from '@/components/kyc/KycVerification';
 import SecurityDashboard from '@/components/security/SecurityDashboard';
+import { AppLayout } from '@/components/layout/AppLayout';
 
 const FundsPage = () => {
   const { data: balance, isLoading: isBalanceLoading, error: balanceError } = useBalance();
@@ -47,7 +48,7 @@ const FundsPage = () => {
   }, [balanceError, ledgerError, toast]);
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <AppLayout>
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
         <h1 className="text-3xl font-bold">Mi Billetera</h1>
         <div className="mt-4 sm:mt-0">
@@ -122,7 +123,7 @@ const FundsPage = () => {
       ) : (
         <LedgerTable entries={ledger || []} />
       )}
-    </div>
+    </AppLayout>
   );
 };
 
