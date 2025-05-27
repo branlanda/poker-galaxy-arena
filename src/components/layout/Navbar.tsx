@@ -1,6 +1,7 @@
+
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Logo } from '@/components/ui/logo';
+import { Logo } from '@/assets/Logo';
 import { useAuth } from '@/stores/auth';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -15,7 +16,7 @@ import {
 import { Menu } from 'lucide-react';
 
 const Navbar = () => {
-  const { user, signOut } = useAuth();
+  const { user, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
@@ -25,8 +26,7 @@ const Navbar = () => {
           {/* Logo */}
           <div className="flex items-center">
             <Link to="/" className="flex items-center space-x-2">
-              <Logo className="h-8 w-8" />
-              <span className="text-xl font-bold text-emerald">PokerPro</span>
+              <Logo size="sm" />
             </Link>
           </div>
 
@@ -60,12 +60,12 @@ const Navbar = () => {
             {user ? (
               <div className="flex items-center space-x-4">
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src={user.avatar_url} alt={user.username} />
+                  <AvatarImage src={user.avatarUrl} alt={user.alias} />
                   <AvatarFallback className="bg-emerald/20 text-emerald">
-                    {user.username?.charAt(0).toUpperCase()}
+                    {user.alias?.charAt(0).toUpperCase() || 'U'}
                   </AvatarFallback>
                 </Avatar>
-                <Button variant="secondary" size="sm" onClick={() => signOut()}>
+                <Button variant="secondary" size="sm" onClick={() => logout()}>
                   Sign Out
                 </Button>
               </div>
@@ -110,7 +110,7 @@ const Navbar = () => {
                     Leaderboards
                   </Link>
                   {user ? (
-                    <Button variant="secondary" size="sm" onClick={() => { signOut(); setMobileMenuOpen(false); }} className="w-full">
+                    <Button variant="secondary" size="sm" onClick={() => { logout(); setMobileMenuOpen(false); }} className="w-full">
                       Sign Out
                     </Button>
                   ) : (
@@ -126,9 +126,6 @@ const Navbar = () => {
           </div>
         </div>
       </div>
-
-      {/* Mobile Navigation */}
-      
     </nav>
   );
 };

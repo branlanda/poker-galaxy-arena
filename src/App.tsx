@@ -8,7 +8,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { NotificationToastContainer } from '@/components/notifications/NotificationToastContainer';
 import { GlobalPresenceTracker } from '@/components/presence/GlobalPresenceTracker';
 import { OfflineIndicator } from '@/components/network/OfflineIndicator';
-import { AppRoutes } from '@/components/routing/AppRoutes';
+import AppRoutes from '@/components/routing/AppRoutes';
 
 function App() {
   useAuthSync();
