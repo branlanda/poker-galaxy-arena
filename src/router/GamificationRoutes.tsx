@@ -1,21 +1,21 @@
 
 import { Routes, Route } from 'react-router-dom';
-import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import AchievementsPage from '@/pages/Gamification/AchievementsPage';
 import LeaderboardsPage from '@/pages/Gamification/LeaderboardsPage';
+import { AppLayout } from '@/components/layout/AppLayout';
 
 const GamificationRoutes = () => {
   return (
     <Routes>
-      <Route path="/achievements" element={
-        <ProtectedRoute>
+      <Route path="/" element={
+        <AppLayout>
           <AchievementsPage />
-        </ProtectedRoute>
+        </AppLayout>
       } />
       <Route path="/leaderboards" element={
-        <ProtectedRoute>
+        <AppLayout>
           <LeaderboardsPage />
-        </ProtectedRoute>
+        </AppLayout>
       } />
     </Routes>
   );

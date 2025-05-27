@@ -16,5 +16,8 @@
   "playToUnlock": "Play games and complete challenges to unlock achievements",
   "unlockedOn": "Unlocked on {{date}}",
   "rewardClaimed": "Reward Claimed",
-  "rewardCreditedToAccount": "Your reward has been credited to your account"
+  "rewardCreditedToAccount": "Your reward has been credited to your account",
+  "userProgress": "Your Progress",
+  "achievements": "Achievements",
+  "claim": "Claim"
 }

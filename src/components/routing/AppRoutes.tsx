@@ -16,8 +16,13 @@ import { TermsOfServicePage } from '@/pages/TermsOfServicePage';
 import { PrivacyPolicyPage } from '@/pages/PrivacyPolicyPage';
 import HowToPlayPage from '@/pages/HowToPlay/HowToPlayPage';
 import TournamentsRoutes from '@/router/TournamentsRoutes';
-import GamificationRoutes from '@/router/GamificationRoutes';
+import AchievementsPage from '@/pages/Gamification/AchievementsPage';
+import LeaderboardsPage from '@/pages/Gamification/LeaderboardsPage';
+import StatisticsPage from '@/pages/profile/StatisticsPage';
 import LobbyPage from '@/pages/Lobby/LobbyPage';
+import FundsPage from '@/pages/Funds/FundsPage';
+import SettingsPage from '@/pages/settings/Settings';
+import { AppLayout } from '@/components/layout/AppLayout';
 
 export function AppRoutes() {
   return (
@@ -66,6 +71,14 @@ export function AppRoutes() {
         }
       />
       <Route
+        path="/statistics"
+        element={
+          <ProtectedRoute>
+            <StatisticsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/game/:tableId"
         element={
           <ProtectedRoute>
@@ -85,7 +98,9 @@ export function AppRoutes() {
         path="/achievements"
         element={
           <ProtectedRoute>
-            <GamificationRoutes />
+            <AppLayout>
+              <AchievementsPage />
+            </AppLayout>
           </ProtectedRoute>
         }
       />
@@ -93,7 +108,25 @@ export function AppRoutes() {
         path="/leaderboards"
         element={
           <ProtectedRoute>
-            <GamificationRoutes />
+            <AppLayout>
+              <LeaderboardsPage />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/funds"
+        element={
+          <ProtectedRoute>
+            <FundsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/settings"
+        element={
+          <ProtectedRoute>
+            <SettingsPage />
           </ProtectedRoute>
         }
       />
