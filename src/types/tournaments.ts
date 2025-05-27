@@ -96,6 +96,8 @@ export interface TournamentRegistration {
   registration_time?: string;
   player_name?: string;
   player_avatar?: string;
+  final_position?: number;
+  payout?: number;
   profiles?: {
     alias?: string;
     avatar_url?: string;
