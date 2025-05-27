@@ -99,11 +99,11 @@ export function Navbar() {
                   <DropdownMenuItem onClick={() => navigate('/profile')}>Profile</DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate('/achievements')}>
                     <Target className="h-4 w-4 mr-2" />
-                    🏆 Achievements
+                    Achievements
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate('/leaderboards')}>
                     <Trophy className="h-4 w-4 mr-2" />
-                    📊 Leaderboards
+                    Leaderboards
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate('/admin')}>Admin</DropdownMenuItem>
                   <DropdownMenuSeparator />
