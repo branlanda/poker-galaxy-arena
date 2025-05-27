@@ -2453,6 +2453,110 @@ export type Database = {
           },
         ]
       }
+      sit_and_go_games: {
+        Row: {
+          blind_structure: Json
+          buy_in: number
+          created_at: string
+          created_by: string | null
+          current_level: number | null
+          finished_at: string | null
+          game_type: string
+          id: string
+          level_start_time: string | null
+          max_players: number
+          name: string
+          payout_structure: Json
+          started_at: string | null
+          starting_chips: number
+          status: string
+          winner_id: string | null
+        }
+        Insert: {
+          blind_structure?: Json
+          buy_in?: number
+          created_at?: string
+          created_by?: string | null
+          current_level?: number | null
+          finished_at?: string | null
+          game_type?: string
+          id?: string
+          level_start_time?: string | null
+          max_players?: number
+          name: string
+          payout_structure?: Json
+          started_at?: string | null
+          starting_chips?: number
+          status?: string
+          winner_id?: string | null
+        }
+        Update: {
+          blind_structure?: Json
+          buy_in?: number
+          created_at?: string
+          created_by?: string | null
+          current_level?: number | null
+          finished_at?: string | null
+          game_type?: string
+          id?: string
+          level_start_time?: string | null
+          max_players?: number
+          name?: string
+          payout_structure?: Json
+          started_at?: string | null
+          starting_chips?: number
+          status?: string
+          winner_id?: string | null
+        }
+        Relationships: []
+      }
+      sit_and_go_players: {
+        Row: {
+          chips: number
+          eliminated_at: string | null
+          final_position: number | null
+          game_id: string
+          id: string
+          joined_at: string
+          payout: number | null
+          player_id: string
+          seat_number: number
+          status: string
+        }
+        Insert: {
+          chips: number
+          eliminated_at?: string | null
+          final_position?: number | null
+          game_id: string
+          id?: string
+          joined_at?: string
+          payout?: number | null
+          player_id: string
+          seat_number: number
+          status?: string
+        }
+        Update: {
+          chips?: number
+          eliminated_at?: string | null
+          final_position?: number | null
+          game_id?: string
+          id?: string
+          joined_at?: string
+          payout?: number | null
+          player_id?: string
+          seat_number?: number
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sit_and_go_players_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "sit_and_go_games"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       special_events: {
         Row: {
           banner_url: string | null
