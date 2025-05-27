@@ -4,9 +4,10 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/stores/auth';
 
 export function useAuthSync() {
-  const setUser = useAuth((s) => s.setUser);
-  const setSession = useAuth((s) => s.setSession);
-  const setAdmin = useAuth((s) => s.setAdmin);
+  // Use individual selectors to avoid potential issues
+  const setUser = useAuth((state) => state.setUser);
+  const setSession = useAuth((state) => state.setSession);
+  const setAdmin = useAuth((state) => state.setAdmin);
   
   useEffect(() => {
     // Set up auth state listener FIRST to prevent missing auth events
