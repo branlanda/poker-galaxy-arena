@@ -8,9 +8,12 @@ import NotFound from '@/pages/NotFound';
 import { TournamentLobby, TournamentDetail } from '@/pages/Tournaments';
 import { AchievementsPage, LeaderboardsPage } from '@/pages/Gamification';
 import LobbyPage from '@/pages/Lobby/LobbyPage';
+import ProfilePage from '@/pages/profile/ProfilePage';
+import FundsPage from '@/pages/Funds/FundsPage';
 import { SitAndGoRoutes } from '@/router/SitAndGoRoutes';
 import { TournamentsRoutes } from '@/router/TournamentsRoutes';
 import { AuthRoute } from '@/components/routing/AuthRoute';
+import { ProtectedRoute } from '@/components/routing/ProtectedRoute';
 
 const AppRoutes = () => {
   return (
@@ -21,6 +24,23 @@ const AppRoutes = () => {
       <Route path="/sit-and-go/*" element={<SitAndGoRoutes />} />
       <Route path="/leaderboards" element={<LeaderboardsPage />} />
       <Route path="/achievements" element={<AchievementsPage />} />
+      
+      {/* Protected routes - only accessible when logged in */}
+      <Route path="/profile" element={
+        <ProtectedRoute>
+          <ProfilePage />
+        </ProtectedRoute>
+      } />
+      <Route path="/funds" element={
+        <ProtectedRoute>
+          <FundsPage />
+        </ProtectedRoute>
+      } />
+      <Route path="/settings" element={
+        <ProtectedRoute>
+          <ProfilePage />
+        </ProtectedRoute>
+      } />
       
       {/* Auth routes - only accessible when not logged in */}
       <Route path="/login" element={
