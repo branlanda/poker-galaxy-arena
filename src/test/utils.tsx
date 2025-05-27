@@ -1,8 +1,6 @@
-
-
 import React, { ReactElement } from 'react';
 import { render, RenderOptions } from '@testing-library/react';
-import { screen, fireEvent, waitFor } from '@testing-library/react';
+import { screen, fireEvent, waitFor } from '@testing-library/dom';
 import { BrowserRouter } from 'react-router-dom';
 import '@testing-library/jest-dom';
 
@@ -52,4 +50,3 @@ export { renderWithProviders as render };
 
 // Explicitly export commonly used utilities
 export { screen, fireEvent, waitFor };
-
