@@ -7,7 +7,6 @@ import GameRoom from '../GameRoom';
 import { useGameStore } from '@/stores/game';
 import { useAuth } from '@/stores/auth';
 import { useGameRoom } from '@/hooks/useGameRoom';
-import { BrowserRouter } from 'react-router-dom';
 
 // Mock hooks
 vi.mock('@/hooks/useGameRoom', () => ({
@@ -95,7 +94,7 @@ describe('GameRoom Integration Tests', () => {
   });
 
   it('renders the game room correctly', async () => {
-    render(<GameRoom />, { wrapper: BrowserRouter });
+    render(<GameRoom />);
     
     await waitFor(() => {
       expect(screen.getByText(/leave table/i)).toBeInTheDocument();
@@ -103,7 +102,7 @@ describe('GameRoom Integration Tests', () => {
   });
 
   it('handles sit down action', async () => {
-    render(<GameRoom />, { wrapper: BrowserRouter });
+    render(<GameRoom />);
     
     // Find a seat
     const seatButton = await screen.findByText(/Sit Here/i);
@@ -178,7 +177,7 @@ describe('GameRoom Integration Tests', () => {
       leaveTable: mockLeaveTable
     });
     
-    render(<GameRoom />, { wrapper: BrowserRouter });
+    render(<GameRoom />);
     
     // Check if action buttons are visible
     await waitFor(() => {
@@ -205,7 +204,7 @@ describe('GameRoom Integration Tests', () => {
       table: null
     });
     
-    render(<GameRoom />, { wrapper: BrowserRouter });
+    render(<GameRoom />);
     expect(screen.queryByText(/leave table/i)).not.toBeInTheDocument();
     expect(screen.getByText(/Test error/i)).toBeInTheDocument();
   });
@@ -248,7 +247,7 @@ describe('GameRoom Integration Tests', () => {
       leaveTable: mockLeaveTable
     });
     
-    render(<GameRoom />, { wrapper: BrowserRouter });
+    render(<GameRoom />);
     
     const leaveButton = screen.getByText(/Leave Table/i);
     expect(leaveButton).toBeInTheDocument();

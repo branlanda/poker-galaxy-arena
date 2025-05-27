@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { render, screen } from '@/test/utils';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import TournamentLobby from '@/pages/Tournaments/TournamentLobby';
 import { TournamentType, TournamentStatus } from '@/types/tournaments';
 

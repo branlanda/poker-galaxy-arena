@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@/test/utils';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import Login from './Login';
 import { AuthResponse } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
