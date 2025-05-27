@@ -62,10 +62,6 @@ export function Navbar() {
                 Tournaments
               </Link>
             )}
-            <Link to="/how-to-play" className="text-gray-300 hover:text-emerald transition-colors flex items-center">
-              <BookOpen className="h-4 w-4 mr-1" />
-              How to Play
-            </Link>
             {session && (
               <Link
                 to="/profile"
