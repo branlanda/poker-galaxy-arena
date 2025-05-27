@@ -22,7 +22,9 @@ export const HandHistoryFilters: React.FC<HandHistoryFiltersProps> = ({
   onResetFilters
 }) => {
   const updateFilter = (key: keyof Filters, value: any) => {
-    onFiltersChange({ ...filters, [key]: value });
+    // Convert "ALL" back to undefined for the filter
+    const filterValue = value === 'ALL' ? undefined : value;
+    onFiltersChange({ ...filters, [key]: filterValue });
   };
 
   return (
@@ -60,14 +62,14 @@ export const HandHistoryFilters: React.FC<HandHistoryFiltersProps> = ({
           <div className="space-y-2">
             <Label className="text-white">Tipo de Juego</Label>
             <Select
-              value={filters.gameType || ''}
-              onValueChange={(value) => updateFilter('gameType', value || undefined)}
+              value={filters.gameType || 'ALL'}
+              onValueChange={(value) => updateFilter('gameType', value)}
             >
               <SelectTrigger className="bg-navy/50 border-emerald/20 text-white">
                 <SelectValue placeholder="Todos" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todos</SelectItem>
+                <SelectItem value="ALL">Todos</SelectItem>
                 <SelectItem value="TEXAS_HOLDEM">Texas Hold'em</SelectItem>
                 <SelectItem value="OMAHA">Omaha</SelectItem>
                 <SelectItem value="SEVEN_CARD_STUD">Seven Card Stud</SelectItem>
@@ -79,14 +81,14 @@ export const HandHistoryFilters: React.FC<HandHistoryFiltersProps> = ({
           <div className="space-y-2">
             <Label className="text-white">Tipo de Mesa</Label>
             <Select
-              value={filters.tableType || ''}
-              onValueChange={(value) => updateFilter('tableType', value || undefined)}
+              value={filters.tableType || 'ALL'}
+              onValueChange={(value) => updateFilter('tableType', value)}
             >
               <SelectTrigger className="bg-navy/50 border-emerald/20 text-white">
                 <SelectValue placeholder="Todos" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todos</SelectItem>
+                <SelectItem value="ALL">Todos</SelectItem>
                 <SelectItem value="CASH">Cash Game</SelectItem>
                 <SelectItem value="TOURNAMENT">Torneo</SelectItem>
                 <SelectItem value="SIT_N_GO">Sit & Go</SelectItem>
