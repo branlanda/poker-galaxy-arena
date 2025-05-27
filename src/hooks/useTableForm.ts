@@ -10,8 +10,8 @@ export function useTableForm() {
   const [name, setName] = useState('');
   const [smallBlind, setSmallBlind] = useState(1);
   const [bigBlind, setBigBlind] = useState(2);
-  const [minBuyIn, setMinBuyIn] = useState(40); // 20x Big Blind
-  const [maxBuyIn, setMaxBuyIn] = useState(200); // 100x Big Blind
+  const [minBuyIn, setMinBuyIn] = useState(40);
+  const [maxBuyIn, setMaxBuyIn] = useState(200);
   const [maxPlayers, setMaxPlayers] = useState(9);
   const [tableType, setTableType] = useState<TableType>('CASH');
   const [isPrivate, setIsPrivate] = useState(false);
@@ -23,28 +23,60 @@ export function useTableForm() {
   const { t } = useTranslation();
   
   const handleSubmit = async () => {
-    // Validate buy-in ranges
-    if (minBuyIn > maxBuyIn) {
+    console.log('Submitting table creation with data:', {
+      name: name.trim(),
+      smallBlind,
+      bigBlind,
+      minBuyIn,
+      maxBuyIn,
+      maxPlayers,
+      tableType,
+      isPrivate,
+      password: isPrivate ? password : undefined,
+    });
+
+    // Validate required fields
+    if (!name.trim()) {
       toast({
-        title: "Error",
-        description: t('errors.minBuyInGreaterThanMax'),
+        title: "❌ Error",
+        description: t('errors.tableNameRequired', 'Table name is required'),
+        variant: "destructive",
+      });
+      return null;
+    }
+
+    // Validate buy-in ranges
+    if (minBuyIn >= maxBuyIn) {
+      toast({
+        title: "❌ Error",
+        description: t('errors.minBuyInGreaterThanMax', 'Minimum buy-in must be less than maximum buy-in'),
         variant: "destructive",
       });
       return null;
     }
 
     // Validate blinds vs buy-ins
-    if (minBuyIn < bigBlind * 20) {
+    if (minBuyIn < bigBlind * 10) {
       toast({
-        title: "Error",
-        description: t('errors.minBuyInTooLow'),
+        title: "❌ Error",
+        description: t('errors.minBuyInTooLow', 'Minimum buy-in should be at least 10x the big blind'),
+        variant: "destructive",
+      });
+      return null;
+    }
+
+    // Validate private table password
+    if (isPrivate && (!password || password.length < 3)) {
+      toast({
+        title: "❌ Error",
+        description: t('errors.privateTablePasswordRequired', 'Private tables require a password (at least 3 characters)'),
         variant: "destructive",
       });
       return null;
     }
 
     const newTable = await createTable({
-      name,
+      name: name.trim(),
       smallBlind,
       bigBlind,
       minBuyIn,
@@ -56,8 +88,13 @@ export function useTableForm() {
     });
     
     if (newTable) {
-      // Navigate to the new table
-      navigate(`/game/${newTable.id}`);
+      toast({
+        title: "🎉 Success!",
+        description: `Table "${name}" created successfully!`,
+      });
+      
+      // Navigate to the lobby to see the new table
+      navigate('/lobby');
       return newTable;
     }
     

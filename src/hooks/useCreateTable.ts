@@ -27,8 +27,8 @@ export function useCreateTable() {
   const createTable = async (params: CreateTableParams) => {
     if (!user) {
       toast({
-        title: t('error'),
-        description: t('mustBeLoggedIn'),
+        title: "❌ Error",
+        description: t('errors.mustBeLoggedIn', 'You must be logged in to create a table'),
         variant: 'destructive',
       });
       return null;
@@ -37,80 +37,68 @@ export function useCreateTable() {
     try {
       setLoading(true);
       
-      // Validation checks
+      console.log('Creating table with params:', params);
+      console.log('User creating table:', user);
+      
+      // Basic validation
       if (!params.name.trim()) {
-        throw new Error(t('tableNameRequired'));
+        throw new Error(t('errors.tableNameRequired', 'Table name is required'));
       }
       
-      if (params.name.length < 3 || params.name.length > 30) {
-        throw new Error(t('tableNameLength'));
+      if (params.name.length < 3 || params.name.length > 50) {
+        throw new Error(t('errors.tableNameLength', 'Table name must be between 3 and 50 characters'));
       }
       
       if (params.smallBlind <= 0) {
-        throw new Error(t('smallBlindPositive'));
+        throw new Error(t('errors.smallBlindPositive', 'Small blind must be positive'));
       }
       
       if (params.bigBlind <= params.smallBlind) {
-        throw new Error(t('bigBlindGreaterThanSmall'));
-      }
-      
-      // Validate buy-in ranges
-      if (params.minBuyIn > params.maxBuyIn) {
-        throw new Error(t('minBuyInGreaterThanMax'));
-      }
-
-      // Validate blinds vs buy-ins
-      if (params.minBuyIn < params.bigBlind * 20) {
-        throw new Error(t('minBuyInTooLow'));
-      }
-      
-      // Check if private table has password
-      if (params.isPrivate && (!params.password || params.password.length < 3)) {
-        throw new Error(t('privateTablePasswordRequired'));
+        throw new Error(t('errors.bigBlindGreaterThanSmall', 'Big blind must be greater than small blind'));
       }
       
       // Create the table in database
+      const tableData = {
+        name: params.name.trim(),
+        creator_id: user.id,
+        small_blind: params.smallBlind,
+        big_blind: params.bigBlind,
+        min_buy_in: params.minBuyIn,
+        max_buy_in: params.maxBuyIn,
+        max_players: params.maxPlayers,
+        table_type: params.tableType,
+        is_private: params.isPrivate,
+        password: params.isPrivate ? params.password : null,
+        status: 'WAITING',
+        current_players: 0,
+      };
+
+      console.log('Inserting table data:', tableData);
+
       const { data, error } = await supabase
         .from('lobby_tables')
-        .insert({
-          name: params.name,
-          creator_id: user.id,
-          small_blind: params.smallBlind,
-          big_blind: params.bigBlind,
-          min_buy_in: params.minBuyIn,
-          max_buy_in: params.maxBuyIn,
-          max_players: params.maxPlayers,
-          table_type: params.tableType,
-          is_private: params.isPrivate,
-          password: params.isPrivate ? params.password : null,
-          last_activity: new Date().toISOString(),
-        })
+        .insert(tableData)
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error creating table:', error);
+        throw new Error(`Failed to create table: ${error.message}`);
+      }
       
-      // Add the creator as a player at the table
-      const { error: joinError } = await supabase
-        .from('players_at_table')
-        .insert({
-          player_id: user.id,
-          table_id: data.id,
-          stack: params.minBuyIn,
-        });
-        
-      if (joinError) throw joinError;
+      console.log('Table created successfully:', data);
       
       toast({
-        title: t('success'),
-        description: t('tableCreatedSuccess', { name: params.name }),
+        title: "🎉 Success!",
+        description: `Table "${params.name}" created successfully!`,
       });
       
       return data;
     } catch (error: any) {
+      console.error('Create table error:', error);
       toast({
-        title: t('error'),
-        description: t('failedToCreateTable', { message: error.message }),
+        title: "❌ Error",
+        description: error.message || t('errors.failedToCreateTable', 'Failed to create table'),
         variant: 'destructive',
       });
       return null;
