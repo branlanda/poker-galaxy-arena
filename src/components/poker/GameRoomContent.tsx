@@ -1,22 +1,19 @@
 
 import React from 'react';
-import { GameContent } from './game-content/GameContent';
-import { GameSidebar } from './game-content/GameSidebar';
-import { PlayerAction } from '@/types/poker';
-import { LobbyTable, PlayerAtTable } from '@/types/lobby';
-import { GameState } from '@/types/game';
+import { GameTableManager } from './game/GameTableManager';
+import { GameState, PlayerState } from '@/types/poker';
 
 interface GameRoomContentProps {
   tableId: string;
-  tableData: LobbyTable;
-  players: PlayerAtTable[];
-  gameState?: GameState | null;
+  tableData: any;
+  players: PlayerState[];
+  gameState: GameState | null;
   isPlayerSeated: boolean;
   isPlayerTurn: boolean;
   isJoining: boolean;
   userId?: string;
-  onSitDown: (seatNumber: number, buyIn: number) => void;
-  onAction: (action: PlayerAction, amount?: number) => Promise<void>;
+  onSitDown: (seatNumber: number) => void;
+  onAction: (action: string, amount?: number) => void;
   onLeaveTable: () => void;
 }
 
@@ -34,28 +31,28 @@ export const GameRoomContent: React.FC<GameRoomContentProps> = ({
   onLeaveTable
 }) => {
   return (
-    <div className="flex flex-col lg:flex-row h-full gap-4 p-4">
-      <div className="lg:flex-1 order-2 lg:order-1">
-        <GameContent
-          tableId={tableId}
-          isPlayerSeated={isPlayerSeated}
-          isPlayerTurn={isPlayerTurn}
-          isJoining={isJoining}
-          onSitDown={onSitDown}
-          onAction={onAction}
-        />
+    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
+      {/* Main content area */}
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-white mb-2">
+            Poker Galaxy Arena
+          </h1>
+          <p className="text-emerald-300 text-lg">
+            Table: {tableData?.name || 'Unknown Table'}
+          </p>
+        </div>
+        
+        {/* Game information */}
+        <div className="text-center text-emerald-200 mb-8">
+          <p>Click the notification badge to open the poker table</p>
+        </div>
       </div>
-      
-      <div className="w-full lg:w-80 order-1 lg:order-2">
-        <GameSidebar
-          tableData={tableData}
-          tableId={tableId}
-          players={players}
-          gameState={gameState}
-          userId={userId}
-          onLeaveTable={onLeaveTable}
-        />
-      </div>
+
+      {/* Game Table Manager handles the modal and notifications */}
+      <GameTableManager
+        tableId={tableId}
+      />
     </div>
   );
 };
