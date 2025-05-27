@@ -23,6 +23,7 @@ import LobbyPage from '@/pages/Lobby/LobbyPage';
 import FundsPage from '@/pages/Funds/FundsPage';
 import SettingsPage from '@/pages/settings/Settings';
 import { AppLayout } from '@/components/layout/AppLayout';
+import NotFound from '@/pages/NotFound';
 
 export function AppRoutes() {
   return (
@@ -46,14 +47,7 @@ export function AppRoutes() {
       <Route path="/terms" element={<TermsOfServicePage />} />
       <Route path="/privacy" element={<PrivacyPolicyPage />} />
       <Route path="/how-to-play" element={<HowToPlayPage />} />
-      <Route
-        path="/"
-        element={
-          <ProtectedRoute>
-            <HomePage />
-          </ProtectedRoute>
-        }
-      />
+      <Route path="/" element={<HomePage />} />
       <Route
         path="/lobby"
         element={
@@ -147,6 +141,7 @@ export function AppRoutes() {
         }
       />
       <Route path="/shared-hand/:shareCode" element={<SharedHandPage />} />
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 }

@@ -62,11 +62,9 @@ export default function Login() {
       <div className="space-y-6">
         {/* Back Button */}
         <div className="flex items-center">
-          <Button variant="ghost" size="sm" asChild>
-            <Link to="/" className="flex items-center text-emerald hover:text-emerald/80">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Home
-            </Link>
+          <Button variant="ghost" size="sm" onClick={() => navigate('/')}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Home
           </Button>
         </div>
 
@@ -147,7 +145,7 @@ export default function Login() {
             <div className="mt-6 text-center">
               <p className="text-gray-400">
                 {t('auth.dontHaveAccount', "Don't have an account?")}{' '}
-                <Link to="/signup" className="text-emerald hover:text-emerald/80 hover:underline">
+                <Link to="/register" className="text-emerald hover:text-emerald/80 hover:underline">
                   {t('auth.signUp', 'Sign Up')}
                 </Link>
               </p>
