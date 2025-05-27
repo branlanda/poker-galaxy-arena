@@ -1,6 +1,6 @@
 
 import React, { ReactElement } from 'react';
-import { render, RenderOptions } from '@testing-library/react';
+import { render, RenderOptions, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import '@testing-library/jest-dom';
 
@@ -47,3 +47,6 @@ export * from '@testing-library/react';
 
 // Export our custom render as the default render
 export { renderWithProviders as render };
+
+// Explicitly export the commonly used utilities
+export { screen, fireEvent, waitFor };
