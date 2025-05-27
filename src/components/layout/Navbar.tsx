@@ -41,7 +41,7 @@ export function Navbar() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center font-bold text-xl text-white">
-            <span className="text-2xl mr-2">🎰</span>
+            <span className="text-2xl mr-2">🃏</span>
             Poker Galaxy
           </Link>
 

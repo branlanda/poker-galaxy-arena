@@ -23,7 +23,7 @@ const AchievementsPage = () => {
 
   if (loading) {
     return (
-      <AppLayout>
+      <AppLayout showBreadcrumbs={false}>
         <div className="flex items-center justify-center min-h-[50vh]">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald"></div>
         </div>
@@ -32,7 +32,7 @@ const AchievementsPage = () => {
   }
 
   return (
-    <AppLayout>
+    <AppLayout showBreadcrumbs={false}>
       <div className="space-y-6">
         {/* Header */}
         <div className="text-center">

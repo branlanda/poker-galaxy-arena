@@ -6,7 +6,6 @@ import { LobbyFilters } from '@/components/lobby/LobbyFilters';
 import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
 import { useTranslation } from '@/hooks/useTranslation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LobbyHeader } from '@/components/lobby/LobbyHeader';
 import { TableGroups } from '@/components/lobby/TableGroups';
 import { LoadingState } from '@/components/lobby/LoadingState';
 import { EmptyState } from '@/components/lobby/EmptyState';
@@ -15,6 +14,12 @@ import { useTableGrouping } from '@/hooks/useTableGrouping';
 import { useDeviceInfo } from '@/hooks/use-mobile';
 import { Toaster } from '@/components/ui/toaster';
 import { useToast } from '@/hooks/use-toast';
+import { AppLayout } from '@/components/layout/AppLayout';
+import { Button } from '@/components/ui/button';
+import { RefreshCcw, Trophy, Target, Users } from 'lucide-react';
+import { CreateTableDialog } from '@/components/lobby/CreateTableDialog';
+import { useAuth } from '@/stores/auth';
+import { Link } from 'react-router-dom';
 
 export default function LobbyPage() {
   const [filters, setFilters] = useState<TableFilters>({
@@ -42,6 +47,7 @@ export default function LobbyPage() {
   const { newTableIds, groupAndSortTables } = useTableGrouping(tables);
   const { isMobile, deviceType } = useDeviceInfo();
   const { toast } = useToast();
+  const { user } = useAuth();
   
   // Set up intersection observer for infinite scrolling
   const bottomInView = useIntersectionObserver(bottomRef, {
@@ -95,76 +101,133 @@ export default function LobbyPage() {
   };
 
   return (
-    <motion.div 
-      initial="hidden"
-      animate="show"
-      variants={containerAnimation}
-      className={`container mx-auto px-4 py-6 ${isMobile ? 'pb-16' : ''}`}
-      drag={isMobile ? "x" : false}
-      dragConstraints={{ left: 0, right: 0 }}
-      onDragEnd={(e, info) => {
-        if (Math.abs(info.offset.x) > 100) {
-          handleSwipeAction(info.offset.x > 0 ? 'right' : 'left');
-        }
-      }}
-    >
-      <Toaster />
-      
-      <motion.div variants={itemAnimation}>
-        <LobbyHeader onRefresh={refreshTables} loading={loading} />
-      </motion.div>
-      
-      <motion.div variants={itemAnimation} className="mt-4">
-        <LobbyFilters
-          filters={filters}
-          onFilterChange={handleFilterChange}
-        />
-      </motion.div>
-      
-      <AnimatePresence mode="wait">
-        <motion.div 
-          className="mt-6 space-y-8"
-          key={loading && tables.length === 0 ? 'loading' : 'content'}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
-        >
-          {loading && tables.length === 0 ? (
-            <LoadingState />
-          ) : tables.length > 0 ? (
-            <>
-              <TableGroups 
-                tables={tables}
-                groupAndSortTables={groupAndSortTables}
-                newTableIds={newTableIds}
-              />
-              
-              <InfiniteScrollIndicator 
-                bottomRef={bottomRef}
-                hasMore={hasMore}
-                loading={loading}
-              />
-            </>
-          ) : (
-            <EmptyState onResetFilters={handleResetFilters} />
-          )}
-        </motion.div>
-      </AnimatePresence>
-
-      {/* Mobile-specific navigation hint */}
-      {isMobile && (
-        <motion.div 
-          className="fixed bottom-4 left-0 right-0 flex justify-center z-50"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1, duration: 0.5 }}
-        >
-          <div className="bg-navy/80 backdrop-blur-sm text-white px-4 py-2 rounded-full shadow-lg text-sm border border-emerald/20">
-            {t('lobby.swipeToNavigate')} ↔️
+    <AppLayout showBreadcrumbs={false}>
+      <motion.div 
+        initial="hidden"
+        animate="show"
+        variants={containerAnimation}
+        className={`space-y-6 ${isMobile ? 'pb-16' : ''}`}
+        drag={isMobile ? "x" : false}
+        dragConstraints={{ left: 0, right: 0 }}
+        onDragEnd={(e, info) => {
+          if (Math.abs(info.offset.x) > 100) {
+            handleSwipeAction(info.offset.x > 0 ? 'right' : 'left');
+          }
+        }}
+      >
+        <Toaster />
+        
+        {/* Navigation Bar */}
+        <motion.div variants={itemAnimation} className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <nav className="flex items-center gap-2">
+              <Button variant="ghost" size="sm">
+                <Link to="/tournaments" className="flex items-center text-gray-300 hover:text-emerald">
+                  <Trophy className="h-4 w-4 mr-2" />
+                  {t('tournaments.lobby', 'Tournaments')}
+                </Link>
+              </Button>
+              <Button variant="ghost" size="sm">
+                <Link to="/leaderboards" className="flex items-center text-gray-300 hover:text-emerald">
+                  <Users className="h-4 w-4 mr-2" />
+                  {t('leaderboards.title', 'Leaderboards')}
+                </Link>
+              </Button>
+              {user && (
+                <Button variant="ghost" size="sm">
+                  <Link to="/achievements" className="flex items-center text-gray-300 hover:text-emerald">
+                    <Target className="h-4 w-4 mr-2" />
+                    {t('achievements.title', 'Achievements')}
+                  </Link>
+                </Button>
+              )}
+            </nav>
           </div>
+          
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={refreshTables}
+              disabled={loading}
+              className="hidden sm:flex"
+            >
+              <RefreshCcw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+              {t('common.refresh', 'Refresh')}
+            </Button>
+            
+            {user ? (
+              <CreateTableDialog />
+            ) : (
+              <Button onClick={() => window.location.href = '/login'}>
+                {t('auth.login', 'Log In to Create Tables')}
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {/* Page Header */}
+        <motion.div variants={itemAnimation} className="text-center">
+          <h1 className="text-3xl font-bold text-emerald mb-2">
+            {t('lobby.title', 'Poker Tables Lobby')}
+          </h1>
+          <p className="text-gray-400">
+            {t('lobby.joinTable', 'Join an existing table or create your own')}
+          </p>
         </motion.div>
-      )}
-    </motion.div>
+        
+        <motion.div variants={itemAnimation}>
+          <LobbyFilters
+            filters={filters}
+            onFilterChange={handleFilterChange}
+          />
+        </motion.div>
+        
+        <AnimatePresence mode="wait">
+          <motion.div 
+            className="space-y-8"
+            key={loading && tables.length === 0 ? 'loading' : 'content'}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            {loading && tables.length === 0 ? (
+              <LoadingState />
+            ) : tables.length > 0 ? (
+              <>
+                <TableGroups 
+                  tables={tables}
+                  groupAndSortTables={groupAndSortTables}
+                  newTableIds={newTableIds}
+                />
+                
+                <InfiniteScrollIndicator 
+                  bottomRef={bottomRef}
+                  hasMore={hasMore}
+                  loading={loading}
+                />
+              </>
+            ) : (
+              <EmptyState onResetFilters={handleResetFilters} />
+            )}
+          </motion.div>
+        </AnimatePresence>
+
+        {/* Mobile-specific navigation hint */}
+        {isMobile && (
+          <motion.div 
+            className="fixed bottom-4 left-0 right-0 flex justify-center z-50"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1, duration: 0.5 }}
+          >
+            <div className="bg-navy/80 backdrop-blur-sm text-white px-4 py-2 rounded-full shadow-lg text-sm border border-emerald/20">
+              {t('lobby.swipeToNavigate')} ↔️
+            </div>
+          </motion.div>
+        )}
+      </motion.div>
+    </AppLayout>
   );
 }
