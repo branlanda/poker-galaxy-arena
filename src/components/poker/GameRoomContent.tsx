@@ -2,11 +2,12 @@
 import React from 'react';
 import { GameTableManager } from './game/GameTableManager';
 import { GameState, PlayerState } from '@/types/poker';
+import { PlayerAtTable } from '@/types/lobby';
 
 interface GameRoomContentProps {
   tableId: string;
   tableData: any;
-  players: PlayerState[];
+  players: PlayerAtTable[];
   gameState: GameState | null;
   isPlayerSeated: boolean;
   isPlayerTurn: boolean;

@@ -7,6 +7,7 @@ import { GameRoomLoader } from '@/components/poker/GameRoomLoader';
 import { GameRoomError } from '@/components/poker/GameRoomError';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/stores/auth';
+import { PlayerAction } from '@/types/poker';
 
 export default function GameRoom() {
   const { tableId } = useParams<{ tableId: string }>();
@@ -117,6 +118,11 @@ export default function GameRoom() {
     }
   }, [table, loading, navigate]);
 
+  // Create async wrapper for handleAction
+  const handleActionAsync = async (action: string, amount?: number) => {
+    await handleAction(action as PlayerAction, amount);
+  };
+
   // Show loading state
   if (loading || gameLoading) {
     return <GameRoomLoader />;
@@ -139,7 +145,7 @@ export default function GameRoom() {
       isJoining={false}
       userId={userId}
       onSitDown={handleSitDown}
-      onAction={handleAction}
+      onAction={handleActionAsync}
       onLeaveTable={leaveTable}
     />
   );

@@ -4,11 +4,32 @@ import { GameModal } from './GameModal';
 import { GameNotificationBadge } from './GameNotificationBadge';
 import { useGameRoom } from '@/hooks/useGameRoom';
 import { PlayerAction } from '@/types/poker';
+import { PlayerAtTable } from '@/types/lobby';
+import { PlayerState } from '@/types/poker';
 
 interface GameTableManagerProps {
   tableId?: string;
   onClose?: () => void;
 }
+
+// Helper function to transform PlayerAtTable to PlayerState
+const transformPlayerAtTableToPlayerState = (player: PlayerAtTable): PlayerState => {
+  return {
+    id: player.id,
+    gameId: '', // This will be set by the game state
+    playerId: player.player_id,
+    playerName: player.player_name || `Player ${player.player_id.substring(0, 4)}`,
+    seatNumber: player.seat_number || 0,
+    stack: player.stack,
+    holeCards: undefined,
+    status: player.status as any,
+    currentBet: 0,
+    isDealer: false,
+    isSmallBlind: false,
+    isBigBlind: false,
+    createdAt: player.joined_at
+  };
+};
 
 export const GameTableManager: React.FC<GameTableManagerProps> = ({
   tableId,
@@ -51,18 +72,34 @@ export const GameTableManager: React.FC<GameTableManagerProps> = ({
     setPlayerHandVisible(!playerHandVisible);
   };
 
+  // Transform players data to PlayerState format
+  const transformedPlayers: PlayerState[] = players.map(transformPlayerAtTableToPlayerState);
+
   const playerState = isPlayerSeated && playerSeatIndex !== undefined ? 
-    players.find(p => p.seatNumber === playerSeatIndex) : undefined;
+    transformedPlayers.find(p => p.seatNumber === playerSeatIndex) : undefined;
 
   // Don't render anything if loading or no game
   if (loading || gameLoading || !gameState) {
     return null;
   }
 
+  // Create a compatible game state for the modal
+  const compatibleGameState = {
+    ...gameState,
+    id: gameState.id || 'temp-id',
+    lastActionTime: gameState.lastActionTime || new Date().toISOString(),
+    createdAt: gameState.createdAt || new Date().toISOString()
+  };
+
   // Calculate notification data
-  const activeTables = players.length > 0 ? 1 : 0;
+  const activeTables = transformedPlayers.length > 0 ? 1 : 0;
   const totalPot = gameState.pot || 0;
   const hasNotifications = isPlayerTurn || gameState.phase === 'SHOWDOWN';
+
+  // Async wrapper for handleAction
+  const handleActionAsync = async (action: PlayerAction, amount?: number) => {
+    await handleAction(action, amount);
+  };
 
   return (
     <>
@@ -79,8 +116,8 @@ export const GameTableManager: React.FC<GameTableManagerProps> = ({
       <GameModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-        game={gameState}
-        players={players}
+        game={compatibleGameState}
+        players={transformedPlayers}
         userId={userId}
         playerHandVisible={playerHandVisible}
         isJoining={false}
@@ -88,7 +125,7 @@ export const GameTableManager: React.FC<GameTableManagerProps> = ({
         isPlayerTurn={isPlayerTurn}
         playerState={playerState}
         onSitDown={handleSitDown}
-        onAction={handleAction}
+        onAction={handleActionAsync}
         onLeaveTable={leaveTable}
         onToggleHandVisibility={handleToggleHandVisibility}
       />
