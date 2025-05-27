@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useToast } from "@/hooks/use-toast"
 import { useNavigate } from 'react-router-dom';
-import { Moon, Sun, Menu, BarChart3, BookOpen, Trophy, Users, Target } from 'lucide-react';
+import { Moon, Sun, Menu, BarChart3, BookOpen, Trophy, Users, Target, Wallet } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 
 export function Navbar() {
@@ -83,6 +83,15 @@ export function Navbar() {
                 History
               </Link>
             )}
+            {session && (
+              <Link
+                to="/funds"
+                className="text-gray-300 hover:text-emerald transition-colors flex items-center"
+              >
+                <Wallet className="h-4 w-4 mr-1" />
+                Wallet
+              </Link>
+            )}
             {session ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -104,6 +113,10 @@ export function Navbar() {
                   <DropdownMenuItem onClick={() => navigate('/leaderboards')}>
                     <Trophy className="h-4 w-4 mr-2" />
                     Leaderboards
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/funds')}>
+                    <Wallet className="h-4 w-4 mr-2" />
+                    Wallet
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate('/admin')}>Admin</DropdownMenuItem>
                   <DropdownMenuSeparator />
@@ -166,6 +179,15 @@ export function Navbar() {
                     className="block text-gray-300 hover:text-emerald transition-colors py-2"
                   >
                     History
+                  </Link>
+                )}
+                {session && (
+                  <Link
+                    to="/funds"
+                    className="block text-gray-300 hover:text-emerald transition-colors py-2 flex items-center"
+                  >
+                    <Wallet className="h-4 w-4 mr-2" />
+                    Wallet
                   </Link>
                 )}
                 {session ? (

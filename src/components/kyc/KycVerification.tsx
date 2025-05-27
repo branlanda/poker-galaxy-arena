@@ -4,342 +4,323 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Shield, Upload, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { Upload, CheckCircle, Clock, AlertCircle, Shield, FileText, Camera } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-interface KycData {
-  firstName: string;
-  lastName: string;
-  dateOfBirth: string;
-  nationality: string;
-  documentType: string;
-  documentNumber: string;
-  address: string;
-  city: string;
-  postalCode: string;
-  country: string;
-}
-
-interface DocumentUpload {
-  front: File | null;
-  back: File | null;
-  selfie: File | null;
-  proofOfAddress: File | null;
+interface KycLevel {
+  level: number;
+  name: string;
+  description: string;
+  requirements: string[];
+  limits: string;
+  status: 'completed' | 'pending' | 'rejected' | 'not_started';
 }
 
 const KycVerification: React.FC = () => {
-  const [kycData, setKycData] = useState<KycData>({
-    firstName: '',
-    lastName: '',
-    dateOfBirth: '',
-    nationality: '',
-    documentType: '',
-    documentNumber: '',
-    address: '',
-    city: '',
-    postalCode: '',
-    country: ''
-  });
-  
-  const [documents, setDocuments] = useState<DocumentUpload>({
-    front: null,
-    back: null,
-    selfie: null,
-    proofOfAddress: null
-  });
-  
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [verificationStatus, setVerificationStatus] = useState<'pending' | 'verified' | 'rejected' | null>(null);
   const { toast } = useToast();
+  const [uploading, setUploading] = useState(false);
+  const [documents, setDocuments] = useState({
+    id_front: null as File | null,
+    id_back: null as File | null,
+    proof_of_address: null as File | null,
+    selfie: null as File | null
+  });
 
-  const handleInputChange = (field: keyof KycData, value: string) => {
-    setKycData(prev => ({ ...prev, [field]: value }));
-  };
+  const kycLevels: KycLevel[] = [
+    {
+      level: 1,
+      name: 'Verificación Básica',
+      description: 'Verificación de identidad básica',
+      requirements: ['Documento de identidad válido'],
+      limits: 'Límite de depósito: $1,000/mes',
+      status: 'completed'
+    },
+    {
+      level: 2,
+      name: 'Verificación Estándar',
+      description: 'Verificación completa de identidad',
+      requirements: ['Documento de identidad', 'Selfie con documento'],
+      limits: 'Límite de depósito: $10,000/mes',
+      status: 'pending'
+    },
+    {
+      level: 3,
+      name: 'Verificación Premium',
+      description: 'Verificación completa con comprobante de domicilio',
+      requirements: ['Documento de identidad', 'Selfie', 'Comprobante de domicilio'],
+      limits: 'Sin límites de depósito',
+      status: 'not_started'
+    }
+  ];
 
-  const handleFileUpload = (type: keyof DocumentUpload, file: File | null) => {
+  const handleFileUpload = (type: keyof typeof documents, file: File) => {
     setDocuments(prev => ({ ...prev, [type]: file }));
+    toast({
+      title: "Archivo cargado",
+      description: `${file.name} ha sido cargado exitosamente`,
+    });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-
+  const handleSubmitVerification = async () => {
+    setUploading(true);
     try {
-      // Validate required fields
-      if (!kycData.firstName || !kycData.lastName || !kycData.documentNumber) {
-        throw new Error('Por favor complete todos los campos obligatorios');
-      }
-
-      if (!documents.front || !documents.selfie) {
-        throw new Error('Por favor suba al menos la foto del documento frontal y selfie');
-      }
-
-      // Simulate KYC submission
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      // Simular envío de documentos
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
-      setVerificationStatus('pending');
       toast({
-        title: "KYC Enviado",
-        description: "Su documentación ha sido enviada para verificación. Recibirá una respuesta en 24-48 horas.",
+        title: "Documentos enviados",
+        description: "Tus documentos han sido enviados para revisión. Te notificaremos el resultado en 1-3 días hábiles.",
       });
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Error al enviar documentación';
       toast({
         title: "Error",
-        description: errorMessage,
+        description: "No se pudieron enviar los documentos. Intenta nuevamente.",
         variant: "destructive",
       });
     } finally {
-      setIsSubmitting(false);
+      setUploading(false);
     }
   };
 
-  const getStatusIcon = () => {
-    switch (verificationStatus) {
-      case 'verified':
+  const getStatusIcon = (status: KycLevel['status']) => {
+    switch (status) {
+      case 'completed':
         return <CheckCircle className="h-5 w-5 text-green-500" />;
+      case 'pending':
+        return <Clock className="h-5 w-5 text-yellow-500" />;
       case 'rejected':
         return <AlertCircle className="h-5 w-5 text-red-500" />;
-      case 'pending':
-        return <Loader2 className="h-5 w-5 text-yellow-500 animate-spin" />;
       default:
-        return <Shield className="h-5 w-5" />;
+        return <Shield className="h-5 w-5 text-gray-400" />;
     }
   };
 
-  if (verificationStatus === 'verified') {
-    return (
-      <Card>
-        <CardContent className="pt-6">
-          <div className="text-center space-y-4">
-            <CheckCircle className="h-16 w-16 text-green-500 mx-auto" />
-            <h3 className="text-xl font-semibold">Verificación Completada</h3>
-            <p className="text-muted-foreground">
-              Su identidad ha sido verificada exitosamente. Ahora puede acceder a todas las funciones de la plataforma.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
+  const getStatusBadge = (status: KycLevel['status']) => {
+    switch (status) {
+      case 'completed':
+        return <Badge className="bg-green-100 text-green-800">Completado</Badge>;
+      case 'pending':
+        return <Badge className="bg-yellow-100 text-yellow-800">Pendiente</Badge>;
+      case 'rejected':
+        return <Badge className="bg-red-100 text-red-800">Rechazado</Badge>;
+      default:
+        return <Badge variant="secondary">No iniciado</Badge>;
+    }
+  };
 
   return (
-    <Card className="w-full max-w-2xl mx-auto">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          {getStatusIcon()}
-          Verificación de Identidad (KYC)
-        </CardTitle>
-        <p className="text-sm text-muted-foreground">
-          Complete este proceso para cumplir con las regulaciones y acceder a todas las funciones.
-        </p>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Personal Information */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium">Información Personal</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="firstName">Nombre *</Label>
-                <Input
-                  id="firstName"
-                  value={kycData.firstName}
-                  onChange={(e) => handleInputChange('firstName', e.target.value)}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="lastName">Apellido *</Label>
-                <Input
-                  id="lastName"
-                  value={kycData.lastName}
-                  onChange={(e) => handleInputChange('lastName', e.target.value)}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="dateOfBirth">Fecha de Nacimiento *</Label>
-                <Input
-                  id="dateOfBirth"
-                  type="date"
-                  value={kycData.dateOfBirth}
-                  onChange={(e) => handleInputChange('dateOfBirth', e.target.value)}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="nationality">Nacionalidad</Label>
-                <Select onValueChange={(value) => handleInputChange('nationality', value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleccione su nacionalidad" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="AR">Argentina</SelectItem>
-                    <SelectItem value="BR">Brasil</SelectItem>
-                    <SelectItem value="CL">Chile</SelectItem>
-                    <SelectItem value="CO">Colombia</SelectItem>
-                    <SelectItem value="MX">México</SelectItem>
-                    <SelectItem value="PE">Perú</SelectItem>
-                    <SelectItem value="UY">Uruguay</SelectItem>
-                    <SelectItem value="US">Estados Unidos</SelectItem>
-                    <SelectItem value="ES">España</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Shield className="h-5 w-5" />
+            Verificación KYC (Know Your Customer)
+          </CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Verifica tu identidad para aumentar los límites de tu cuenta y acceder a todas las funcionalidades.
+          </p>
+        </CardHeader>
+      </Card>
 
-          {/* Document Information */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium">Documento de Identidad</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="documentType">Tipo de Documento *</Label>
-                <Select onValueChange={(value) => handleInputChange('documentType', value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleccione tipo de documento" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="dni">DNI</SelectItem>
-                    <SelectItem value="passport">Pasaporte</SelectItem>
-                    <SelectItem value="license">Licencia de Conducir</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="documentNumber">Número de Documento *</Label>
-                <Input
-                  id="documentNumber"
-                  value={kycData.documentNumber}
-                  onChange={(e) => handleInputChange('documentNumber', e.target.value)}
-                  required
-                />
-              </div>
-            </div>
-          </div>
+      <Tabs defaultValue="levels" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="levels">Niveles de Verificación</TabsTrigger>
+          <TabsTrigger value="upload">Subir Documentos</TabsTrigger>
+        </TabsList>
 
-          {/* Address Information */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium">Dirección</h3>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="address">Dirección Completa</Label>
-                <Input
-                  id="address"
-                  value={kycData.address}
-                  onChange={(e) => handleInputChange('address', e.target.value)}
-                />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="city">Ciudad</Label>
-                  <Input
-                    id="city"
-                    value={kycData.city}
-                    onChange={(e) => handleInputChange('city', e.target.value)}
-                  />
+        <TabsContent value="levels" className="space-y-4">
+          {kycLevels.map((level) => (
+            <Card key={level.level} className="relative">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    {getStatusIcon(level.status)}
+                    <div>
+                      <CardTitle className="text-lg">Nivel {level.level} - {level.name}</CardTitle>
+                      <p className="text-sm text-muted-foreground">{level.description}</p>
+                    </div>
+                  </div>
+                  {getStatusBadge(level.status)}
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="postalCode">Código Postal</Label>
-                  <Input
-                    id="postalCode"
-                    value={kycData.postalCode}
-                    onChange={(e) => handleInputChange('postalCode', e.target.value)}
-                  />
+              </CardHeader>
+              <CardContent>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <h4 className="font-medium mb-2">Requisitos:</h4>
+                    <ul className="space-y-1">
+                      {level.requirements.map((req, index) => (
+                        <li key={index} className="text-sm flex items-center gap-2">
+                          <CheckCircle className="h-3 w-3 text-green-500" />
+                          {req}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div>
+                    <h4 className="font-medium mb-2">Límites:</h4>
+                    <p className="text-sm text-muted-foreground">{level.limits}</p>
+                  </div>
                 </div>
+              </CardContent>
+            </Card>
+          ))}
+        </TabsContent>
+
+        <TabsContent value="upload" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Subir Documentos</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Sube los documentos requeridos para completar tu verificación KYC.
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="country">País</Label>
-                  <Select onValueChange={(value) => handleInputChange('country', value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Seleccione país" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="AR">Argentina</SelectItem>
-                      <SelectItem value="BR">Brasil</SelectItem>
-                      <SelectItem value="CL">Chile</SelectItem>
-                      <SelectItem value="CO">Colombia</SelectItem>
-                      <SelectItem value="MX">México</SelectItem>
-                      <SelectItem value="PE">Perú</SelectItem>
-                      <SelectItem value="UY">Uruguay</SelectItem>
-                      <SelectItem value="US">Estados Unidos</SelectItem>
-                      <SelectItem value="ES">España</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Label htmlFor="id-front">Documento de Identidad (Frente)</Label>
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                    <FileText className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+                    <Input
+                      id="id-front"
+                      type="file"
+                      accept="image/*,.pdf"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleFileUpload('id_front', file);
+                      }}
+                      className="hidden"
+                    />
+                    <Label htmlFor="id-front" className="cursor-pointer">
+                      <Button variant="outline" asChild>
+                        <span>
+                          <Upload className="h-4 w-4 mr-2" />
+                          Seleccionar archivo
+                        </span>
+                      </Button>
+                    </Label>
+                    {documents.id_front && (
+                      <p className="text-sm text-green-600 mt-2">
+                        ✓ {documents.id_front.name}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="id-back">Documento de Identidad (Reverso)</Label>
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                    <FileText className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+                    <Input
+                      id="id-back"
+                      type="file"
+                      accept="image/*,.pdf"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleFileUpload('id_back', file);
+                      }}
+                      className="hidden"
+                    />
+                    <Label htmlFor="id-back" className="cursor-pointer">
+                      <Button variant="outline" asChild>
+                        <span>
+                          <Upload className="h-4 w-4 mr-2" />
+                          Seleccionar archivo
+                        </span>
+                      </Button>
+                    </Label>
+                    {documents.id_back && (
+                      <p className="text-sm text-green-600 mt-2">
+                        ✓ {documents.id_back.name}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="selfie">Selfie con Documento</Label>
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                    <Camera className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+                    <Input
+                      id="selfie"
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleFileUpload('selfie', file);
+                      }}
+                      className="hidden"
+                    />
+                    <Label htmlFor="selfie" className="cursor-pointer">
+                      <Button variant="outline" asChild>
+                        <span>
+                          <Camera className="h-4 w-4 mr-2" />
+                          Tomar/Seleccionar foto
+                        </span>
+                      </Button>
+                    </Label>
+                    {documents.selfie && (
+                      <p className="text-sm text-green-600 mt-2">
+                        ✓ {documents.selfie.name}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="proof-address">Comprobante de Domicilio</Label>
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                    <FileText className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+                    <Input
+                      id="proof-address"
+                      type="file"
+                      accept="image/*,.pdf"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleFileUpload('proof_of_address', file);
+                      }}
+                      className="hidden"
+                    />
+                    <Label htmlFor="proof-address" className="cursor-pointer">
+                      <Button variant="outline" asChild>
+                        <span>
+                          <Upload className="h-4 w-4 mr-2" />
+                          Seleccionar archivo
+                        </span>
+                      </Button>
+                    </Label>
+                    {documents.proof_of_address && (
+                      <p className="text-sm text-green-600 mt-2">
+                        ✓ {documents.proof_of_address.name}
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
 
-          {/* Document Upload */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium">Subir Documentos</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="front">Documento Frontal *</Label>
-                <Input
-                  id="front"
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => handleFileUpload('front', e.target.files?.[0] || null)}
-                />
+              <div className="border rounded-lg p-4 bg-blue-50">
+                <h4 className="font-medium text-blue-900 mb-2">Información importante:</h4>
+                <ul className="text-sm text-blue-800 space-y-1">
+                  <li>• Los documentos deben estar en formato JPG, PNG o PDF</li>
+                  <li>• Asegúrate de que la información sea legible y no esté borrosa</li>
+                  <li>• Los documentos deben estar vigentes</li>
+                  <li>• El procesamiento puede tomar entre 1-3 días hábiles</li>
+                </ul>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="back">Documento Reverso</Label>
-                <Input
-                  id="back"
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => handleFileUpload('back', e.target.files?.[0] || null)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="selfie">Selfie con Documento *</Label>
-                <Input
-                  id="selfie"
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => handleFileUpload('selfie', e.target.files?.[0] || null)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="proofOfAddress">Comprobante de Domicilio</Label>
-                <Input
-                  id="proofOfAddress"
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => handleFileUpload('proofOfAddress', e.target.files?.[0] || null)}
-                />
-              </div>
-            </div>
-          </div>
 
-          <Button 
-            type="submit" 
-            className="w-full" 
-            disabled={isSubmitting || verificationStatus === 'pending'}
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Enviando documentación...
-              </>
-            ) : verificationStatus === 'pending' ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Verificación en proceso...
-              </>
-            ) : (
-              <>
-                <Upload className="h-4 w-4 mr-2" />
-                Enviar para Verificación
-              </>
-            )}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+              <Button
+                onClick={handleSubmitVerification}
+                disabled={uploading || !documents.id_front}
+                className="w-full"
+              >
+                {uploading ? "Enviando..." : "Enviar Documentos para Verificación"}
+              </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
   );
 };
 

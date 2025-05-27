@@ -1,7 +1,8 @@
+
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, BarChart3 } from 'lucide-react';
+import { ArrowLeft, BarChart3, Shield } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from '@/hooks/useTranslation';
 import { usePlayerStatistics } from '@/hooks/usePlayerStatistics';
@@ -12,6 +13,7 @@ import { GameHistoryTable } from '@/components/profile/GameHistoryTable';
 import { AccountSettings } from '@/components/profile/AccountSettings';
 import { FriendsSection } from '@/components/profile/FriendsSection';
 import { AvatarSelector } from '@/components/profile/AvatarSelector';
+import SecuritySettings from '@/components/auth/SecuritySettings';
 import StarfallEffect from '@/components/effects/StarfallEffect';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
@@ -66,7 +68,7 @@ export default function ProfilePage() {
 
         {/* Main Content Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 mb-8">
+          <TabsList className="grid w-full grid-cols-5 mb-8">
             <TabsTrigger value="overview" className="text-white">
               {t('profile.overview', 'Resumen')}
             </TabsTrigger>
@@ -78,6 +80,10 @@ export default function ProfilePage() {
             </TabsTrigger>
             <TabsTrigger value="settings" className="text-white">
               {t('profile.settings', 'Configuración')}
+            </TabsTrigger>
+            <TabsTrigger value="security" className="text-white">
+              <Shield className="h-4 w-4 mr-2" />
+              Seguridad
             </TabsTrigger>
           </TabsList>
 
@@ -115,6 +121,10 @@ export default function ProfilePage() {
 
           <TabsContent value="settings" className="space-y-6">
             <AccountSettings />
+          </TabsContent>
+
+          <TabsContent value="security" className="space-y-6">
+            <SecuritySettings />
           </TabsContent>
         </Tabs>
 

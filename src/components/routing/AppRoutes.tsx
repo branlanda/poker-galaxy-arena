@@ -22,6 +22,7 @@ import StatisticsPage from '@/pages/profile/StatisticsPage';
 import LobbyPage from '@/pages/Lobby/LobbyPage';
 import FundsPage from '@/pages/Funds/FundsPage';
 import SettingsPage from '@/pages/settings/Settings';
+import SecuritySettingsPage from '@/pages/settings/SecuritySettings';
 import { AppLayout } from '@/components/layout/AppLayout';
 import NotFound from '@/pages/NotFound';
 
@@ -121,6 +122,14 @@ export function AppRoutes() {
         element={
           <ProtectedRoute>
             <SettingsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/settings/security"
+        element={
+          <ProtectedRoute>
+            <SecuritySettingsPage />
           </ProtectedRoute>
         }
       />
