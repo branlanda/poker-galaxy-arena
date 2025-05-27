@@ -83,15 +83,6 @@ export function Navbar() {
                 History
               </Link>
             )}
-            {session && (
-              <Link
-                to="/funds"
-                className="text-gray-300 hover:text-emerald transition-colors flex items-center"
-              >
-                <Wallet className="h-4 w-4 mr-1" />
-                Wallet
-              </Link>
-            )}
             {session ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
