@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { GameModal } from './GameModal';
 import { GameNotificationBadge } from './GameNotificationBadge';
 import { useGameRoom } from '@/hooks/useGameRoom';
-import { PlayerAction } from '@/types/poker';
+import { PlayerAction, GameState as PokerGameState } from '@/types/poker';
 import { PlayerAtTable } from '@/types/lobby';
 import { PlayerState } from '@/types/poker';
 
@@ -28,6 +28,27 @@ const transformPlayerAtTableToPlayerState = (player: PlayerAtTable): PlayerState
     isSmallBlind: false,
     isBigBlind: false,
     createdAt: player.joined_at
+  };
+};
+
+// Helper function to transform game state to poker game state
+const transformGameStateToPokerGameState = (gameState: any): PokerGameState => {
+  return {
+    id: gameState.tableId || 'temp-id',
+    tableId: gameState.tableId,
+    phase: gameState.phase,
+    pot: gameState.pot,
+    currentBet: gameState.currentBet,
+    communityCards: (gameState.communityCards || []).map((card: any) => ({
+      suit: card.suit,
+      value: card.value,
+      code: card.code || `${card.value}${card.suit.charAt(0).toUpperCase()}`
+    })),
+    lastActionTime: new Date().toISOString(),
+    createdAt: new Date().toISOString(),
+    dealerSeat: gameState.dealer,
+    activeSeat: gameState.seats?.findIndex((seat: any) => seat?.playerId === gameState.activePlayerId),
+    activePlayerId: gameState.activePlayerId
   };
 };
 
@@ -84,12 +105,7 @@ export const GameTableManager: React.FC<GameTableManagerProps> = ({
   }
 
   // Create a compatible game state for the modal
-  const compatibleGameState = {
-    ...gameState,
-    id: gameState.id || 'temp-id',
-    lastActionTime: gameState.lastActionTime || new Date().toISOString(),
-    createdAt: gameState.createdAt || new Date().toISOString()
-  };
+  const compatibleGameState = transformGameStateToPokerGameState(gameState);
 
   // Calculate notification data
   const activeTables = transformedPlayers.length > 0 ? 1 : 0;

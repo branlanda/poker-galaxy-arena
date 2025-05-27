@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { GameTable } from './GameTable';
 import { GameControls } from './GameControls';
-import { GameState, PlayerState } from '@/types/poker';
+import { GameState, PlayerState, PlayerAction } from '@/types/poker';
 
 interface GameModalProps {
   isOpen: boolean;
@@ -20,7 +20,7 @@ interface GameModalProps {
   isPlayerTurn: boolean;
   playerState?: PlayerState;
   onSitDown: (seatNumber: number) => void;
-  onAction: (action: string, amount?: number) => void;
+  onAction: (action: PlayerAction, amount?: number) => Promise<void>;
   onLeaveTable: () => void;
   onToggleHandVisibility: () => void;
 }
