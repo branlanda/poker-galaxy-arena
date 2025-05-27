@@ -164,7 +164,7 @@ export default function LobbyPage() {
               </Button>
             )}
           </div>
-        </div>
+        </motion.div>
 
         {/* Page Header */}
         <motion.div variants={itemAnimation} className="text-center">
