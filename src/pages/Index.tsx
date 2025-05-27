@@ -1,11 +1,10 @@
-
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/stores/auth';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import StarfallEffect from '@/components/effects/StarfallEffect';
-import { Navbar } from '@/components/layout/Navbar';
+import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { 
   Play, 
