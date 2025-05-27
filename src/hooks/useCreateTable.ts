@@ -83,6 +83,12 @@ export function useCreateTable() {
 
       if (error) {
         console.error('Error creating table:', error);
+        
+        // Handle specific error for table limit
+        if (error.message?.includes('No puedes crear más de 3 mesas')) {
+          throw new Error('Ya tienes el máximo de 3 mesas activas. Cierra una mesa antes de crear otra.');
+        }
+        
         throw new Error(`Failed to create table: ${error.message}`);
       }
       

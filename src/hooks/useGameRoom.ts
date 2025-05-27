@@ -47,13 +47,17 @@ export function useGameRoom(tableId: string | undefined) {
     TURN_TIMEOUT_MS
   });
 
+  // Enhanced error handling for RLS issues
+  const enhancedGameError = gameError || 
+    (table && !gameState && !gameLoading ? 'No se pudo cargar el estado del juego. Verifica que tengas permisos para acceder a esta mesa.' : null);
+
   return {
     table,
     players,
     gameState,
     loading,
     gameLoading,
-    gameError,
+    gameError: enhancedGameError,
     isPlayerSeated,
     isPlayerTurn,
     playerSeatIndex,

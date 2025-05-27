@@ -1,3 +1,4 @@
+
 import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useGameRoom } from '@/hooks/useGameRoom';
@@ -36,7 +37,7 @@ export default function GameRoom() {
         description: "You need to be logged in to access the game room",
         variant: "destructive",
       });
-      navigate('/auth/login', { replace: true });
+      navigate('/login', { replace: true });
     }
   }, [user, loading, navigate]);
 
@@ -112,7 +113,7 @@ export default function GameRoom() {
         description: "This table has been closed",
         variant: "destructive",
       });
-      navigate('/tables');
+      navigate('/lobby');
     }
   }, [table, loading, navigate]);
 
@@ -123,7 +124,8 @@ export default function GameRoom() {
 
   // Show error state if there's an issue
   if (gameError || !table) {
-    return <GameRoomError error={gameError} onBack={() => navigate('/tables')} />;
+    const errorMessage = gameError || 'Table not found or you do not have permission to access it';
+    return <GameRoomError error={errorMessage} onBack={() => navigate('/lobby')} />;
   }
 
   return (
