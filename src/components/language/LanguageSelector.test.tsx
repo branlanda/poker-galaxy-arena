@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent } from '@/test/utils';
 import { LanguageSelector } from './LanguageSelector';
 import { useLanguage } from '@/stores/language';
 import { I18nextProvider } from 'react-i18next';

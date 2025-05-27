@@ -1,14 +1,13 @@
 
 import React from 'react';
-import { render, screen } from '@testing-library/react';
-import { BrowserRouter } from 'react-router-dom';
+import { render, screen } from '@/test/utils';
 import TournamentLobby from '@/pages/Tournaments/TournamentLobby';
 import { TournamentType, TournamentStatus } from '@/types/tournaments';
 
 // Mock the hooks
-jest.mock('@/hooks/useTournaments');
-jest.mock('@/hooks/useTranslation');
-jest.mock('@/stores/auth');
+vi.mock('@/hooks/useTournaments');
+vi.mock('@/hooks/useTranslation');
+vi.mock('@/stores/auth');
 
 const mockUseTournaments = require('@/hooks/useTournaments').useTournaments;
 const mockUseTranslation = require('@/hooks/useTranslation').useTranslation;
@@ -51,16 +50,12 @@ describe('TournamentLobby', () => {
         type: 'ALL',
         status: 'ALL',
       },
-      setFilters: jest.fn(),
-      fetchTournaments: jest.fn(),
-      refreshTournaments: jest.fn(),
+      setFilters: vi.fn(),
+      fetchTournaments: vi.fn(),
+      refreshTournaments: vi.fn(),
     });
 
-    render(
-      <BrowserRouter>
-        <TournamentLobby />
-      </BrowserRouter>
-    );
+    render(<TournamentLobby />);
 
     expect(screen.getByText('Test Tournament')).toBeInTheDocument();
   });
@@ -71,16 +66,12 @@ describe('TournamentLobby', () => {
       loading: true,
       error: '',
       filters: {},
-      setFilters: jest.fn(),
-      fetchTournaments: jest.fn(),
-      refreshTournaments: jest.fn(),
+      setFilters: vi.fn(),
+      fetchTournaments: vi.fn(),
+      refreshTournaments: vi.fn(),
     });
 
-    render(
-      <BrowserRouter>
-        <TournamentLobby />
-      </BrowserRouter>
-    );
+    render(<TournamentLobby />);
 
     // Should show loading skeletons
     expect(document.querySelectorAll('.animate-pulse')).toHaveLength(6);

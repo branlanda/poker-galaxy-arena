@@ -1,24 +1,23 @@
 
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { BrowserRouter } from 'react-router-dom';
+import { render, screen, fireEvent, waitFor } from '@/test/utils';
 import Login from './Login';
 import { AuthResponse } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 
 // Mock the useAuth hook
-const mockSetUser = jest.fn();
-jest.mock('@/stores/auth', () => ({
+const mockSetUser = vi.fn();
+vi.mock('@/stores/auth', () => ({
   useAuth: () => ({
     setUser: mockSetUser,
   }),
 }));
 
 // Mock the supabase client
-jest.mock('@/lib/supabase', () => ({
+vi.mock('@/lib/supabase', () => ({
   supabase: {
     auth: {
-      signInWithPassword: jest.fn(),
+      signInWithPassword: vi.fn(),
     },
   },
 }));
@@ -29,22 +28,14 @@ describe('Login Component', () => {
   });
 
   it('renders the login form', () => {
-    render(
-      <BrowserRouter>
-        <Login />
-      </BrowserRouter>
-    );
+    render(<Login />);
     expect(screen.getByLabelText('Email')).toBeInTheDocument();
     expect(screen.getByLabelText('Password')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Sign In' })).toBeInTheDocument();
   });
 
   it('allows the user to input email and password', () => {
-    render(
-      <BrowserRouter>
-        <Login />
-      </BrowserRouter>
-    );
+    render(<Login />);
     const emailInput = screen.getByLabelText('Email');
     const passwordInput = screen.getByLabelText('Password');
 
@@ -56,7 +47,7 @@ describe('Login Component', () => {
   });
 
   it('attempts to sign in with valid credentials', async () => {
-    (supabase.auth.signInWithPassword as jest.Mock).mockResolvedValue({
+    (supabase.auth.signInWithPassword as any).mockResolvedValue({
       data: {
         user: {
           id: 'test-user-id',
@@ -66,11 +57,7 @@ describe('Login Component', () => {
       error: null,
     });
 
-    render(
-      <BrowserRouter>
-        <Login />
-      </BrowserRouter>
-    );
+    render(<Login />);
 
     const emailInput = screen.getByLabelText('Email');
     const passwordInput = screen.getByLabelText('Password');
@@ -89,16 +76,12 @@ describe('Login Component', () => {
   });
 
   it('displays an error message for invalid credentials', async () => {
-    (supabase.auth.signInWithPassword as jest.Mock).mockResolvedValue({
+    (supabase.auth.signInWithPassword as any).mockResolvedValue({
       data: { user: null },
       error: { message: 'Invalid credentials' },
     } as AuthResponse);
 
-    render(
-      <BrowserRouter>
-        <Login />
-      </BrowserRouter>
-    );
+    render(<Login />);
 
     const emailInput = screen.getByLabelText('Email');
     const passwordInput = screen.getByLabelText('Password');
