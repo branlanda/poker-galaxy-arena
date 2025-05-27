@@ -1,32 +1,26 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTournaments } from '@/hooks/useTournaments';
 import { TournamentRegistration } from '@/components/tournaments/TournamentRegistration';
 import { TournamentBracket } from '@/components/tournaments/TournamentBracket';
 import { TournamentChat } from '@/components/tournaments/TournamentChat';
+import { TournamentInfoHeader } from '@/components/tournaments/TournamentInfoHeader';
+import { TournamentPrizeStructure } from '@/components/tournaments/TournamentPrizeStructure';
+import { TournamentBlindStructure } from '@/components/tournaments/TournamentBlindStructure';
+import { TournamentPlayersTable } from '@/components/tournaments/TournamentPlayersTable';
 import { ShareTournamentDialog } from './components/ShareTournamentDialog';
-import { 
-  Card, 
-  CardContent, 
-  CardDescription,
-  CardHeader, 
-  CardTitle 
-} from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   ArrowLeft, 
-  Calendar, 
-  Users, 
-  Trophy, 
-  DollarSign, 
-  Clock,
   Share2,
   MessageSquare,
   BarChart3,
+  Trophy,
   Settings,
-  PlayCircle
+  TrendingUp,
+  DollarSign
 } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useAuth } from '@/stores/auth';
@@ -61,29 +55,37 @@ export default function TournamentDetail() {
     navigate('/tournaments');
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'scheduled':
-        return 'bg-blue-500/20 text-blue-500 border-blue-500/30';
-      case 'active':
-        return 'bg-emerald/20 text-emerald border-emerald/30';
-      case 'completed':
-        return 'bg-gray-500/20 text-gray-400 border-gray-500/30';
-      case 'cancelled':
-        return 'bg-red-500/20 text-red-500 border-red-500/30';
-      default:
-        return 'bg-gray-500/20 text-gray-400 border-gray-500/30';
+  const handleRefresh = () => {
+    if (tournamentId) {
+      fetchTournamentById(tournamentId);
+      fetchTournamentRegistrations(tournamentId);
+      fetchTournamentTables(tournamentId);
     }
-  };
-
-  const formatDateTime = (dateString: string) => {
-    return new Date(dateString).toLocaleString();
   };
 
   const calculatePrizePool = () => {
     if (!selectedTournament || !tournamentRegistrations) return 0;
     return selectedTournament.buy_in * tournamentRegistrations.length;
   };
+
+  // Default blind structure if none exists
+  const defaultBlindStructure = [
+    { level: 1, small_blind: 10, big_blind: 20, ante: 0, duration_minutes: 15 },
+    { level: 2, small_blind: 15, big_blind: 30, ante: 0, duration_minutes: 15 },
+    { level: 3, small_blind: 25, big_blind: 50, ante: 0, duration_minutes: 15 },
+    { level: 4, small_blind: 50, big_blind: 100, ante: 0, duration_minutes: 15 },
+    { level: 5, small_blind: 75, big_blind: 150, ante: 0, duration_minutes: 15 },
+    { level: 6, small_blind: 100, big_blind: 200, ante: 25, duration_minutes: 15 },
+    { level: 7, small_blind: 150, big_blind: 300, ante: 25, duration_minutes: 15 },
+    { level: 8, small_blind: 200, big_blind: 400, ante: 50, duration_minutes: 15 },
+  ];
+
+  // Default payout structure
+  const defaultPayoutStructure = [
+    { position: 1, percentage: 50 },
+    { position: 2, percentage: 30 },
+    { position: 3, percentage: 20 },
+  ];
 
   if (loading || !selectedTournament) {
     return (
@@ -98,193 +100,88 @@ export default function TournamentDetail() {
     );
   }
 
+  const blindStructure = selectedTournament.blind_structure || defaultBlindStructure;
+  const payoutStructure = selectedTournament.payout_structure || defaultPayoutStructure;
+
   return (
     <AppLayout showBreadcrumbs={false}>
-      <div className="py-8">
-        {/* Header */}
-        <div className="flex items-center gap-4 mb-6">
+      <div className="py-8 space-y-6">
+        {/* Header with Back Button */}
+        <div className="flex items-center gap-4">
           <Button variant="ghost" size="sm" onClick={handleBack}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             {t('tournaments.backToLobby', 'Back to Tournaments')}
           </Button>
           <div className="h-6 w-px bg-gray-600"></div>
-          <div className="flex-1">
-            <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-3xl font-bold text-white">{selectedTournament.name}</h1>
-              <Badge className={getStatusColor(selectedTournament.status)}>
-                {selectedTournament.status?.toUpperCase()}
-              </Badge>
-            </div>
-            <p className="text-gray-400">
-              {t('tournaments.gameType', 'Game Type')}: {selectedTournament.game_type || 'No-Limit Hold\'em'}
-            </p>
-          </div>
           <Button variant="outline" onClick={() => setShowShareDialog(true)}>
             <Share2 className="h-4 w-4 mr-2" />
             {t('tournaments.share', 'Share')}
           </Button>
         </div>
 
+        {/* Tournament Header */}
+        <TournamentInfoHeader
+          tournament={selectedTournament}
+          registrationsCount={tournamentRegistrations?.length || 0}
+          onRefresh={handleRefresh}
+        />
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Tournament Info Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <Card className="bg-navy/50 border-emerald/20">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Calendar className="h-4 w-4 text-emerald" />
-                    <span className="text-sm text-gray-400">{t('tournaments.startTime', 'Start Time')}</span>
-                  </div>
-                  <p className="font-semibold text-white">
-                    {formatDateTime(selectedTournament.start_time)}
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-navy/50 border-emerald/20">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Users className="h-4 w-4 text-emerald" />
-                    <span className="text-sm text-gray-400">{t('tournaments.players', 'Players')}</span>
-                  </div>
-                  <p className="font-semibold text-white">
-                    {tournamentRegistrations?.length || 0} / {selectedTournament.max_players}
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-navy/50 border-emerald/20">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <DollarSign className="h-4 w-4 text-emerald" />
-                    <span className="text-sm text-gray-400">{t('tournaments.buyIn', 'Buy-in')}</span>
-                  </div>
-                  <p className="font-semibold text-white">${selectedTournament.buy_in}</p>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-navy/50 border-emerald/20">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Trophy className="h-4 w-4 text-emerald" />
-                    <span className="text-sm text-gray-400">{t('tournaments.prizePool', 'Prize Pool')}</span>
-                  </div>
-                  <p className="font-semibold text-white">${calculatePrizePool()}</p>
-                </CardContent>
-              </Card>
-            </div>
-
             {/* Tournament Tabs */}
             <Tabs defaultValue="overview" className="w-full">
-              <TabsList className="bg-navy/60 border border-emerald/20">
-                <TabsTrigger value="overview" className="data-[state=active]:bg-emerald/20 data-[state=active]:text-emerald">
+              <TabsList className="bg-navy/60 border border-emerald/20 w-full">
+                <TabsTrigger value="overview" className="data-[state=active]:bg-emerald/20 data-[state=active]:text-emerald flex-1">
                   <BarChart3 className="h-4 w-4 mr-2" />
                   {t('tournaments.overview', 'Overview')}
                 </TabsTrigger>
-                <TabsTrigger value="bracket" className="data-[state=active]:bg-emerald/20 data-[state=active]:text-emerald">
-                  <Trophy className="h-4 w-4 mr-2" />
-                  {t('tournaments.bracket', 'Bracket')}
+                <TabsTrigger value="structure" className="data-[state=active]:bg-emerald/20 data-[state=active]:text-emerald flex-1">
+                  <TrendingUp className="h-4 w-4 mr-2" />
+                  Structure
                 </TabsTrigger>
-                <TabsTrigger value="rules" className="data-[state=active]:bg-emerald/20 data-[state=active]:text-emerald">
-                  <Settings className="h-4 w-4 mr-2" />
-                  {t('tournaments.rules', 'Rules')}
+                <TabsTrigger value="payouts" className="data-[state=active]:bg-emerald/20 data-[state=active]:text-emerald flex-1">
+                  <DollarSign className="h-4 w-4 mr-2" />
+                  Payouts
+                </TabsTrigger>
+                <TabsTrigger value="players" className="data-[state=active]:bg-emerald/20 data-[state=active]:text-emerald flex-1">
+                  <Trophy className="h-4 w-4 mr-2" />
+                  Players
                 </TabsTrigger>
               </TabsList>
 
               <TabsContent value="overview" className="mt-6">
                 <div className="space-y-6">
-                  {/* Description */}
-                  <Card className="bg-navy/50 border-emerald/20">
-                    <CardHeader>
-                      <CardTitle className="text-white">{t('tournaments.description', 'Description')}</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-gray-300">
-                        {selectedTournament.description || t('tournaments.defaultDescription', 'Join this exciting tournament and compete for the prize pool!')}
-                      </p>
-                    </CardContent>
-                  </Card>
-
-                  {/* Registered Players */}
-                  <Card className="bg-navy/50 border-emerald/20">
-                    <CardHeader>
-                      <CardTitle className="text-white flex items-center gap-2">
-                        <Users className="h-5 w-5 text-emerald" />
-                        {t('tournaments.registeredPlayers', 'Registered Players')}
-                      </CardTitle>
-                      <CardDescription className="text-gray-400">
-                        {tournamentRegistrations?.length || 0} {t('tournaments.playersRegistered', 'players registered')}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      {tournamentRegistrations && tournamentRegistrations.length > 0 ? (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                          {tournamentRegistrations.map((registration) => (
-                            <div 
-                              key={registration.id}
-                              className="p-3 bg-navy/30 rounded-lg border border-emerald/10"
-                            >
-                              <p className="font-medium text-white">{registration.player_name}</p>
-                              <p className="text-sm text-gray-400">
-                                {t('tournaments.registered', 'Registered')}: {new Date(registration.registration_time || registration.created_at).toLocaleDateString()}
-                              </p>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="text-gray-400 text-center py-8">
-                          {t('tournaments.noPlayersYet', 'No players registered yet. Be the first!')}
-                        </p>
-                      )}
-                    </CardContent>
-                  </Card>
+                  <TournamentBracket
+                    tournamentId={selectedTournament.id}
+                    registrations={tournamentRegistrations || []}
+                    tables={tournamentTables || []}
+                  />
                 </div>
               </TabsContent>
 
-              <TabsContent value="bracket" className="mt-6">
-                <TournamentBracket
-                  tournamentId={selectedTournament.id}
-                  registrations={tournamentRegistrations || []}
-                  tables={tournamentTables || []}
+              <TabsContent value="structure" className="mt-6">
+                <TournamentBlindStructure
+                  blindStructure={blindStructure}
+                  currentLevel={selectedTournament.current_level}
                 />
               </TabsContent>
 
-              <TabsContent value="rules" className="mt-6">
-                <Card className="bg-navy/50 border-emerald/20">
-                  <CardHeader>
-                    <CardTitle className="text-white">{t('tournaments.tournamentRules', 'Tournament Rules')}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4 text-gray-300">
-                    <div>
-                      <h4 className="font-semibold text-white mb-2">{t('tournaments.gameFormat', 'Game Format')}</h4>
-                      <p>{selectedTournament.game_type || 'No-Limit Hold\'em'}</p>
-                    </div>
-                    
-                    <div>
-                      <h4 className="font-semibold text-white mb-2">{t('tournaments.blindStructure', 'Blind Structure')}</h4>
-                      <p>{t('tournaments.blindsIncrease', 'Blinds increase every 15 minutes')}</p>
-                    </div>
-                    
-                    <div>
-                      <h4 className="font-semibold text-white mb-2">{t('tournaments.payoutStructure', 'Payout Structure')}</h4>
-                      <ul className="list-disc list-inside space-y-1">
-                        <li>1st Place: 50% of prize pool</li>
-                        <li>2nd Place: 30% of prize pool</li>
-                        <li>3rd Place: 20% of prize pool</li>
-                      </ul>
-                    </div>
-                    
-                    <div>
-                      <h4 className="font-semibold text-white mb-2">{t('tournaments.additionalRules', 'Additional Rules')}</h4>
-                      <ul className="list-disc list-inside space-y-1">
-                        <li>{t('tournaments.ruleNoChatAbuse', 'No abusive language in chat')}</li>
-                        <li>{t('tournaments.ruleNoSlowPlay', 'No excessive slow play')}</li>
-                        <li>{t('tournaments.ruleDecisionFinal', 'Tournament director decisions are final')}</li>
-                      </ul>
-                    </div>
-                  </CardContent>
-                </Card>
+              <TabsContent value="payouts" className="mt-6">
+                <TournamentPrizeStructure
+                  prizePool={calculatePrizePool()}
+                  payoutStructure={payoutStructure}
+                  playersCount={tournamentRegistrations?.length || 0}
+                />
+              </TabsContent>
+
+              <TabsContent value="players" className="mt-6">
+                <TournamentPlayersTable
+                  registrations={tournamentRegistrations || []}
+                  tournamentStatus={selectedTournament.status}
+                  prizePool={calculatePrizePool()}
+                  payoutStructure={payoutStructure}
+                />
               </TabsContent>
             </Tabs>
           </div>
@@ -297,20 +194,20 @@ export default function TournamentDetail() {
             />
 
             {/* Tournament Chat */}
-            <Card className="bg-navy/50 border-emerald/20">
-              <CardHeader>
-                <CardTitle className="text-white flex items-center gap-2">
+            <div className="bg-navy/50 border border-emerald/20 rounded-lg">
+              <div className="p-4 border-b border-emerald/20">
+                <h3 className="text-white font-medium flex items-center gap-2">
                   <MessageSquare className="h-5 w-5 text-emerald" />
                   {t('tournaments.chat', 'Tournament Chat')}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
+                </h3>
+              </div>
+              <div className="p-0">
                 <TournamentChat 
                   tournamentId={selectedTournament.id} 
                   tournamentName={selectedTournament.name}
                 />
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </div>
         </div>
 
