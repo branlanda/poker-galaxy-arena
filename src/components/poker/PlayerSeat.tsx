@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Card, PlayerState } from '@/types/poker';
 import { PokerCard } from './PokerCard';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -7,16 +8,16 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
   DollarSign,
-  Award,
   UserCircle2,
-  ShieldAlert,
-  Clock
+  Crown,
+  Timer,
+  Zap
 } from 'lucide-react';
 
 interface PlayerSeatProps {
   position: number;
   player?: PlayerState;
-  state?: any; // Adding this prop to match what's coming from PokerTable
+  state?: any;
   isCurrentPlayer: boolean;
   isActive: boolean;
   isDealer?: boolean;
@@ -40,121 +41,286 @@ export function PlayerSeat({
   onSitDown,
   disabled = false
 }: PlayerSeatProps) {
-  // Use state prop if provided (from PokerTable)
   const playerState = state || player;
   
-  // Calculate the position on the table
-  // This is just one way to position seats in a circle
+  // Enhanced position calculation for better circular layout
   const positions = [
-    { top: '85%', left: '50%' },      // bottom center (0)
-    { top: '75%', left: '20%' },      // bottom left (1)
-    { top: '50%', left: '5%' },       // middle left (2)
-    { top: '25%', left: '20%' },      // top left (3)
-    { top: '15%', left: '50%' },      // top center (4)
-    { top: '25%', left: '80%' },      // top right (5)
-    { top: '50%', left: '95%' },      // middle right (6)
-    { top: '75%', left: '80%' },      // bottom right (7)
-    { top: '85%', left: '35%' },      // bottom left-center (8)
+    { top: '88%', left: '50%' },      // bottom center (0)
+    { top: '78%', left: '18%' },      // bottom left (1)
+    { top: '50%', left: '2%' },       // middle left (2)
+    { top: '22%', left: '18%' },      // top left (3)
+    { top: '12%', left: '50%' },      // top center (4)
+    { top: '22%', left: '82%' },      // top right (5)
+    { top: '50%', left: '98%' },      // middle right (6)
+    { top: '78%', left: '82%' },      // bottom right (7)
+    { top: '88%', left: '30%' },      // bottom left-center (8)
   ];
   
   const seatStyle = positions[position % positions.length];
   
   if (!playerState) {
-    // Empty seat that can be taken
     return (
-      <div 
+      <motion.div 
         className="absolute transform -translate-x-1/2 -translate-y-1/2 z-10"
         style={seatStyle}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
       >
         <Button
           variant="outline"
-          size="sm"
+          size="lg"
           onClick={onSitDown}
           disabled={disabled}
-          className="h-14 w-14 rounded-full bg-navy/60 hover:bg-navy/80 border border-emerald/30"
+          className="h-16 w-16 rounded-full bg-slate-800/80 hover:bg-slate-700/90 border-2 border-emerald/40 hover:border-emerald/60 transition-all duration-300 backdrop-blur-sm shadow-lg"
         >
-          <UserCircle2 className="h-6 w-6" />
+          <UserCircle2 className="h-8 w-8 text-emerald-400" />
         </Button>
-      </div>
+      </motion.div>
     );
   }
   
-  // Get initials for avatar fallback
-  const initials = 'P' + (playerState.playerId?.substring(0, 1) || '?');
+  const initials = playerState.playerName?.substring(0, 2).toUpperCase() || 'P' + (playerState.playerId?.substring(0, 1) || '?');
   
-  // Display occupied seat with player info
   return (
-    <div 
-      className={`absolute transform -translate-x-1/2 -translate-y-1/2 z-10 
-        ${isActive ? 'scale-110 transition-transform duration-300' : ''}
-      `}
+    <motion.div 
+      className={`absolute transform -translate-x-1/2 -translate-y-1/2 z-10 ${
+        isActive ? 'scale-110' : 'scale-100'
+      } transition-all duration-500`}
       style={seatStyle}
+      initial={{ opacity: 0, scale: 0.8, y: 20 }}
+      animate={{ 
+        opacity: 1, 
+        scale: isActive ? 1.1 : 1, 
+        y: 0 
+      }}
+      transition={{ 
+        type: "spring", 
+        damping: 15, 
+        stiffness: 300,
+        delay: position * 0.1 
+      }}
     >
-      <div className={`
-        p-3 rounded-lg ${isActive ? 'bg-emerald-600/30 border border-emerald-500/50 animate-pulse shadow-lg' : 'bg-navy/70 border border-emerald/10'}
-        ${playerState.status === 'FOLDED' ? 'opacity-50' : ''}
-        ${playerState.status === 'ALL_IN' ? 'border-amber-500/70' : ''}
-      `}>
-        {/* Player indicators */}
-        <div className="flex space-x-1 mb-1">
-          {isDealer && (
-            <Badge className="bg-blue-800 text-xs px-1.5 py-0">D</Badge>
-          )}
-          {isSmallBlind && (
-            <Badge className="bg-amber-800 text-xs px-1.5 py-0">SB</Badge>
-          )}
-          {isBigBlind && (
-            <Badge className="bg-red-800 text-xs px-1.5 py-0">BB</Badge>
-          )}
-          {playerState.status === 'FOLDED' && (
-            <Badge className="bg-gray-700 text-xs px-1.5 py-0">Folded</Badge>
-          )}
-          {playerState.status === 'ALL_IN' && (
-            <Badge className="bg-amber-600 text-xs px-1.5 py-0">All In!</Badge>
-          )}
-        </div>
+      <div className={`relative p-3 rounded-2xl backdrop-blur-sm border transition-all duration-500 ${
+        isActive 
+          ? 'bg-gradient-to-br from-emerald-500/30 to-emerald-600/40 border-emerald-400 shadow-[0_0_30px_0_rgba(16,185,129,0.6)]' 
+          : 'bg-gradient-to-br from-slate-800/80 to-slate-900/90 border-slate-600/40 shadow-lg'
+      } ${
+        playerState.status === 'FOLDED' ? 'opacity-50 grayscale' : ''
+      } ${
+        playerState.status === 'ALL_IN' ? 'border-amber-500/70 shadow-[0_0_20px_0_rgba(245,158,11,0.5)]' : ''
+      }`}>
         
-        {/* Player avatar and info */}
-        <div className="flex items-center mb-2">
-          <Avatar className={`h-8 w-8 mr-2 ${isCurrentPlayer ? 'ring-2 ring-emerald-500' : ''}`}>
-            <AvatarImage src="#" />
-            <AvatarFallback className="bg-navy">{initials}</AvatarFallback>
-          </Avatar>
-          <div>
-            <div className="text-sm font-medium truncate w-20">
-              {isCurrentPlayer ? 'You' : playerState.playerName || `Player ${playerState.playerId?.substring(0, 4) || '?'}`}
-            </div>
-            <div className="flex items-center text-xs text-emerald-300">
-              <DollarSign className="h-3 w-3 mr-1" />
-              <span>{playerState.stack}</span>
-            </div>
-          </div>
-        </div>
-        
-        {/* Current bet display */}
-        {playerState.currentBet > 0 && (
-          <div className="flex items-center justify-center p-1 bg-black/30 rounded text-xs mb-2">
-            <span className="font-bold text-emerald-300">{playerState.currentBet}</span>
-          </div>
+        {/* Active player glow effect */}
+        {isActive && (
+          <motion.div
+            className="absolute -inset-1 bg-gradient-to-r from-emerald-400 to-emerald-600 rounded-2xl opacity-75 blur-sm"
+            animate={{
+              opacity: [0.5, 0.8, 0.5],
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          />
         )}
         
-        {/* Player cards */}
-        {playerState.status !== 'FOLDED' && (
-          <div className="flex justify-center space-x-1">
-            {holeCards && holeCards.length === 2 ? (
-              <>
-                <PokerCard card={holeCards[0]} size="sm" />
-                <PokerCard card={holeCards[1]} size="sm" />
-              </>
-            ) : (
-              <>
-                <div className="w-8 h-12 bg-gray-800 rounded border border-gray-700"></div>
-                <div className="w-8 h-12 bg-gray-800 rounded border border-gray-700"></div>
-              </>
+        <div className="relative">
+          {/* Player indicators */}
+          <div className="flex flex-wrap gap-1 mb-2 justify-center">
+            <AnimatePresence>
+              {isDealer && (
+                <motion.div
+                  initial={{ scale: 0, rotate: -180 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  exit={{ scale: 0, rotate: 180 }}
+                  transition={{ type: "spring", damping: 10 }}
+                >
+                  <Badge className="bg-gradient-to-r from-yellow-500 to-yellow-600 text-black text-xs px-2 py-1 shadow-lg">
+                    <Crown className="w-3 h-3 mr-1" />
+                    D
+                  </Badge>
+                </motion.div>
+              )}
+              {isSmallBlind && (
+                <Badge className="bg-gradient-to-r from-blue-500 to-blue-600 text-white text-xs px-2 py-1">
+                  SB
+                </Badge>
+              )}
+              {isBigBlind && (
+                <Badge className="bg-gradient-to-r from-red-500 to-red-600 text-white text-xs px-2 py-1">
+                  BB
+                </Badge>
+              )}
+              {playerState.status === 'FOLDED' && (
+                <Badge className="bg-gray-700 text-gray-300 text-xs px-2 py-1">
+                  Folded
+                </Badge>
+              )}
+              {playerState.status === 'ALL_IN' && (
+                <motion.div
+                  animate={{
+                    scale: [1, 1.1, 1],
+                  }}
+                  transition={{
+                    duration: 1,
+                    repeat: Infinity,
+                  }}
+                >
+                  <Badge className="bg-gradient-to-r from-amber-500 to-amber-600 text-white text-xs px-2 py-1">
+                    <Zap className="w-3 h-3 mr-1" />
+                    ALL IN!
+                  </Badge>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+          
+          {/* Enhanced avatar with status ring */}
+          <div className="flex flex-col items-center mb-2">
+            <div className="relative">
+              <motion.div
+                className={`p-1 rounded-full ${
+                  isCurrentPlayer 
+                    ? 'bg-gradient-to-r from-emerald-400 to-emerald-600' 
+                    : 'bg-gradient-to-r from-slate-600 to-slate-700'
+                }`}
+                animate={isActive ? {
+                  background: [
+                    'linear-gradient(to right, #10b981, #059669)',
+                    'linear-gradient(to right, #34d399, #10b981)',
+                    'linear-gradient(to right, #10b981, #059669)'
+                  ]
+                } : {}}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+              >
+                <Avatar className="h-12 w-12 border-2 border-white/20">
+                  <AvatarImage src="#" />
+                  <AvatarFallback className="bg-gradient-to-br from-slate-700 to-slate-800 text-white font-bold">
+                    {initials}
+                  </AvatarFallback>
+                </Avatar>
+              </motion.div>
+              
+              {/* Online status indicator */}
+              <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white shadow-sm"></div>
+              
+              {/* Turn timer */}
+              {isActive && (
+                <motion.div
+                  className="absolute -top-2 -right-2 w-6 h-6 bg-amber-500 rounded-full flex items-center justify-center"
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
+                >
+                  <Timer className="w-3 h-3 text-white" />
+                </motion.div>
+              )}
+            </div>
+            
+            {/* Player name and info */}
+            <div className="text-center mt-1">
+              <div className="text-sm font-bold text-white truncate max-w-20">
+                {isCurrentPlayer ? 'You' : playerState.playerName || `Player ${playerState.playerId?.substring(0, 4) || '?'}`}
+              </div>
+              <motion.div 
+                className="flex items-center justify-center text-xs font-bold gap-1"
+                animate={{
+                  color: playerState.stack < 100 ? ['#fbbf24', '#ef4444', '#fbbf24'] : '#fbbf24'
+                }}
+                transition={{
+                  duration: 1,
+                  repeat: playerState.stack < 100 ? Infinity : 0
+                }}
+              >
+                <DollarSign className="h-3 w-3" />
+                <span>{playerState.stack.toLocaleString()}</span>
+              </motion.div>
+            </div>
+          </div>
+          
+          {/* Current bet display */}
+          <AnimatePresence>
+            {playerState.currentBet > 0 && (
+              <motion.div 
+                className="mb-2"
+                initial={{ scale: 0, y: 10 }}
+                animate={{ scale: 1, y: 0 }}
+                exit={{ scale: 0, y: -10 }}
+                transition={{ type: "spring", damping: 15 }}
+              >
+                <div className="flex items-center justify-center p-2 bg-gradient-to-r from-amber-500/80 to-amber-600/80 rounded-lg border border-amber-400/50 shadow-lg">
+                  <div className="w-4 h-4 bg-gradient-to-br from-amber-300 to-amber-500 rounded-full mr-1"></div>
+                  <span className="font-bold text-white text-sm">
+                    ${playerState.currentBet.toLocaleString()}
+                  </span>
+                </div>
+              </motion.div>
             )}
-          </div>
-        )}
+          </AnimatePresence>
+          
+          {/* Player cards */}
+          {playerState.status !== 'FOLDED' && (
+            <div className="flex justify-center gap-1">
+              <AnimatePresence>
+                {holeCards && holeCards.length === 2 ? (
+                  holeCards.map((card, index) => (
+                    <motion.div
+                      key={`${card.code}-${index}`}
+                      initial={{ 
+                        rotateY: 180, 
+                        x: index === 0 ? -20 : 20,
+                        opacity: 0 
+                      }}
+                      animate={{ 
+                        rotateY: 0, 
+                        x: 0,
+                        opacity: 1 
+                      }}
+                      transition={{ 
+                        delay: index * 0.2,
+                        duration: 0.6,
+                        ease: "easeOut"
+                      }}
+                    >
+                      <PokerCard card={card} size="sm" />
+                    </motion.div>
+                  ))
+                ) : (
+                  // Face-down cards
+                  [0, 1].map((index) => (
+                    <motion.div
+                      key={`facedown-${index}`}
+                      className="w-8 h-12 bg-gradient-to-br from-blue-800 to-blue-900 rounded border border-blue-700 shadow-md flex items-center justify-center"
+                      initial={{ 
+                        rotateY: 180,
+                        x: index === 0 ? -20 : 20,
+                        opacity: 0 
+                      }}
+                      animate={{ 
+                        rotateY: 0,
+                        x: 0,
+                        opacity: 1 
+                      }}
+                      transition={{ 
+                        delay: index * 0.1,
+                        duration: 0.5 
+                      }}
+                    >
+                      <div className="w-4 h-6 bg-blue-600 rounded border border-blue-500 flex items-center justify-center">
+                        <div className="text-xs text-blue-200 font-bold">♠</div>
+                      </div>
+                    </motion.div>
+                  ))
+                )}
+              </AnimatePresence>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
