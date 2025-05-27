@@ -1,5 +1,4 @@
 
-
 import React, { ReactElement } from 'react';
 import { render, RenderOptions } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
@@ -48,4 +47,3 @@ export * from '@testing-library/react';
 
 // Export our custom render as the default render
 export { renderWithProviders as render };
-
