@@ -7,7 +7,28 @@ import { GameRoomLoader } from '@/components/poker/GameRoomLoader';
 import { GameRoomError } from '@/components/poker/GameRoomError';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/stores/auth';
-import { PlayerAction } from '@/types/poker';
+import { PlayerAction, GameState as PokerGameState } from '@/types/poker';
+
+// Helper function to transform game state to poker game state
+const transformGameStateToPokerGameState = (gameState: any): PokerGameState => {
+  return {
+    id: gameState.tableId || 'temp-id',
+    tableId: gameState.tableId,
+    phase: gameState.phase,
+    pot: gameState.pot,
+    currentBet: gameState.currentBet,
+    communityCards: (gameState.communityCards || []).map((card: any) => ({
+      suit: card.suit,
+      value: card.value,
+      code: card.code || `${card.value}${card.suit.charAt(0).toUpperCase()}`
+    })),
+    lastActionTime: new Date().toISOString(),
+    createdAt: new Date().toISOString(),
+    dealerSeat: gameState.dealer,
+    activeSeat: gameState.seats?.findIndex((seat: any) => seat?.playerId === gameState.activePlayerId),
+    activePlayerId: gameState.activePlayerId
+  };
+};
 
 export default function GameRoom() {
   const { tableId } = useParams<{ tableId: string }>();
@@ -134,12 +155,15 @@ export default function GameRoom() {
     return <GameRoomError error={errorMessage} onBack={() => navigate('/lobby')} />;
   }
 
+  // Transform gameState if it exists
+  const transformedGameState = gameState ? transformGameStateToPokerGameState(gameState) : null;
+
   return (
     <GameRoomContent 
       tableId={tableId || ''}
       tableData={table}
       players={players}
-      gameState={gameState}
+      gameState={transformedGameState}
       isPlayerSeated={isPlayerSeated}
       isPlayerTurn={isPlayerTurn}
       isJoining={false}
