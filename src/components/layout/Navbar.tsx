@@ -106,6 +106,10 @@ export function Navbar() {
                   <DropdownMenuLabel>{user?.email}</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => navigate('/profile')}>Profile</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/how-to-play')}>
+                    <BookOpen className="h-4 w-4 mr-2" />
+                    How to Play
+                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate('/achievements')}>
                     <Target className="h-4 w-4 mr-2" />
                     Achievements
