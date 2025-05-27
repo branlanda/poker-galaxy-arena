@@ -41,14 +41,14 @@ export default function Login() {
     try {
       await signIn(data.email, data.password);
       toast({
-        title: "Welcome back!",
-        description: "You have successfully signed in.",
+        title: "🎉 Welcome back to Poker Galaxy!",
+        description: "You have successfully signed in. 🎰",
       });
       navigate('/');
     } catch (error: any) {
       console.error('Login error:', error);
       toast({
-        title: "Sign in failed",
+        title: "❌ Sign in failed",
         description: error.message || "Please check your credentials and try again.",
         variant: "destructive",
       });
@@ -64,17 +64,17 @@ export default function Login() {
         <div className="flex items-center">
           <Button variant="ghost" size="sm" onClick={() => navigate('/')}>
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Home
+            🏠 Back to Home
           </Button>
         </div>
 
         <Card className="bg-navy border-emerald/20">
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl text-center text-emerald">
-              {t('auth.signIn', 'Sign In')}
+              🎰 {t('auth.signIn', 'Sign In')} - Poker Galaxy
             </CardTitle>
             <CardDescription className="text-center text-gray-400">
-              Enter your credentials to access your account
+              🎯 Enter your credentials to access your account ♠️♥️♦️♣️
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -85,7 +85,7 @@ export default function Login() {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-white">{t('auth.email', 'Email')}</FormLabel>
+                      <FormLabel className="text-white">📧 {t('auth.email', 'Email')}</FormLabel>
                       <FormControl>
                         <div className="relative">
                           <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
@@ -106,7 +106,7 @@ export default function Login() {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-white">{t('auth.password', 'Password')}</FormLabel>
+                      <FormLabel className="text-white">🔒 {t('auth.password', 'Password')}</FormLabel>
                       <FormControl>
                         <div className="relative">
                           <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
@@ -128,7 +128,7 @@ export default function Login() {
                     to="/forgot-password" 
                     className="text-sm text-emerald hover:text-emerald/80 hover:underline"
                   >
-                    {t('auth.forgotPassword', 'Forgot Password?')}
+                    🤔 {t('auth.forgotPassword', 'Forgot Password?')}
                   </Link>
                 </div>
 
@@ -137,7 +137,7 @@ export default function Login() {
                   className="w-full bg-emerald hover:bg-emerald/90" 
                   loading={loading}
                 >
-                  {t('auth.signIn', 'Sign In')}
+                  🎮 {t('auth.signIn', 'Sign In')}
                 </Button>
               </form>
             </Form>
@@ -146,7 +146,7 @@ export default function Login() {
               <p className="text-gray-400">
                 {t('auth.dontHaveAccount', "Don't have an account?")}{' '}
                 <Link to="/register" className="text-emerald hover:text-emerald/80 hover:underline">
-                  {t('auth.signUp', 'Sign Up')}
+                  ⭐ {t('auth.signUp', 'Sign Up')}
                 </Link>
               </p>
             </div>
