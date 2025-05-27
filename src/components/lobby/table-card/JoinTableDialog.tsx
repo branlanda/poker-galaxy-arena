@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { useTranslation } from '@/hooks/useTranslation';
 import { LobbyTable } from '@/types/lobby';
 import { useJoinTable } from '@/hooks/useJoinTable';
+import { useAuth } from '@/stores/auth';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   Dialog,
@@ -24,6 +26,8 @@ export function JoinTableDialog({ table }: JoinTableDialogProps) {
   const [isJoining, setIsJoining] = useState(false);
   const [password, setPassword] = useState('');
   const { joinTable, loading } = useJoinTable();
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const { t } = useTranslation();
   
   const handleJoin = async () => {
@@ -33,29 +37,39 @@ export function JoinTableDialog({ table }: JoinTableDialogProps) {
     }
   };
 
+  const handleEnterTable = () => {
+    // If user is the creator, go directly to the game
+    navigate(`/game/${table.id}`);
+  };
+
   const isFull = table.current_players >= table.max_players;
+  const isCreator = user?.id === table.creator_id;
 
   return (
     <Dialog open={isJoining} onOpenChange={setIsJoining}>
       <DialogTrigger asChild>
         <Button 
           className="w-full relative overflow-hidden group" 
-          disabled={isFull}
-          variant={isFull ? "outline" : "primary"}
+          disabled={isFull && !isCreator}
+          variant={isFull && !isCreator ? "outline" : "default"}
+          onClick={isCreator ? handleEnterTable : undefined}
         >
           <motion.div 
             className="absolute inset-0 bg-emerald-500/20" 
             initial={false}
-            animate={{ x: isFull ? '0%' : '100%' }}
+            animate={{ x: (isFull && !isCreator) ? '0%' : '100%' }}
             transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-            style={{ display: isFull ? 'none' : 'block' }}
+            style={{ display: (isFull && !isCreator) ? 'none' : 'block' }}
           />
           <motion.span 
             className="relative z-10"
             animate={{ scale: [1, 1.05, 1] }}
             transition={{ repeat: Infinity, duration: 2, repeatType: "reverse" }}
           >
-            {isFull ? t('tableFull', 'Mesa Llena') : t('joinTable', 'Unirse a la Mesa')}
+            {isCreator ? 
+              '🎮 ' + t('enterMyTable', 'Enter My Table') : 
+              (isFull ? t('tableFull', 'Mesa Llena') : t('joinTable', 'Unirse a la Mesa'))
+            }
           </motion.span>
         </Button>
       </DialogTrigger>

@@ -10,6 +10,7 @@ import { AchievementsPage, LeaderboardsPage } from '@/pages/Gamification';
 import LobbyPage from '@/pages/Lobby/LobbyPage';
 import ProfilePage from '@/pages/profile/ProfilePage';
 import FundsPage from '@/pages/Funds/FundsPage';
+import GameRoom from '@/pages/Game/GameRoom';
 import { SitAndGoRoutes } from '@/router/SitAndGoRoutes';
 import { TournamentsRoutes } from '@/router/TournamentsRoutes';
 import { AuthRoute } from '@/components/routing/AuthRoute';
@@ -24,6 +25,13 @@ const AppRoutes = () => {
       <Route path="/sit-and-go/*" element={<SitAndGoRoutes />} />
       <Route path="/leaderboards" element={<LeaderboardsPage />} />
       <Route path="/achievements" element={<AchievementsPage />} />
+      
+      {/* Game room route - protected */}
+      <Route path="/game/:tableId" element={
+        <ProtectedRoute>
+          <GameRoom />
+        </ProtectedRoute>
+      } />
       
       {/* Protected routes - only accessible when logged in */}
       <Route path="/profile" element={

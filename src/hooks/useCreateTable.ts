@@ -75,7 +75,7 @@ export function useCreateTable() {
 
       console.log('Inserting table data:', tableData);
 
-      const { data, error } = await supabase
+      const { data: newTable, error } = await supabase
         .from('lobby_tables')
         .insert(tableData)
         .select()
@@ -86,14 +86,39 @@ export function useCreateTable() {
         throw new Error(`Failed to create table: ${error.message}`);
       }
       
-      console.log('Table created successfully:', data);
+      console.log('Table created successfully:', newTable);
+
+      // Automatically add the creator to the table as the first player
+      const { error: joinError } = await supabase
+        .from('players_at_table')
+        .insert({
+          table_id: newTable.id,
+          player_id: user.id,
+          player_name: user.alias || user.email || 'Unknown',
+          seat_number: 1, // Creator gets seat 1
+          stack: params.maxBuyIn, // Creator starts with max buy-in
+          status: 'SITTING',
+          joined_at: new Date().toISOString()
+        });
+
+      if (joinError) {
+        console.error('Error joining table as creator:', joinError);
+        // Don't throw here, table was created successfully
+        toast({
+          title: "⚠️ Warning",
+          description: "Table created but couldn't auto-join. You can join manually.",
+          variant: 'destructive',
+        });
+      } else {
+        console.log('Creator automatically joined table');
+      }
       
       toast({
         title: "🎉 Success!",
-        description: `Table "${params.name}" created successfully!`,
+        description: `Table "${params.name}" created successfully! You've been seated at position 1.`,
       });
       
-      return data;
+      return newTable;
     } catch (error: any) {
       console.error('Create table error:', error);
       toast({

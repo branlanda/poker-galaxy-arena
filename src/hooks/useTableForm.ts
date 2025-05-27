@@ -89,12 +89,12 @@ export function useTableForm() {
     
     if (newTable) {
       toast({
-        title: "🎉 Success!",
-        description: `Table "${name}" created successfully!`,
+        title: "🎮 Table Created!",
+        description: `Welcome to "${name}"! You're now seated at the table.`,
       });
       
-      // Navigate to the lobby to see the new table
-      navigate('/lobby');
+      // Navigate directly to the game room instead of lobby
+      navigate(`/game/${newTable.id}`);
       return newTable;
     }
     
