@@ -1,6 +1,5 @@
 
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { useLeaderboards } from '@/hooks/useLeaderboards';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,13 +17,13 @@ const LeaderboardsPage = () => {
   const [selectedCategory, setSelectedCategory] = useState('total_winnings');
   const [searchQuery, setSearchQuery] = useState('');
 
-  const { data: leaderboards, isLoading, error } = useLeaderboards(selectedPeriod, selectedCategory);
+  const { leaderboardEntries, loading, fetchLeaderboardEntries } = useLeaderboards();
 
   const handleClearSearch = () => {
     setSearchQuery('');
   };
 
-  const filteredLeaderboards = leaderboards?.filter(player =>
+  const filteredLeaderboards = leaderboardEntries?.filter(player =>
     player.player_name?.toLowerCase().includes(searchQuery.toLowerCase())
   ) || [];
 
@@ -67,19 +66,6 @@ const LeaderboardsPage = () => {
     { value: 'monthly', label: t('leaderboards.monthly', 'Monthly') },
     { value: 'allTime', label: t('leaderboards.allTime', 'All Time') },
   ];
-
-  if (error) {
-    return (
-      <AppLayout>
-        <div className="flex items-center justify-center min-h-[50vh]">
-          <div className="text-center">
-            <h2 className="text-xl font-semibold text-white mb-2">Error loading leaderboards</h2>
-            <p className="text-gray-400">{error.message}</p>
-          </div>
-        </div>
-      </AppLayout>
-    );
-  }
 
   return (
     <AppLayout>
@@ -146,7 +132,7 @@ const LeaderboardsPage = () => {
         </div>
 
         {/* Leaderboards */}
-        {isLoading ? (
+        {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="h-32 bg-navy/70 rounded-lg animate-pulse border border-emerald/10" />
@@ -181,7 +167,7 @@ const LeaderboardsPage = () => {
               const rank = index + 1;
               return (
                 <Card 
-                  key={player.player_id} 
+                  key={player.id || player.player_id} 
                   className={`bg-navy/70 border-emerald/20 hover:border-emerald/40 transition-colors ${
                     rank <= 3 ? 'ring-2 ring-emerald/20' : ''
                   }`}
@@ -195,7 +181,7 @@ const LeaderboardsPage = () => {
                             {player.player_name}
                           </CardTitle>
                           <CardDescription className="text-gray-400">
-                            {t('leaderboards.dateAchieved', 'Achieved')}: {new Date(player.date_achieved).toLocaleDateString()}
+                            {t('leaderboards.dateAchieved', 'Achieved')}: {new Date(player.created_at).toLocaleDateString()}
                           </CardDescription>
                         </div>
                       </div>
@@ -216,7 +202,7 @@ const LeaderboardsPage = () => {
                       </div>
                       <div className="flex items-center gap-2">
                         <Avatar className="h-10 w-10">
-                          <AvatarImage src={player.avatar_url} />
+                          <AvatarImage src={player.player_avatar} />
                           <AvatarFallback className="bg-emerald/20 text-emerald">
                             {player.player_name?.charAt(0).toUpperCase()}
                           </AvatarFallback>
