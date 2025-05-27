@@ -21,6 +21,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { FriendsDropdown } from '@/components/friends/FriendsDropdown';
+import { NotificationButton } from '@/components/layout/NotificationButton';
 import { Menu, User, Settings, LogOut, DollarSign } from 'lucide-react';
 
 const Navbar = () => {
@@ -68,6 +69,7 @@ const Navbar = () => {
             {user ? (
               <div className="flex items-center space-x-4">
                 <FriendsDropdown />
+                <NotificationButton />
                 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -80,39 +82,39 @@ const Navbar = () => {
                       </Avatar>
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-56" align="end" forceMount>
+                  <DropdownMenuContent className="w-56 bg-navy/95 backdrop-blur-sm border-emerald/20" align="end" forceMount>
                     <div className="flex items-center justify-start gap-2 p-2">
                       <div className="flex flex-col space-y-1 leading-none">
-                        <p className="font-medium">{user.alias || user.email}</p>
+                        <p className="font-medium text-white">{user.alias || user.email}</p>
                         {user.alias && (
-                          <p className="w-[200px] truncate text-sm text-muted-foreground">
+                          <p className="w-[200px] truncate text-sm text-gray-400">
                             {user.email}
                           </p>
                         )}
                       </div>
                     </div>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild>
+                    <DropdownMenuSeparator className="bg-emerald/20" />
+                    <DropdownMenuItem asChild className="text-gray-300 hover:text-emerald hover:bg-emerald/10">
                       <Link to="/profile">
                         <User className="mr-2 h-4 w-4" />
                         <span>Profile</span>
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
+                    <DropdownMenuItem asChild className="text-gray-300 hover:text-emerald hover:bg-emerald/10">
                       <Link to="/funds">
                         <DollarSign className="mr-2 h-4 w-4" />
                         <span>Funds</span>
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
+                    <DropdownMenuItem asChild className="text-gray-300 hover:text-emerald hover:bg-emerald/10">
                       <Link to="/settings">
                         <Settings className="mr-2 h-4 w-4" />
                         <span>Settings</span>
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuSeparator />
+                    <DropdownMenuSeparator className="bg-emerald/20" />
                     <DropdownMenuItem
-                      className="cursor-pointer"
+                      className="cursor-pointer text-gray-300 hover:text-emerald hover:bg-emerald/10"
                       onClick={() => logout()}
                     >
                       <LogOut className="mr-2 h-4 w-4" />
@@ -132,6 +134,11 @@ const Navbar = () => {
 
           {/* Mobile menu button */}
           <div className="flex md:hidden items-center">
+            {user && (
+              <div className="flex items-center space-x-2 mr-2">
+                <NotificationButton />
+              </div>
+            )}
             <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
               <SheetTrigger asChild>
                 <Button variant="ghost" className="p-2">
@@ -140,8 +147,8 @@ const Navbar = () => {
               </SheetTrigger>
               <SheetContent side="top" className="bg-navy/90 backdrop-blur-sm border-b border-emerald/20">
                 <SheetHeader className="text-left">
-                  <SheetTitle>Menu</SheetTitle>
-                  <SheetDescription>
+                  <SheetTitle className="text-white">Menu</SheetTitle>
+                  <SheetDescription className="text-gray-400">
                     Navigate through the app.
                   </SheetDescription>
                 </SheetHeader>
@@ -154,7 +161,7 @@ const Navbar = () => {
                   </Link>
                    <Link 
                     to="/sit-and-go" 
-                    className="text-gray-300 hover:text-emerald transition-colors duration-200"
+                    className="block text-gray-300 hover:text-emerald transition-colors duration-200 p-2"
                   >
                     Sit & Go
                   </Link>
