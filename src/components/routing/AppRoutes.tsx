@@ -15,6 +15,9 @@ import { SharedHandPage } from '@/pages/SharedHandPage';
 import { TermsOfServicePage } from '@/pages/TermsOfServicePage';
 import { PrivacyPolicyPage } from '@/pages/PrivacyPolicyPage';
 import HowToPlayPage from '@/pages/HowToPlay/HowToPlayPage';
+import TournamentsRoutes from '@/router/TournamentsRoutes';
+import GamificationRoutes from '@/router/GamificationRoutes';
+import LobbyPage from '@/pages/Lobby/LobbyPage';
 
 export function AppRoutes() {
   return (
@@ -47,6 +50,14 @@ export function AppRoutes() {
         }
       />
       <Route
+        path="/lobby"
+        element={
+          <ProtectedRoute>
+            <LobbyPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/profile"
         element={
           <ProtectedRoute>
@@ -59,6 +70,30 @@ export function AppRoutes() {
         element={
           <ProtectedRoute>
             <GameRoom />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/tournaments/*"
+        element={
+          <ProtectedRoute>
+            <TournamentsRoutes />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/achievements"
+        element={
+          <ProtectedRoute>
+            <GamificationRoutes />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/leaderboards"
+        element={
+          <ProtectedRoute>
+            <GamificationRoutes />
           </ProtectedRoute>
         }
       />

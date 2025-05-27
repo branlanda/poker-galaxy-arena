@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useToast } from "@/hooks/use-toast"
 import { useNavigate } from 'react-router-dom';
-import { Moon, Sun, Menu, BarChart3, BookOpen } from 'lucide-react';
+import { Moon, Sun, Menu, BarChart3, BookOpen, Trophy, Users, Target } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 
 export function Navbar() {
@@ -53,6 +53,18 @@ export function Navbar() {
             <Link to="/" className="text-gray-300 hover:text-emerald transition-colors">
               {t('common.home', 'Inicio')}
             </Link>
+            {session && (
+              <Link to="/lobby" className="text-gray-300 hover:text-emerald transition-colors flex items-center">
+                <Users className="h-4 w-4 mr-1" />
+                Lobby
+              </Link>
+            )}
+            {session && (
+              <Link to="/tournaments" className="text-gray-300 hover:text-emerald transition-colors flex items-center">
+                <Trophy className="h-4 w-4 mr-1" />
+                Torneos
+              </Link>
+            )}
             <Link to="/how-to-play" className="text-gray-300 hover:text-emerald transition-colors flex items-center">
               <BookOpen className="h-4 w-4 mr-1" />
               Cómo Jugar
@@ -88,7 +100,14 @@ export function Navbar() {
                   <DropdownMenuLabel>{user?.email}</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => navigate('/profile')}>Perfil</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate('/account')}>Cuenta</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/achievements')}>
+                    <Target className="h-4 w-4 mr-2" />
+                    Logros
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/leaderboards')}>
+                    <Trophy className="h-4 w-4 mr-2" />
+                    Clasificaciones
+                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate('/admin')}>Admin</DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut}>Logout</DropdownMenuItem>
@@ -120,6 +139,18 @@ export function Navbar() {
                 <Link to="/" className="block text-gray-300 hover:text-emerald transition-colors py-2">
                   {t('common.home', 'Inicio')}
                 </Link>
+                {session && (
+                  <Link to="/lobby" className="block text-gray-300 hover:text-emerald transition-colors py-2 flex items-center">
+                    <Users className="h-4 w-4 mr-2" />
+                    Lobby
+                  </Link>
+                )}
+                {session && (
+                  <Link to="/tournaments" className="block text-gray-300 hover:text-emerald transition-colors py-2 flex items-center">
+                    <Trophy className="h-4 w-4 mr-2" />
+                    Torneos
+                  </Link>
+                )}
                 <Link to="/how-to-play" className="block text-gray-300 hover:text-emerald transition-colors py-2 flex items-center">
                   <BookOpen className="h-4 w-4 mr-2" />
                   Cómo Jugar
