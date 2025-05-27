@@ -8,11 +8,13 @@ interface AuthRouteProps {
 }
 
 export function AuthRoute({ children }: AuthRouteProps) {
-  const { session } = useAuth();
+  const { user } = useAuth();
 
-  if (session) {
+  // Si el usuario está autenticado, redirigir a la página principal
+  if (user) {
     return <Navigate to="/" replace />;
   }
 
+  // Si no está autenticado, mostrar la página de autenticación
   return children;
 }
