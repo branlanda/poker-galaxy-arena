@@ -17,10 +17,13 @@ import { useAuth } from '@/stores/auth';
 
 export const FriendsDropdown: React.FC = () => {
   const { user } = useAuth();
-  const { friends, onlineFriends } = useFriends();
+  const { friends } = useFriends();
   const [showAddFriend, setShowAddFriend] = useState(false);
   
   if (!user) return null;
+
+  // Create onlineFriends array from friends data
+  const onlineFriends = friends.filter(friend => friend.is_online);
 
   return (
     <DropdownMenu>
@@ -61,30 +64,30 @@ export const FriendsDropdown: React.FC = () => {
             </DropdownMenuLabel>
             {onlineFriends.map((friend) => (
               <DropdownMenuItem 
-                key={friend.id} 
+                key={friend.friend_id} 
                 className="text-gray-300 hover:text-white hover:bg-slate-700/50 cursor-pointer"
               >
                 <div className="flex items-center space-x-3 w-full">
                   <div className="relative">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src={friend.avatarUrl} alt={friend.alias} />
+                      <AvatarImage src={friend.friend_avatar_url} alt={friend.friend_alias} />
                       <AvatarFallback className="bg-emerald/20 text-emerald text-xs">
-                        {friend.alias?.charAt(0).toUpperCase()}
+                        {friend.friend_alias?.charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                     <div className="absolute -bottom-1 -right-1 h-3 w-3 bg-emerald rounded-full border-2 border-slate-800"></div>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{friend.alias}</p>
+                    <p className="text-sm font-medium truncate">{friend.friend_alias}</p>
                     <p className="text-xs text-gray-400">
-                      {friend.isPlaying ? `Playing ${friend.currentGame}` : 'Online'}
+                      {friend.current_table_id ? `Playing ${friend.current_game_type}` : 'Online'}
                     </p>
                   </div>
                   <div className="flex space-x-1">
                     <Button variant="ghost" size="sm" className="h-6 w-6 p-0 hover:bg-emerald/10">
                       <MessageCircle className="h-3 w-3" />
                     </Button>
-                    {friend.isPlaying && (
+                    {friend.current_table_id && (
                       <Button variant="ghost" size="sm" className="h-6 w-6 p-0 hover:bg-emerald/10">
                         <Gamepad2 className="h-3 w-3" />
                       </Button>
@@ -97,27 +100,27 @@ export const FriendsDropdown: React.FC = () => {
           </>
         )}
         
-        {friends.filter(f => !f.isOnline).length > 0 && (
+        {friends.filter(f => !f.is_online).length > 0 && (
           <>
             <DropdownMenuLabel className="text-gray-400 text-sm">
-              Offline ({friends.filter(f => !f.isOnline).length})
+              Offline ({friends.filter(f => !f.is_online).length})
             </DropdownMenuLabel>
-            {friends.filter(f => !f.isOnline).slice(0, 5).map((friend) => (
+            {friends.filter(f => !f.is_online).slice(0, 5).map((friend) => (
               <DropdownMenuItem 
-                key={friend.id} 
+                key={friend.friend_id} 
                 className="text-gray-400 hover:text-gray-300 hover:bg-slate-700/30 cursor-pointer"
               >
                 <div className="flex items-center space-x-3 w-full">
                   <Avatar className="h-8 w-8 opacity-60">
-                    <AvatarImage src={friend.avatarUrl} alt={friend.alias} />
+                    <AvatarImage src={friend.friend_avatar_url} alt={friend.friend_alias} />
                     <AvatarFallback className="bg-slate-700 text-gray-400 text-xs">
-                      {friend.alias?.charAt(0).toUpperCase()}
+                      {friend.friend_alias?.charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{friend.alias}</p>
+                    <p className="text-sm font-medium truncate">{friend.friend_alias}</p>
                     <p className="text-xs text-gray-500">
-                      Last seen {friend.lastSeen}
+                      Last seen {friend.last_seen}
                     </p>
                   </div>
                 </div>

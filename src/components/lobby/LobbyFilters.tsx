@@ -21,10 +21,10 @@ export function LobbyFilters({ filters, onFilterChange }: LobbyFiltersProps) {
 
   const hasActiveFilters = () => {
     return filters.searchQuery ||
-           filters.gameType !== 'ALL' ||
-           filters.minBuyIn ||
-           filters.maxBuyIn ||
-           filters.maxPlayers ||
+           filters.game_type !== 'ALL' ||
+           filters.min_buy_in ||
+           filters.max_buy_in ||
+           filters.max_players ||
            filters.showFull !== true ||
            filters.showEmpty !== true ||
            filters.sortBy !== 'activity';
@@ -33,10 +33,10 @@ export function LobbyFilters({ filters, onFilterChange }: LobbyFiltersProps) {
   const clearFilters = () => {
     onFilterChange({
       searchQuery: '',
-      gameType: 'ALL',
-      minBuyIn: undefined,
-      maxBuyIn: undefined,
-      maxPlayers: undefined,
+      game_type: 'ALL',
+      min_buy_in: undefined,
+      max_buy_in: undefined,
+      max_players: undefined,
       showFull: true,
       showEmpty: true,
       showActive: false,
@@ -87,8 +87,8 @@ export function LobbyFilters({ filters, onFilterChange }: LobbyFiltersProps) {
         <div className="space-y-2">
           <Label className="text-gray-300">{t('lobby.gameType', 'Game Type')}</Label>
           <Select 
-            value={filters.gameType || 'ALL'} 
-            onValueChange={(value) => onFilterChange({ gameType: value })}
+            value={filters.game_type || 'ALL'} 
+            onValueChange={(value) => onFilterChange({ game_type: value })}
           >
             <SelectTrigger className="bg-slate-800/60 border-emerald/20 text-white">
               <SelectValue />
@@ -111,9 +111,9 @@ export function LobbyFilters({ filters, onFilterChange }: LobbyFiltersProps) {
               <Input
                 type="number"
                 placeholder="0"
-                value={filters.minBuyIn || ''}
+                value={filters.min_buy_in || ''}
                 onChange={(e) => onFilterChange({ 
-                  minBuyIn: e.target.value ? parseFloat(e.target.value) : undefined 
+                  min_buy_in: e.target.value ? parseFloat(e.target.value) : undefined 
                 })}
                 className="bg-slate-800/60 border-emerald/20 text-white placeholder-gray-400"
               />
@@ -123,9 +123,9 @@ export function LobbyFilters({ filters, onFilterChange }: LobbyFiltersProps) {
               <Input
                 type="number"
                 placeholder="∞"
-                value={filters.maxBuyIn || ''}
+                value={filters.max_buy_in || ''}
                 onChange={(e) => onFilterChange({ 
-                  maxBuyIn: e.target.value ? parseFloat(e.target.value) : undefined 
+                  max_buy_in: e.target.value ? parseFloat(e.target.value) : undefined 
                 })}
                 className="bg-slate-800/60 border-emerald/20 text-white placeholder-gray-400"
               />
@@ -182,7 +182,7 @@ export function LobbyFilters({ filters, onFilterChange }: LobbyFiltersProps) {
           <Label className="text-gray-300">{t('lobby.sortBy', 'Sort By')}</Label>
           <Select 
             value={filters.sortBy || 'activity'} 
-            onValueChange={(value) => onFilterChange({ sortBy: value })}
+            onValueChange={(value) => onFilterChange({ sortBy: value as 'activity' | 'players' | 'buyIn' | 'created' })}
           >
             <SelectTrigger className="bg-slate-800/60 border-emerald/20 text-white">
               <SelectValue />
