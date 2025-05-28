@@ -1,19 +1,14 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Twitter, Facebook, MessageCircle } from 'lucide-react';
 import Logo from '@/assets/Logo';
-
 const Footer: React.FC = () => {
-  return (
-    <footer className="bg-navy/90 border-t border-emerald/10 pt-10 pb-6">
+  return <footer className="bg-navy/90 border-t border-emerald/10 pt-10 pb-6">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="space-y-4">
             <Logo />
-            <p className="text-gray-300 text-sm">
-              🎰 The premier destination for peer-to-peer online poker. Fair games, fast payouts, and a vibrant community. ♠️♥️♦️♣️
-            </p>
+            <p className="text-gray-300 text-sm">🎰 The premier destination for peer-to-peer online poker. Fair games, fast payouts, and a vibrant community. </p>
             <div className="flex space-x-3">
               <a href="#" className="text-emerald hover:text-emerald/80 transition-colors">
                 <span className="sr-only">Twitter</span>
@@ -66,13 +61,9 @@ const Footer: React.FC = () => {
           <p className="text-center text-sm text-gray-400">
             © {new Date().getFullYear()} Poker Galaxy 🌌 All rights reserved. 18+ 🎰 Play responsibly.
           </p>
-          <p className="text-center text-xs text-gray-500 mt-2">
-            This platform is intended for entertainment purposes only. 🎮 Virtual chips used in the game have no real money value. ♠️♥️♦️♣️
-          </p>
+          <p className="text-center text-xs text-gray-500 mt-2">This platform is intended for entertainment purposes only. 🎮 Virtual chips used in the game have no real money value. </p>
         </div>
       </div>
-    </footer>
-  );
+    </footer>;
 };
-
 export default Footer;
