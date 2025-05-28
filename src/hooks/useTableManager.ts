@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/stores/auth';
 import { supabase } from '@/lib/supabase';
@@ -50,7 +49,7 @@ export function useTableManager() {
 
       if (error) throw error;
 
-      const openTables: OpenTable[] = (playersAtTables as PlayerAtTableWithTable[] || []).map(item => ({
+      const openTables: OpenTable[] = (playersAtTables || []).map((item: any) => ({
         id: item.table_id,
         name: item.lobby_tables?.name || 'Unknown Table',
         type: (item.lobby_tables?.table_type as OpenTable['type']) || 'CASH_GAME',
