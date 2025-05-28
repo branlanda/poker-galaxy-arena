@@ -59,7 +59,7 @@ export const GameRoomContent: React.FC<GameRoomContentProps> = ({
   onAction,
   onLeaveTable
 }) => {
-  // Transform players data to PlayerState format
+  // Transform players data to PlayerState format for GameTable
   const transformedPlayers: PlayerState[] = players.map(transformPlayerAtTableToPlayerState);
   
   const playerState = isPlayerSeated ? 
@@ -145,7 +145,7 @@ export const GameRoomContent: React.FC<GameRoomContentProps> = ({
             </TabsContent>
             
             <TabsContent value="players" className="flex-1 m-0 p-2">
-              <PlayerList players={transformedPlayers} currentUserId={userId} />
+              <PlayerList players={players} gameState={gameState} />
             </TabsContent>
             
             <TabsContent value="info" className="flex-1 m-0 p-2">
