@@ -8,6 +8,7 @@ import { useJoinTable } from '@/hooks/useJoinTable';
 import { useAuth } from '@/stores/auth';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { Users, DollarSign, Lock, Play } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -23,7 +24,8 @@ interface JoinTableDialogProps {
 }
 
 export function JoinTableDialog({ table }: JoinTableDialogProps) {
-  const [isJoining, setIsJoining] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [buyInAmount, setBuyInAmount] = useState(table.min_buy_in);
   const [password, setPassword] = useState('');
   const { joinTable, loading } = useJoinTable();
   const { user } = useAuth();
@@ -31,114 +33,186 @@ export function JoinTableDialog({ table }: JoinTableDialogProps) {
   const { t } = useTranslation();
   
   const handleJoin = async () => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+
     const success = await joinTable(table, password);
-    if (!success) {
-      setIsJoining(false);
+    if (success) {
+      setIsOpen(false);
     }
   };
 
-  const handleEnterTable = () => {
-    // If user is the creator, go directly to the game
-    navigate(`/game/${table.id}`);
+  const handleDirectJoin = () => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+
+    // Si es el creador, ir directamente
+    if (user.id === table.creator_id) {
+      navigate(`/game/${table.id}`);
+      return;
+    }
+
+    // Si no es privada, intentar unirse directamente
+    if (!table.is_private) {
+      handleJoin();
+    } else {
+      setIsOpen(true);
+    }
   };
 
   const isFull = table.current_players >= table.max_players;
   const isCreator = user?.id === table.creator_id;
+  const canJoin = !isFull || isCreator;
+
+  // Botón principal más intuitivo
+  const getButtonText = () => {
+    if (!user) return '🔐 Iniciar Sesión para Jugar';
+    if (isCreator) return '🎮 Entrar a Mi Mesa';
+    if (isFull) return '😔 Mesa Llena';
+    if (table.is_private) return '🔒 Unirse con Contraseña';
+    return '🚀 ¡Jugar Ahora!';
+  };
+
+  const getButtonVariant = () => {
+    if (!canJoin && !isCreator) return "outline";
+    if (isCreator) return "default";
+    return "default";
+  };
 
   return (
-    <Dialog open={isJoining} onOpenChange={setIsJoining}>
-      <DialogTrigger asChild>
-        <Button 
-          className="w-full relative overflow-hidden group" 
-          disabled={isFull && !isCreator}
-          variant={isFull && !isCreator ? "outline" : "default"}
-          onClick={isCreator ? handleEnterTable : undefined}
-        >
-          <motion.div 
-            className="absolute inset-0 bg-emerald-500/20" 
-            initial={false}
-            animate={{ x: (isFull && !isCreator) ? '0%' : '100%' }}
-            transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-            style={{ display: (isFull && !isCreator) ? 'none' : 'block' }}
-          />
-          <motion.span 
-            className="relative z-10"
-            animate={{ scale: [1, 1.05, 1] }}
-            transition={{ repeat: Infinity, duration: 2, repeatType: "reverse" }}
-          >
-            {isCreator ? 
-              '🎮 ' + t('enterMyTable', 'Enter My Table') : 
-              (isFull ? t('tableFull', 'Mesa Llena') : t('joinTable', 'Unirse a la Mesa'))
-            }
-          </motion.span>
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>{t('joinTableName', 'Unirse a la Mesa')}: {table.name}</DialogTitle>
-          <DialogDescription>
-            {t('enterBuyIn', 'Ingresa tu cantidad de buy-in para unirte a esta mesa.')}
-          </DialogDescription>
-        </DialogHeader>
+    <>
+      <Button 
+        className="w-full relative overflow-hidden group" 
+        disabled={!canJoin && !isCreator}
+        variant={getButtonVariant()}
+        onClick={handleDirectJoin}
+      >
         <motion.div 
-          className="space-y-4 py-4"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
+          className="absolute inset-0 bg-emerald-500/20" 
+          initial={false}
+          animate={{ x: canJoin ? ['100%', '0%', '100%'] : '0%' }}
+          transition={{ 
+            repeat: canJoin ? Infinity : 0, 
+            duration: 2, 
+            ease: "linear" 
+          }}
+          style={{ display: canJoin ? 'block' : 'none' }}
+        />
+        <motion.span 
+          className="relative z-10 flex items-center justify-center gap-2"
+          animate={{ scale: canJoin ? [1, 1.02, 1] : 1 }}
+          transition={{ repeat: canJoin ? Infinity : 0, duration: 2, repeatType: "reverse" }}
         >
-          <div className="space-y-2">
-            <label className="text-sm font-medium">
-              {t('buyInAmount', 'Cantidad de Buy-in')} ({table.min_buy_in} - {table.max_buy_in})
-            </label>
-            <div className="relative">
-              <Input
-                type="number"
-                defaultValue={table.min_buy_in}
-                min={table.min_buy_in}
-                max={table.max_buy_in}
-                className="pl-6"
-              />
-              <span className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400">$</span>
-            </div>
-          </div>
+          {getButtonText()}
+        </motion.span>
+      </Button>
+
+      {/* Dialog solo para configuración avanzada */}
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Play className="w-5 h-5 text-emerald-500" />
+              Unirse a: {table.name}
+            </DialogTitle>
+            <DialogDescription>
+              Configura tu entrada a la mesa
+            </DialogDescription>
+          </DialogHeader>
           
-          {table.is_private && (
-            <motion.div 
-              className="space-y-2"
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              transition={{ delay: 0.2 }}
-            >
-              <label className="text-sm font-medium">
-                {t('password', 'Contraseña')}
-              </label>
-              <Input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder={t('enterTablePassword', 'Ingresa la contraseña de la mesa')}
-              />
-            </motion.div>
-          )}
-        </motion.div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => setIsJoining(false)}>
-            {t('cancel', 'Cancelar')}
-          </Button>
-          <Button 
-            onClick={handleJoin} 
-            disabled={loading}
+          <motion.div 
+            className="space-y-6 py-4"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
           >
-            {loading ? (
-              <div className="flex items-center">
-                <span className="animate-spin mr-2 h-4 w-4 border-t-2 border-b-2 border-white rounded-full"></span>
-                {t('joining', 'Uniéndose...')}
+            {/* Información de la mesa */}
+            <div className="bg-slate-800/50 rounded-lg p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Users className="w-4 h-4 text-emerald-400" />
+                  <span className="text-sm text-gray-300">Jugadores</span>
+                </div>
+                <span className="text-sm font-medium">{table.current_players}/{table.max_players}</span>
               </div>
-            ) : (
-              t('joinNow', 'Unirse Ahora')
+              
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <DollarSign className="w-4 h-4 text-emerald-400" />
+                  <span className="text-sm text-gray-300">Ciegas</span>
+                </div>
+                <span className="text-sm font-medium">${table.small_blind}/${table.big_blind}</span>
+              </div>
+            </div>
+
+            {/* Buy-in */}
+            <div className="space-y-3">
+              <label className="text-sm font-medium flex items-center gap-2">
+                <DollarSign className="w-4 h-4" />
+                Cantidad de Fichas ({table.min_buy_in} - {table.max_buy_in})
+              </label>
+              <div className="relative">
+                <Input
+                  type="number"
+                  value={buyInAmount}
+                  onChange={(e) => setBuyInAmount(Number(e.target.value))}
+                  min={table.min_buy_in}
+                  max={table.max_buy_in}
+                  className="pl-8"
+                />
+                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">$</span>
+              </div>
+            </div>
+            
+            {/* Contraseña si es necesaria */}
+            {table.is_private && (
+              <motion.div 
+                className="space-y-3"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                transition={{ delay: 0.2 }}
+              >
+                <label className="text-sm font-medium flex items-center gap-2">
+                  <Lock className="w-4 h-4" />
+                  Contraseña de la Mesa
+                </label>
+                <Input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Ingresa la contraseña"
+                />
+              </motion.div>
             )}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          </motion.div>
+          
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setIsOpen(false)}>
+              Cancelar
+            </Button>
+            <Button 
+              onClick={handleJoin} 
+              disabled={loading}
+              className="bg-emerald-600 hover:bg-emerald-700"
+            >
+              {loading ? (
+                <div className="flex items-center gap-2">
+                  <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div>
+                  Entrando...
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <Play className="w-4 h-4" />
+                  ¡Entrar Ahora!
+                </div>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
