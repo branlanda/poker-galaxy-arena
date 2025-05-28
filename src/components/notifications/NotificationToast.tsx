@@ -31,22 +31,22 @@ export const NotificationToast: React.FC<NotificationToastProps> = ({
   const getTypeStyles = () => {
     switch (notification.type) {
       case 'success':
-        return 'bg-green-500 border-green-600';
+        return 'bg-emerald border-emerald/50 text-white';
       case 'error':
-        return 'bg-red-500 border-red-600';
+        return 'bg-red-600 border-red-500 text-white';
       case 'warning':
-        return 'bg-yellow-500 border-yellow-600';
+        return 'bg-yellow-600 border-yellow-500 text-white';
       default:
-        return 'bg-blue-500 border-blue-600';
+        return 'bg-slate-800 border-emerald/20 text-white';
     }
   };
 
   return (
-    <div className={`${getTypeStyles()} text-white p-4 rounded-lg border shadow-lg max-w-sm animate-in slide-in-from-right`}>
+    <div className={`${getTypeStyles()} p-4 rounded-lg border shadow-lg max-w-sm animate-in slide-in-from-right backdrop-blur-sm`}>
       <div className="flex items-start justify-between">
         <div className="flex-1">
-          <h4 className="font-semibold">{notification.title}</h4>
-          <p className="text-sm opacity-90 mt-1">{notification.message}</p>
+          <h4 className="font-semibold text-white">{notification.title}</h4>
+          <p className="text-sm opacity-90 mt-1 text-gray-200">{notification.message}</p>
         </div>
         <button
           onClick={onClose}

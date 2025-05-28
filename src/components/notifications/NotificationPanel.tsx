@@ -50,9 +50,9 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-start justify-end p-4">
-      <div className="bg-navy/90 backdrop-blur-lg border border-emerald/20 rounded-lg w-full max-w-md h-[80vh] overflow-hidden animate-in slide-in-from-right">
+      <div className="bg-slate-800/95 backdrop-blur-lg border border-emerald/20 rounded-lg w-full max-w-md h-[80vh] overflow-hidden animate-in slide-in-from-right">
         <Tabs defaultValue="notifications" className="h-full flex flex-col">
-          <div className="p-4 border-b border-emerald/10 flex items-center justify-between bg-navy/50">
+          <div className="p-4 border-b border-emerald/10 flex items-center justify-between bg-slate-900/50">
             <div className="flex items-center">
               <Bell className="h-5 w-5 mr-2 text-emerald" />
               <h2 className="text-lg font-medium text-white">
@@ -64,16 +64,16 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
                 </Badge>
               )}
             </div>
-            <Button variant="ghost" size="sm" onClick={onClose}>
+            <Button variant="ghost" size="sm" onClick={onClose} className="text-gray-300 hover:text-white">
               <X className="h-5 w-5" />
             </Button>
           </div>
 
-          <TabsList className="grid w-full grid-cols-2 bg-navy/30">
-            <TabsTrigger value="notifications" className="text-white data-[state=active]:bg-emerald/20">
+          <TabsList className="grid w-full grid-cols-2 bg-slate-800/50">
+            <TabsTrigger value="notifications" className="text-gray-300 data-[state=active]:bg-emerald/20 data-[state=active]:text-white">
               Notifications
             </TabsTrigger>
-            <TabsTrigger value="settings" className="text-white data-[state=active]:bg-emerald/20">
+            <TabsTrigger value="settings" className="text-gray-300 data-[state=active]:bg-emerald/20 data-[state=active]:text-white">
               <Settings className="h-4 w-4 mr-1" />
               Settings
             </TabsTrigger>
@@ -87,7 +87,7 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
                     variant={filter === 'all' ? 'default' : 'ghost'}
                     size="sm"
                     onClick={() => setFilter('all')}
-                    className="h-8"
+                    className="h-8 text-gray-300 hover:text-white"
                   >
                     All
                   </Button>
@@ -95,7 +95,7 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
                     variant={filter === 'unread' ? 'default' : 'ghost'}
                     size="sm"
                     onClick={() => setFilter('unread')}
-                    className="h-8"
+                    className="h-8 text-gray-300 hover:text-white"
                   >
                     <Filter className="h-3 w-3 mr-1" />
                     Unread ({unreadCount})
@@ -107,7 +107,7 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
                     variant="ghost"
                     size="sm"
                     onClick={markAllAsRead}
-                    className="h-8 text-emerald hover:text-emerald"
+                    className="h-8 text-emerald hover:text-emerald/80"
                   >
                     <CheckCircle className="h-3 w-3 mr-1" />
                     Mark all read
@@ -162,7 +162,7 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
                   const pref = preferences.find(p => p.notification_type === type.key);
                   
                   return (
-                    <div key={type.key} className="space-y-4 p-4 rounded-lg bg-navy/30 border border-emerald/10">
+                    <div key={type.key} className="space-y-4 p-4 rounded-lg bg-slate-700/50 border border-emerald/10">
                       <div>
                         <h4 className="font-medium text-white">{type.label}</h4>
                       </div>

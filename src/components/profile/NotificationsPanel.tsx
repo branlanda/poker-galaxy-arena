@@ -149,7 +149,7 @@ export const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
             <Button 
               size="sm" 
               variant="outline" 
-              className="bg-emerald/10 border-emerald hover:bg-emerald/20"
+              className="bg-emerald/10 border-emerald hover:bg-emerald/20 text-emerald hover:text-emerald"
               onClick={() => handleFriendRequest(notification.id, friendId, true)}
             >
               <Check className="h-4 w-4 mr-1" />
@@ -158,7 +158,7 @@ export const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
             <Button 
               size="sm" 
               variant="outline"
-              className="bg-red-500/10 border-red-500 hover:bg-red-500/20 text-red-400"
+              className="bg-red-500/10 border-red-500 hover:bg-red-500/20 text-red-400 hover:text-red-400"
               onClick={() => handleFriendRequest(notification.id, friendId, false)}
             >
               <X className="h-4 w-4 mr-1" />
@@ -174,7 +174,7 @@ export const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
           <Button 
             size="sm" 
             variant="ghost" 
-            className="mt-2"
+            className="mt-2 text-gray-300 hover:text-white"
             onClick={() => markAsRead(notification.id)}
           >
             {t('notifications.markAsRead')}
@@ -187,15 +187,15 @@ export const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-start justify-end p-4">
-      <div className="bg-navy/90 backdrop-blur-lg border border-emerald/20 rounded-lg w-full max-w-md overflow-hidden animate-in slide-in-from-right">
-        <div className="p-4 border-b border-emerald/10 flex items-center justify-between bg-navy/50">
+      <div className="bg-slate-800/95 backdrop-blur-lg border border-emerald/20 rounded-lg w-full max-w-md overflow-hidden animate-in slide-in-from-right">
+        <div className="p-4 border-b border-emerald/10 flex items-center justify-between bg-slate-900/50">
           <div className="flex items-center">
             <Bell className="h-5 w-5 mr-2 text-emerald" />
             <h2 className="text-lg font-medium text-white">
               {t('notifications.title')}
             </h2>
           </div>
-          <Button variant="ghost" size="sm" onClick={onClose}>
+          <Button variant="ghost" size="sm" onClick={onClose} className="text-gray-300 hover:text-white">
             <X className="h-5 w-5" />
           </Button>
         </div>
@@ -216,7 +216,7 @@ export const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
               {notifications.map(notification => (
                 <div 
                   key={notification.id} 
-                  className={`p-4 ${notification.is_read ? 'bg-navy/30' : 'bg-emerald/5'}`}
+                  className={`p-4 ${notification.is_read ? 'bg-slate-800/30' : 'bg-emerald/5'}`}
                 >
                   <div className="flex">
                     <div className="mr-3 mt-1">
