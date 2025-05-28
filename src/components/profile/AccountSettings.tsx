@@ -55,7 +55,7 @@ export const AccountSettings: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Personal Information */}
-      <Card className="bg-navy/70 border-emerald/20">
+      <Card className="bg-slate-800/90 border-emerald/20">
         <CardHeader>
           <CardTitle className="text-white flex items-center">
             <Settings className="h-5 w-5 mr-2" />
@@ -71,7 +71,7 @@ export const AccountSettings: React.FC = () => {
                 type="email"
                 value={user?.email || ''}
                 disabled
-                className="bg-navy/50 border-emerald/20 text-gray-400"
+                className="bg-slate-700/60 border-emerald/20 text-gray-400"
               />
               <p className="text-xs text-gray-500 mt-1">Email cannot be changed</p>
             </div>
@@ -84,7 +84,7 @@ export const AccountSettings: React.FC = () => {
                 value={formData.alias}
                 onChange={(e) => setFormData(prev => ({ ...prev, alias: e.target.value }))}
                 placeholder="Enter your display name"
-                className="bg-navy/50 border-emerald/20 text-white"
+                className="bg-slate-700/60 border-emerald/20 text-white"
               />
             </div>
           </div>
@@ -92,14 +92,14 @@ export const AccountSettings: React.FC = () => {
           <div>
             <Label htmlFor="language" className="text-gray-300">Language</Label>
             <Select value={formData.language} onValueChange={(value) => setFormData(prev => ({ ...prev, language: value }))}>
-              <SelectTrigger className="bg-navy/50 border-emerald/20 text-white">
+              <SelectTrigger className="bg-slate-700/60 border-emerald/20 text-white">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="en">English</SelectItem>
-                <SelectItem value="es">Español</SelectItem>
-                <SelectItem value="fr">Français</SelectItem>
-                <SelectItem value="de">Deutsch</SelectItem>
+              <SelectContent className="bg-slate-800 border-emerald/20">
+                <SelectItem value="en" className="text-white hover:bg-slate-700">English</SelectItem>
+                <SelectItem value="es" className="text-white hover:bg-slate-700">Español</SelectItem>
+                <SelectItem value="fr" className="text-white hover:bg-slate-700">Français</SelectItem>
+                <SelectItem value="de" className="text-white hover:bg-slate-700">Deutsch</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -107,7 +107,7 @@ export const AccountSettings: React.FC = () => {
       </Card>
 
       {/* Privacy Settings */}
-      <Card className="bg-navy/70 border-emerald/20">
+      <Card className="bg-slate-800/90 border-emerald/20">
         <CardHeader>
           <CardTitle className="text-white flex items-center">
             <Shield className="h-5 w-5 mr-2" />
@@ -129,7 +129,7 @@ export const AccountSettings: React.FC = () => {
       </Card>
 
       {/* Notification Settings */}
-      <Card className="bg-navy/70 border-emerald/20">
+      <Card className="bg-slate-800/90 border-emerald/20">
         <CardHeader>
           <CardTitle className="text-white flex items-center">
             <Bell className="h-5 w-5 mr-2" />

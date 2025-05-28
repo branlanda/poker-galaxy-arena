@@ -48,82 +48,84 @@ const FundsPage = () => {
   }, [balanceError, ledgerError, toast]);
 
   return (
-    <AppLayout>
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
-        <h1 className="text-3xl font-bold">Mi Billetera</h1>
-        <div className="mt-4 sm:mt-0">
-          <WalletConnect />
-        </div>
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <Card className="p-6 col-span-2">
-          <h2 className="text-sm font-medium text-muted-foreground mb-2">SALDO DISPONIBLE</h2>
-          <div className="text-3xl font-bold">
-            {isBalanceLoading ? (
-              <div className="h-8 w-36 bg-muted animate-pulse rounded"></div>
-            ) : (
-              <span>{balance?.amount.toFixed(2)} USDT</span>
-            )}
+    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
+      <AppLayout>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+          <h1 className="text-3xl font-bold text-white">Mi Billetera</h1>
+          <div className="mt-4 sm:mt-0">
+            <WalletConnect />
           </div>
-          
-          {ethBalance && (
-            <div className="mt-2 text-sm text-muted-foreground">
-              <span>ETH en wallet: {parseFloat(ethBalance).toFixed(4)} ETH</span>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <Card className="p-6 col-span-2 bg-slate-800/90 border-emerald/20">
+            <h2 className="text-sm font-medium text-gray-400 mb-2">SALDO DISPONIBLE</h2>
+            <div className="text-3xl font-bold text-white">
+              {isBalanceLoading ? (
+                <div className="h-8 w-36 bg-slate-700 animate-pulse rounded"></div>
+              ) : (
+                <span>{balance?.amount.toFixed(2)} USDT</span>
+              )}
             </div>
-          )}
-        </Card>
+            
+            {ethBalance && (
+              <div className="mt-2 text-sm text-gray-400">
+                <span>ETH en wallet: {parseFloat(ethBalance).toFixed(4)} ETH</span>
+              </div>
+            )}
+          </Card>
+          
+          <Card className="p-6 bg-slate-800/90 border-emerald/20">
+            <h2 className="text-sm font-medium text-gray-400 mb-2">INFORMACIÓN</h2>
+            <Alert variant="default" className="bg-slate-700/50 border-none p-3">
+              <Info className="w-4 h-4" />
+              <AlertDescription className="text-gray-300">
+                Sistema de pagos real integrado con Stripe y CoinPal para máxima seguridad
+              </AlertDescription>
+            </Alert>
+          </Card>
+        </div>
         
-        <Card className="p-6">
-          <h2 className="text-sm font-medium text-muted-foreground mb-2">INFORMACIÓN</h2>
-          <Alert variant="default" className="bg-muted/50 border-none p-3">
-            <Info className="w-4 h-4" />
-            <AlertDescription>
-              Sistema de pagos real integrado con Stripe y CoinPal para máxima seguridad
-            </AlertDescription>
-          </Alert>
-        </Card>
-      </div>
-      
-      <Tabs defaultValue="payments" className="mb-8">
-        <TabsList className="mb-4">
-          <TabsTrigger value="payments">Pagos</TabsTrigger>
-          <TabsTrigger value="deposit">Depositar</TabsTrigger>
-          <TabsTrigger value="withdraw">Retirar</TabsTrigger>
-          <TabsTrigger value="kyc">Verificación KYC</TabsTrigger>
-          <TabsTrigger value="security">
-            <Shield className="h-4 w-4 mr-2" />
-            Seguridad
-          </TabsTrigger>
-        </TabsList>
+        <Tabs defaultValue="payments" className="mb-8">
+          <TabsList className="mb-4 bg-slate-800/90 border-emerald/20">
+            <TabsTrigger value="payments" className="data-[state=active]:bg-emerald data-[state=active]:text-white">Pagos</TabsTrigger>
+            <TabsTrigger value="deposit" className="data-[state=active]:bg-emerald data-[state=active]:text-white">Depositar</TabsTrigger>
+            <TabsTrigger value="withdraw" className="data-[state=active]:bg-emerald data-[state=active]:text-white">Retirar</TabsTrigger>
+            <TabsTrigger value="kyc" className="data-[state=active]:bg-emerald data-[state=active]:text-white">Verificación KYC</TabsTrigger>
+            <TabsTrigger value="security" className="data-[state=active]:bg-emerald data-[state=active]:text-white">
+              <Shield className="h-4 w-4 mr-2" />
+              Seguridad
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="payments">
+            <PaymentIntegration />
+          </TabsContent>
+          
+          <TabsContent value="deposit">
+            <DepositTab />
+          </TabsContent>
+          
+          <TabsContent value="withdraw">
+            <WithdrawTab />
+          </TabsContent>
+          
+          <TabsContent value="kyc">
+            <KycVerification />
+          </TabsContent>
+          
+          <TabsContent value="security">
+            <SecurityDashboard />
+          </TabsContent>
+        </Tabs>
         
-        <TabsContent value="payments">
-          <PaymentIntegration />
-        </TabsContent>
-        
-        <TabsContent value="deposit">
-          <DepositTab />
-        </TabsContent>
-        
-        <TabsContent value="withdraw">
-          <WithdrawTab />
-        </TabsContent>
-        
-        <TabsContent value="kyc">
-          <KycVerification />
-        </TabsContent>
-        
-        <TabsContent value="security">
-          <SecurityDashboard />
-        </TabsContent>
-      </Tabs>
-      
-      {isLedgerLoading ? (
-        <div className="h-32 w-full bg-muted/20 animate-pulse rounded mb-8"></div>
-      ) : (
-        <LedgerTable entries={ledger || []} />
-      )}
-    </AppLayout>
+        {isLedgerLoading ? (
+          <div className="h-32 w-full bg-slate-800/50 animate-pulse rounded mb-8"></div>
+        ) : (
+          <LedgerTable entries={ledger || []} />
+        )}
+      </AppLayout>
+    </div>
   );
 };
 

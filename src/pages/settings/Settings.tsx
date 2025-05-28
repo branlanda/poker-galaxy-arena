@@ -96,7 +96,7 @@ const SettingsPage = () => {
           </div>
           
           {/* Personal Information */}
-          <Card className="bg-slate-800/70 border-emerald/20 backdrop-blur-sm">
+          <Card className="bg-slate-800/90 border-emerald/20 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="text-white flex items-center">
                 <User className="h-5 w-5 mr-2 text-emerald" />
@@ -112,7 +112,7 @@ const SettingsPage = () => {
                     type="email"
                     value={user.email || ''}
                     disabled
-                    className="bg-slate-800/60 border-emerald/20 text-gray-400"
+                    className="bg-slate-700/60 border-emerald/20 text-gray-400"
                   />
                   <p className="text-xs text-gray-500">{t('settings.emailHelp', 'Contact support to change your email')}</p>
                 </div>
@@ -129,7 +129,7 @@ const SettingsPage = () => {
                     onChange={(e) => setAlias(e.target.value)}
                     minLength={3}
                     maxLength={24}
-                    className="bg-slate-800/60 border-emerald/20 text-white placeholder-gray-400"
+                    className="bg-slate-700/60 border-emerald/20 text-white placeholder-gray-400"
                   />
                 </div>
               </div>
@@ -152,7 +152,7 @@ const SettingsPage = () => {
           </Card>
 
           {/* Privacy Settings */}
-          <Card className="bg-slate-800/70 border-emerald/20 backdrop-blur-sm">
+          <Card className="bg-slate-800/90 border-emerald/20 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="text-white flex items-center">
                 <Shield className="h-5 w-5 mr-2 text-emerald" />
@@ -175,7 +175,7 @@ const SettingsPage = () => {
           </Card>
 
           {/* Preferences */}
-          <Card className="bg-slate-800/70 border-emerald/20 backdrop-blur-sm">
+          <Card className="bg-slate-800/90 border-emerald/20 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="text-white flex items-center">
                 <Globe className="h-5 w-5 mr-2 text-emerald" />
@@ -186,7 +186,7 @@ const SettingsPage = () => {
               <div className="space-y-2">
                 <Label htmlFor="language" className="text-gray-300">{t('settings.language', 'Language')}</Label>
                 <Select value={currentLanguage.code} onValueChange={handleLanguageChange}>
-                  <SelectTrigger className="bg-slate-800/60 border-emerald/20 text-white">
+                  <SelectTrigger className="bg-slate-700/60 border-emerald/20 text-white">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="bg-slate-800 border-emerald/20">
@@ -202,7 +202,7 @@ const SettingsPage = () => {
           </Card>
 
           {/* Notifications */}
-          <Card className="bg-slate-800/70 border-emerald/20 backdrop-blur-sm">
+          <Card className="bg-slate-800/90 border-emerald/20 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="text-white flex items-center">
                 <Bell className="h-5 w-5 mr-2 text-emerald" />

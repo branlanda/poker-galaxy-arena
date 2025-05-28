@@ -21,8 +21,8 @@ const SecuritySettings: React.FC = () => {
   if (loading) {
     return (
       <div className="animate-pulse space-y-4">
-        <div className="h-32 bg-muted rounded-lg"></div>
-        <div className="h-48 bg-muted rounded-lg"></div>
+        <div className="h-32 bg-slate-800/50 rounded-lg"></div>
+        <div className="h-48 bg-slate-800/50 rounded-lg"></div>
       </div>
     );
   }
@@ -30,29 +30,29 @@ const SecuritySettings: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Security Overview */}
-      <Card>
+      <Card className="bg-slate-800/90 border-emerald/20">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-white">
             <Shield className="h-5 w-5" />
             Estado de Seguridad
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="flex items-center justify-between p-3 border rounded-lg">
+            <div className="flex items-center justify-between p-3 border border-emerald/20 rounded-lg bg-slate-700/50">
               <div className="flex items-center gap-3">
-                <Mail className="h-5 w-5" />
-                <span>Verificación de Email</span>
+                <Mail className="h-5 w-5 text-emerald" />
+                <span className="text-gray-300">Verificación de Email</span>
               </div>
               <Badge variant={securitySettings.emailVerified ? "default" : "destructive"}>
                 {securitySettings.emailVerified ? "Verificado" : "Pendiente"}
               </Badge>
             </div>
 
-            <div className="flex items-center justify-between p-3 border rounded-lg">
+            <div className="flex items-center justify-between p-3 border border-emerald/20 rounded-lg bg-slate-700/50">
               <div className="flex items-center gap-3">
-                <Smartphone className="h-5 w-5" />
-                <span>Autenticación 2FA</span>
+                <Smartphone className="h-5 w-5 text-emerald" />
+                <span className="text-gray-300">Autenticación 2FA</span>
               </div>
               <div className="flex items-center gap-2">
                 <Badge variant={securitySettings.twoFactorEnabled ? "default" : "secondary"}>
@@ -69,12 +69,12 @@ const SecuritySettings: React.FC = () => {
             </div>
           </div>
 
-          <div className="p-3 border rounded-lg">
+          <div className="p-3 border border-emerald/20 rounded-lg bg-slate-700/50">
             <div className="flex items-center gap-3 mb-2">
-              <Key className="h-5 w-5" />
-              <span>Último cambio de contraseña</span>
+              <Key className="h-5 w-5 text-emerald" />
+              <span className="text-gray-300">Último cambio de contraseña</span>
             </div>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-gray-400">
               {securitySettings.lastPasswordChange
                 ? formatDistanceToNow(securitySettings.lastPasswordChange, { addSuffix: true, locale: es })
                 : "Nunca"}
@@ -82,12 +82,12 @@ const SecuritySettings: React.FC = () => {
           </div>
 
           {securitySettings.accountLocked && (
-            <div className="p-3 border border-red-200 bg-red-50 rounded-lg">
+            <div className="p-3 border border-red-400/20 bg-red-900/20 rounded-lg">
               <div className="flex items-center gap-3">
-                <AlertTriangle className="h-5 w-5 text-red-600" />
-                <span className="text-red-800 font-medium">Cuenta bloqueada</span>
+                <AlertTriangle className="h-5 w-5 text-red-400" />
+                <span className="text-red-300 font-medium">Cuenta bloqueada</span>
               </div>
-              <p className="text-sm text-red-600 mt-1">
+              <p className="text-sm text-red-400 mt-1">
                 Tu cuenta está temporalmente bloqueada debido a múltiples intentos de acceso fallidos.
               </p>
             </div>
@@ -96,16 +96,16 @@ const SecuritySettings: React.FC = () => {
       </Card>
 
       {/* Trusted Devices */}
-      <Card>
+      <Card className="bg-slate-800/90 border-emerald/20">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-white">
             <Monitor className="h-5 w-5" />
             Dispositivos de Confianza
           </CardTitle>
         </CardHeader>
         <CardContent>
           {devices.length === 0 ? (
-            <p className="text-muted-foreground text-center py-4">
+            <p className="text-gray-400 text-center py-4">
               No hay dispositivos de confianza registrados
             </p>
           ) : (
@@ -113,14 +113,14 @@ const SecuritySettings: React.FC = () => {
               {devices.map((device) => (
                 <div
                   key={device.id}
-                  className="flex items-center justify-between p-3 border rounded-lg"
+                  className="flex items-center justify-between p-3 border border-emerald/20 rounded-lg bg-slate-700/50"
                 >
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <Monitor className="h-4 w-4" />
-                      <span className="font-medium">{device.name}</span>
+                      <Monitor className="h-4 w-4 text-emerald" />
+                      <span className="font-medium text-gray-300">{device.name}</span>
                     </div>
-                    <div className="text-sm text-muted-foreground space-y-1">
+                    <div className="text-sm text-gray-400 space-y-1">
                       <p>{device.browser}</p>
                       {device.location && <p>{device.location}</p>}
                       <p>
@@ -132,6 +132,7 @@ const SecuritySettings: React.FC = () => {
                     variant="outline"
                     size="sm"
                     onClick={() => revokeDevice(device.id)}
+                    className="border-emerald/20 text-gray-300 hover:bg-slate-600"
                   >
                     Revocar
                   </Button>
@@ -143,23 +144,23 @@ const SecuritySettings: React.FC = () => {
       </Card>
 
       {/* Security Recommendations */}
-      <Card>
+      <Card className="bg-slate-800/90 border-emerald/20">
         <CardHeader>
-          <CardTitle>Recomendaciones de Seguridad</CardTitle>
+          <CardTitle className="text-white">Recomendaciones de Seguridad</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
             {!securitySettings.emailVerified && (
-              <div className="p-3 border border-yellow-200 bg-yellow-50 rounded-lg">
-                <p className="text-yellow-800">
+              <div className="p-3 border border-yellow-400/20 bg-yellow-900/20 rounded-lg">
+                <p className="text-yellow-300">
                   Verifica tu email para mejorar la seguridad de tu cuenta
                 </p>
               </div>
             )}
             
             {!securitySettings.twoFactorEnabled && (
-              <div className="p-3 border border-blue-200 bg-blue-50 rounded-lg">
-                <p className="text-blue-800">
+              <div className="p-3 border border-blue-400/20 bg-blue-900/20 rounded-lg">
+                <p className="text-blue-300">
                   Activa la autenticación de dos factores para mayor protección
                 </p>
               </div>
@@ -167,8 +168,8 @@ const SecuritySettings: React.FC = () => {
 
             {!securitySettings.lastPasswordChange || 
              (Date.now() - securitySettings.lastPasswordChange.getTime()) > 90 * 24 * 60 * 60 * 1000 && (
-              <div className="p-3 border border-orange-200 bg-orange-50 rounded-lg">
-                <p className="text-orange-800">
+              <div className="p-3 border border-orange-400/20 bg-orange-900/20 rounded-lg">
+                <p className="text-orange-300">
                   Considera cambiar tu contraseña regularmente (recomendado cada 90 días)
                 </p>
               </div>
