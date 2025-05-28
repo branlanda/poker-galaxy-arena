@@ -7,6 +7,7 @@ import { GameRoomError } from '@/components/poker/GameRoomError';
 import { GameRoomContent } from '@/components/poker/GameRoomContent';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/stores/auth';
+import { Card as PokerCard } from '@/types/poker';
 
 export default function GameRoom() {
   const { tableId } = useParams<{ tableId: string }>();
@@ -65,20 +66,24 @@ export default function GameRoom() {
 
   // Transform gameState to include required properties for poker GameState
   const transformedGameState = gameState ? {
-    id: gameState.id || table.id,
+    id: table.id, // Use table ID as game ID
     tableId: gameState.tableId,
     phase: gameState.phase,
     pot: gameState.pot,
-    dealerSeat: gameState.dealerSeat,
-    activeSeat: gameState.activeSeat,
+    dealerSeat: gameState.dealer,
+    activeSeat: gameState.seats?.findIndex((seat: any) => seat?.playerId === gameState.activePlayerId),
     activePlayerId: gameState.activePlayerId,
-    communityCards: gameState.communityCards || [],
+    communityCards: (gameState.communityCards || []).map((card: any): PokerCard => ({
+      suit: card.suit,
+      value: card.value,
+      code: card.code || `${card.value}${card.suit.charAt(0).toUpperCase()}`
+    })),
     currentBet: gameState.currentBet,
-    lastActionTime: gameState.lastActionTime || new Date().toISOString(),
+    lastActionTime: new Date().toISOString(),
     lastAction: gameState.lastAction,
     seats: gameState.seats,
-    createdAt: gameState.createdAt || new Date().toISOString(),
-    dealer: gameState.dealer || gameState.dealerSeat,
+    createdAt: new Date().toISOString(),
+    dealer: gameState.dealer,
     smallBlind: table.small_blind,
     bigBlind: table.big_blind
   } : null;
