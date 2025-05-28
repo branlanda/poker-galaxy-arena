@@ -1,6 +1,6 @@
 
 import { useParams, useNavigate } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useGameRoom } from '@/hooks/useGameRoom';
 import { GameRoomContent } from '@/components/poker/GameRoomContent';
 import { GameRoomLoader } from '@/components/poker/GameRoomLoader';
@@ -55,8 +55,8 @@ export default function GameRoom() {
   useEffect(() => {
     if (!user && !loading) {
       toast({
-        title: "Authentication Required",
-        description: "You need to be logged in to access the game room",
+        title: "Autenticación Requerida",
+        description: "Necesitas iniciar sesión para acceder a la sala de juego",
         variant: "destructive",
       });
       navigate('/login', { replace: true });
@@ -67,12 +67,12 @@ export default function GameRoom() {
   useEffect(() => {
     if (gameState?.lastAction && gameState.lastAction.playerId !== userId) {
       const actionMap: Record<string, string> = {
-        'FOLD': 'folded',
-        'CHECK': 'checked',
-        'CALL': 'called',
-        'BET': 'bet',
-        'RAISE': 'raised',
-        'ALL_IN': 'went ALL IN'
+        'FOLD': 'se retiró',
+        'CHECK': 'pasó',
+        'CALL': 'igualó',
+        'BET': 'apostó',
+        'RAISE': 'subió',
+        'ALL_IN': 'fue ALL IN'
       };
       
       const action = gameState.lastAction.action;
@@ -97,8 +97,8 @@ export default function GameRoom() {
   useEffect(() => {
     if (isPlayerTurn) {
       toast({
-        title: "Your Turn",
-        description: "It's your turn to act",
+        title: "Tu Turno",
+        description: "Es tu turno para actuar",
         variant: "default",
         duration: 3000,
       });
@@ -111,8 +111,8 @@ export default function GameRoom() {
     
     if (isPlayerTurn && turnTimeRemaining <= 0) {
       toast({
-        title: "Time Expired",
-        description: "You took too long, auto-folding",
+        title: "Tiempo Agotado",
+        description: "Te quedaste sin tiempo, retirándose automáticamente",
         variant: "destructive",
       });
       
@@ -131,8 +131,8 @@ export default function GameRoom() {
   useEffect(() => {
     if (!loading && table?.status === 'CLOSED') {
       toast({
-        title: "Table Closed",
-        description: "This table has been closed",
+        title: "Mesa Cerrada",
+        description: "Esta mesa ha sido cerrada",
         variant: "destructive",
       });
       navigate('/lobby');
@@ -151,7 +151,7 @@ export default function GameRoom() {
 
   // Show error state if there's an issue
   if (gameError || !table) {
-    const errorMessage = gameError || 'Table not found or you do not have permission to access it';
+    const errorMessage = gameError || 'Mesa no encontrada o no tienes permisos para acceder';
     return <GameRoomError error={errorMessage} onBack={() => navigate('/lobby')} />;
   }
 
