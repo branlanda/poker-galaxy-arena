@@ -73,7 +73,7 @@ const Navbar = () => {
                 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                    <Button variant="ghost" className="relative h-8 w-8 rounded-full hover:bg-slate-700/50">
                       <Avatar className="h-8 w-8">
                         <AvatarImage src={user.avatarUrl} alt={user.alias} />
                         <AvatarFallback className="bg-emerald/20 text-emerald">
@@ -82,7 +82,7 @@ const Navbar = () => {
                       </Avatar>
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-56 bg-navy/95 backdrop-blur-sm border-emerald/20" align="end" forceMount>
+                  <DropdownMenuContent className="w-56 bg-slate-800/95 backdrop-blur-sm border-emerald/20" align="end" forceMount>
                     <div className="flex items-center justify-start gap-2 p-2">
                       <div className="flex flex-col space-y-1 leading-none">
                         <p className="font-medium text-white">{user.alias || user.email}</p>
@@ -125,7 +125,7 @@ const Navbar = () => {
               </div>
             ) : (
               <Link to="/login">
-                <Button variant="secondary" size="sm">
+                <Button variant="outline" size="sm" className="bg-slate-800/60 border-emerald/20 hover:bg-slate-700/50 text-white">
                   Sign In
                 </Button>
               </Link>
@@ -141,11 +141,11 @@ const Navbar = () => {
             )}
             <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
               <SheetTrigger asChild>
-                <Button variant="ghost" className="p-2">
+                <Button variant="ghost" className="p-2 hover:bg-slate-700/50">
                   <Menu className="h-6 w-6 text-gray-300" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="top" className="bg-navy/90 backdrop-blur-sm border-b border-emerald/20">
+              <SheetContent side="top" className="bg-slate-800/95 backdrop-blur-sm border-b border-emerald/20">
                 <SheetHeader className="text-left">
                   <SheetTitle className="text-white">Menu</SheetTitle>
                   <SheetDescription className="text-gray-400">
@@ -169,12 +169,17 @@ const Navbar = () => {
                     Leaderboards
                   </Link>
                   {user ? (
-                    <Button variant="secondary" size="sm" onClick={() => { logout(); setMobileMenuOpen(false); }} className="w-full">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => { logout(); setMobileMenuOpen(false); }} 
+                      className="w-full bg-slate-800/60 border-emerald/20 hover:bg-slate-700/50 text-white"
+                    >
                       Sign Out
                     </Button>
                   ) : (
                     <Link to="/login" className="block">
-                      <Button variant="secondary" size="sm" className="w-full">
+                      <Button variant="outline" size="sm" className="w-full bg-slate-800/60 border-emerald/20 hover:bg-slate-700/50 text-white">
                         Sign In
                       </Button>
                     </Link>

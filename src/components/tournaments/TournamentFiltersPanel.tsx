@@ -42,11 +42,11 @@ export function TournamentFiltersPanel({ filters, onFiltersChange }: TournamentF
   };
 
   return (
-    <Card className="h-fit">
+    <Card className="h-fit bg-slate-800/70 border-emerald/20 backdrop-blur-sm">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg flex items-center">
-            <Filter className="h-5 w-5 mr-2" />
+          <CardTitle className="text-lg flex items-center text-white">
+            <Filter className="h-5 w-5 mr-2 text-emerald" />
             Filters
           </CardTitle>
           {hasActiveFilters() && (
@@ -54,7 +54,7 @@ export function TournamentFiltersPanel({ filters, onFiltersChange }: TournamentF
               variant="ghost"
               size="sm"
               onClick={clearFilters}
-              className="text-xs"
+              className="text-xs text-gray-400 hover:text-white hover:bg-slate-700/50"
             >
               <X className="h-3 w-3 mr-1" />
               Clear
@@ -65,7 +65,7 @@ export function TournamentFiltersPanel({ filters, onFiltersChange }: TournamentF
       <CardContent className="space-y-6">
         {/* Search */}
         <div className="space-y-2">
-          <Label htmlFor="search">Search</Label>
+          <Label htmlFor="search" className="text-gray-300">Search</Label>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
             <Input
@@ -73,20 +73,24 @@ export function TournamentFiltersPanel({ filters, onFiltersChange }: TournamentF
               placeholder="Tournament name..."
               value={filters.searchQuery || ''}
               onChange={(e) => updateFilters({ searchQuery: e.target.value })}
-              className="pl-10"
+              className="pl-10 bg-slate-800/60 border-emerald/20 text-white placeholder-gray-400"
             />
           </div>
         </div>
 
-        <Separator />
+        <Separator className="bg-emerald/20" />
 
         {/* Status Filter */}
         <div className="space-y-3">
-          <Label>Status</Label>
+          <Label className="text-gray-300">Status</Label>
           <div className="flex flex-wrap gap-2">
             <Badge
               variant={filters.status === 'ALL' ? "default" : "outline"}
-              className="cursor-pointer"
+              className={`cursor-pointer ${
+                filters.status === 'ALL' 
+                  ? 'bg-emerald text-white' 
+                  : 'bg-slate-700/50 text-gray-300 border-emerald/20 hover:bg-slate-600/50'
+              }`}
               onClick={() => updateFilters({ status: 'ALL' })}
             >
               All
@@ -95,7 +99,11 @@ export function TournamentFiltersPanel({ filters, onFiltersChange }: TournamentF
               <Badge
                 key={status}
                 variant={filters.status === status ? "default" : "outline"}
-                className="cursor-pointer"
+                className={`cursor-pointer ${
+                  filters.status === status 
+                    ? 'bg-emerald text-white' 
+                    : 'bg-slate-700/50 text-gray-300 border-emerald/20 hover:bg-slate-600/50'
+                }`}
                 onClick={() => {
                   updateFilters({ status: status });
                 }}
@@ -106,14 +114,14 @@ export function TournamentFiltersPanel({ filters, onFiltersChange }: TournamentF
           </div>
         </div>
 
-        <Separator />
+        <Separator className="bg-emerald/20" />
 
         {/* Buy-in Range */}
         <div className="space-y-3">
-          <Label>Buy-in Range</Label>
+          <Label className="text-gray-300">Buy-in Range</Label>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label htmlFor="buyInMin" className="text-xs text-gray-500">Min</Label>
+              <Label htmlFor="buyInMin" className="text-xs text-gray-400">Min</Label>
               <Input
                 id="buyInMin"
                 type="number"
@@ -122,10 +130,11 @@ export function TournamentFiltersPanel({ filters, onFiltersChange }: TournamentF
                 onChange={(e) => updateFilters({ 
                   buyInMin: e.target.value ? parseFloat(e.target.value) : null 
                 })}
+                className="bg-slate-800/60 border-emerald/20 text-white placeholder-gray-400"
               />
             </div>
             <div>
-              <Label htmlFor="buyInMax" className="text-xs text-gray-500">Max</Label>
+              <Label htmlFor="buyInMax" className="text-xs text-gray-400">Max</Label>
               <Input
                 id="buyInMax"
                 type="number"
@@ -134,20 +143,25 @@ export function TournamentFiltersPanel({ filters, onFiltersChange }: TournamentF
                 onChange={(e) => updateFilters({ 
                   buyInMax: e.target.value ? parseFloat(e.target.value) : null 
                 })}
+                className="bg-slate-800/60 border-emerald/20 text-white placeholder-gray-400"
               />
             </div>
           </div>
         </div>
 
-        <Separator />
+        <Separator className="bg-emerald/20" />
 
         {/* Tournament Type */}
         <div className="space-y-3">
-          <Label>Type</Label>
+          <Label className="text-gray-300">Type</Label>
           <div className="space-y-2">
             <Badge
               variant={filters.type === 'ALL' ? "default" : "outline"}
-              className="cursor-pointer w-full justify-center"
+              className={`cursor-pointer w-full justify-center ${
+                filters.type === 'ALL' 
+                  ? 'bg-emerald text-white' 
+                  : 'bg-slate-700/50 text-gray-300 border-emerald/20 hover:bg-slate-600/50'
+              }`}
               onClick={() => updateFilters({ type: 'ALL' })}
             >
               All Types
@@ -156,41 +170,16 @@ export function TournamentFiltersPanel({ filters, onFiltersChange }: TournamentF
               <Badge
                 key={type}
                 variant={filters.type === type ? "default" : "outline"}
-                className="cursor-pointer w-full justify-center"
-                onClick={() => {
-                  updateFilters({ type: type });
-                }}
+                className={`cursor-pointer w-full justify-center ${
+                  filters.type === type 
+                    ? 'bg-emerald text-white' 
+                    : 'bg-slate-700/50 text-gray-300 border-emerald/20 hover:bg-slate-600/50'
+                }`}
+                onClick={() => updateFilters({ type: type })}
               >
                 {type.replace('_', ' ')}
               </Badge>
             ))}
-          </div>
-        </div>
-
-        <Separator />
-
-        {/* Additional Filters */}
-        <div className="space-y-3">
-          <Label>Additional</Label>
-          <div className="space-y-2">
-            <Badge
-              variant={filters.isPrivate === false ? "default" : "outline"}
-              className="cursor-pointer w-full justify-center"
-              onClick={() => updateFilters({ 
-                isPrivate: filters.isPrivate === false ? null : false 
-              })}
-            >
-              Public Only
-            </Badge>
-            <Badge
-              variant={filters.isFeatured === true ? "default" : "outline"}
-              className="cursor-pointer w-full justify-center"
-              onClick={() => updateFilters({ 
-                isFeatured: filters.isFeatured === true ? null : true 
-              })}
-            >
-              Featured Only
-            </Badge>
           </div>
         </div>
       </CardContent>

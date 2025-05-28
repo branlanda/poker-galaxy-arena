@@ -1,32 +1,15 @@
 
-import { useState } from 'react';
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { TableFilters, TableType, SortOption } from '@/types/lobby';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { TableFilters } from '@/types/lobby';
+import { Search, Filter, X, Settings } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
-import { Search, SlidersHorizontal, ChevronDown, ChevronUp } from 'lucide-react';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import { Slider } from '@/components/ui/slider';
-import { motion, AnimatePresence } from 'framer-motion';
 
 interface LobbyFiltersProps {
   filters: TableFilters;
@@ -35,214 +18,184 @@ interface LobbyFiltersProps {
 
 export function LobbyFilters({ filters, onFilterChange }: LobbyFiltersProps) {
   const { t } = useTranslation();
-  const [filtersOpen, setFiltersOpen] = useState(false);
-  const [blindsRange, setBlindsRange] = useState<[number, number]>(filters.blindsRange);
-  const [buyInRange, setBuyInRange] = useState<[number, number]>(filters.buyInRange);
-  
-  // Apply slider changes after a delay to prevent too many updates
-  const handleBlindsChange = (value: number[]) => {
-    setBlindsRange([value[0], value[1]]);
-    onFilterChange({ blindsRange: [value[0], value[1]] });
+
+  const hasActiveFilters = () => {
+    return filters.searchQuery ||
+           filters.gameType !== 'ALL' ||
+           filters.minBuyIn ||
+           filters.maxBuyIn ||
+           filters.maxPlayers ||
+           filters.showFull !== true ||
+           filters.showEmpty !== true ||
+           filters.sortBy !== 'activity';
   };
-  
-  const handleBuyInChange = (value: number[]) => {
-    setBuyInRange([value[0], value[1]]);
-    onFilterChange({ buyInRange: [value[0], value[1]] });
+
+  const clearFilters = () => {
+    onFilterChange({
+      searchQuery: '',
+      gameType: 'ALL',
+      minBuyIn: undefined,
+      maxBuyIn: undefined,
+      maxPlayers: undefined,
+      showFull: true,
+      showEmpty: true,
+      showActive: false,
+      sortBy: 'activity'
+    });
   };
 
   return (
-    <div className="space-y-4 bg-navy-800/50 rounded-lg p-4 border border-emerald/10">
-      <div className="flex flex-col md:flex-row gap-4">
-        <div className="relative flex-grow">
-          <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <Input
-            className="pl-8"
-            placeholder={t('lobby.searchByName')}
-            value={filters.searchQuery}
-            onChange={(e) => onFilterChange({ searchQuery: e.target.value })}
-          />
+    <Card className="bg-slate-800/70 border-emerald/20 backdrop-blur-sm">
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-lg flex items-center text-white">
+            <Filter className="h-5 w-5 mr-2 text-emerald" />
+            {t('lobby.filters', 'Filters')}
+          </CardTitle>
+          {hasActiveFilters() && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={clearFilters}
+              className="text-xs text-gray-400 hover:text-white hover:bg-slate-700/50"
+            >
+              <X className="h-3 w-3 mr-1" />
+              {t('common.clear', 'Clear')}
+            </Button>
+          )}
         </div>
-        
-        <div className="flex gap-2">
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {/* Search */}
+        <div className="space-y-2">
+          <Label htmlFor="search" className="text-gray-300">{t('lobby.search', 'Search')}</Label>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <Input
+              id="search"
+              placeholder={t('lobby.searchPlaceholder', 'Search tables...')}
+              value={filters.searchQuery || ''}
+              onChange={(e) => onFilterChange({ searchQuery: e.target.value })}
+              className="pl-10 bg-slate-800/60 border-emerald/20 text-white placeholder-gray-400"
+            />
+          </div>
+        </div>
+
+        <Separator className="bg-emerald/20" />
+
+        {/* Game Type */}
+        <div className="space-y-2">
+          <Label className="text-gray-300">{t('lobby.gameType', 'Game Type')}</Label>
           <Select 
-            value={filters.tableType} 
-            onValueChange={(value) => onFilterChange({ tableType: value as TableType | 'ALL' })}
+            value={filters.gameType || 'ALL'} 
+            onValueChange={(value) => onFilterChange({ gameType: value })}
           >
-            <SelectTrigger className="w-[150px]">
-              <SelectValue placeholder={t('lobby.tableType')} />
+            <SelectTrigger className="bg-slate-800/60 border-emerald/20 text-white">
+              <SelectValue />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ALL">{t('lobby.allTableTypes')}</SelectItem>
-              <SelectItem value="CASH">{t('lobby.cashGame')}</SelectItem>
-              <SelectItem value="TOURNAMENT">{t('lobby.tournament')}</SelectItem>
+            <SelectContent className="bg-slate-800 border-emerald/20">
+              <SelectItem value="ALL" className="text-white hover:bg-slate-700">All Games</SelectItem>
+              <SelectItem value="TEXAS_HOLDEM" className="text-white hover:bg-slate-700">Texas Hold'em</SelectItem>
+              <SelectItem value="OMAHA" className="text-white hover:bg-slate-700">Omaha</SelectItem>
+              <SelectItem value="SEVEN_CARD_STUD" className="text-white hover:bg-slate-700">Seven Card Stud</SelectItem>
             </SelectContent>
           </Select>
-          
-          <Select 
-            value={filters.sortBy} 
-            onValueChange={(value) => onFilterChange({ sortBy: value as SortOption })}
-          >
-            <SelectTrigger className="w-[150px]">
-              <SelectValue placeholder={t('lobby.sortBy')} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="activity">{t('lobby.sortActivity')}</SelectItem>
-              <SelectItem value="players">{t('lobby.sortPlayers')}</SelectItem>
-              <SelectItem value="newest">{t('lobby.sortNewest')}</SelectItem>
-              <SelectItem value="blinds_asc">{t('lobby.sortBlindsAsc')}</SelectItem>
-              <SelectItem value="blinds_desc">{t('lobby.sortBlindsDesc')}</SelectItem>
-            </SelectContent>
-          </Select>
-          
-          <Button 
-            variant="outline" 
-            size="icon"
-            onClick={() => setFiltersOpen(!filtersOpen)}
-            className={filtersOpen ? 'bg-emerald/10' : ''}
-          >
-            <SlidersHorizontal className="h-4 w-4" />
-          </Button>
         </div>
-      </div>
-      
-      <AnimatePresence>
-        {filtersOpen && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="overflow-hidden"
-          >
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-emerald/10">
-              <div className="space-y-4">
-                <div>
-                  <h3 className="text-sm font-medium mb-2">{t('lobby.blindsRange')}</h3>
-                  <div className="space-y-4">
-                    <Slider
-                      value={[blindsRange[0], blindsRange[1]]}
-                      min={0}
-                      max={1000}
-                      step={10}
-                      onValueChange={handleBlindsChange}
-                      className="my-4"
-                    />
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-gray-400">
-                        ${blindsRange[0]} - ${blindsRange[1]}
-                      </span>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => {
-                          setBlindsRange([0, 1000]);
-                          onFilterChange({ blindsRange: [0, 1000] });
-                        }}
-                      >
-                        {t('common.reset')}
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-                
-                <div>
-                  <h3 className="text-sm font-medium mb-2">{t('lobby.buyInRange')}</h3>
-                  <div className="space-y-4">
-                    <Slider
-                      value={[buyInRange[0], buyInRange[1]]}
-                      min={0}
-                      max={10000}
-                      step={100}
-                      onValueChange={handleBuyInChange}
-                      className="my-4"
-                    />
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-gray-400">
-                        ${buyInRange[0]} - ${buyInRange[1]}
-                      </span>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => {
-                          setBuyInRange([0, 10000]);
-                          onFilterChange({ buyInRange: [0, 10000] });
-                        }}
-                      >
-                        {t('common.reset')}
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="showEmpty" className="flex items-center space-x-2 cursor-pointer">
-                    <span>{t('lobby.showEmptyTables')}</span>
-                  </Label>
-                  <Switch 
-                    id="showEmpty"
-                    checked={filters.showEmpty}
-                    onCheckedChange={(checked) => onFilterChange({ showEmpty: checked })}
-                  />
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="showFull" className="flex items-center space-x-2 cursor-pointer">
-                    <span>{t('lobby.showFullTables')}</span>
-                  </Label>
-                  <Switch 
-                    id="showFull"
-                    checked={filters.showFull}
-                    onCheckedChange={(checked) => onFilterChange({ showFull: checked })}
-                  />
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="showPrivate" className="flex items-center space-x-2 cursor-pointer">
-                    <span>{t('lobby.showPrivateTables')}</span>
-                  </Label>
-                  <Switch 
-                    id="showPrivate"
-                    checked={filters.showPrivate}
-                    onCheckedChange={(checked) => onFilterChange({ showPrivate: checked })}
-                  />
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="showActive" className="flex items-center space-x-2 cursor-pointer">
-                    <span>{t('lobby.onlyActiveTables')}</span>
-                  </Label>
-                  <Switch 
-                    id="showActive"
-                    checked={filters.showActive}
-                    onCheckedChange={(checked) => onFilterChange({ showActive: checked })}
-                  />
-                </div>
-                
-                <div className="flex justify-end mt-4">
-                  <Button
-                    variant="outline"
-                    onClick={() => onFilterChange({
-                      searchQuery: '',
-                      tableType: 'ALL',
-                      blindsRange: [0, 1000],
-                      buyInRange: [0, 10000],
-                      showFull: true,
-                      showEmpty: true,
-                      showPrivate: true,
-                      showActive: false,
-                      sortBy: 'activity'
-                    })}
-                  >
-                    {t('lobby.resetAllFilters')}
-                  </Button>
-                </div>
-              </div>
+
+        {/* Buy-in Range */}
+        <div className="space-y-3">
+          <Label className="text-gray-300">{t('lobby.buyInRange', 'Buy-in Range')}</Label>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label className="text-xs text-gray-400">{t('common.min', 'Min')}</Label>
+              <Input
+                type="number"
+                placeholder="0"
+                value={filters.minBuyIn || ''}
+                onChange={(e) => onFilterChange({ 
+                  minBuyIn: e.target.value ? parseFloat(e.target.value) : undefined 
+                })}
+                className="bg-slate-800/60 border-emerald/20 text-white placeholder-gray-400"
+              />
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+            <div>
+              <Label className="text-xs text-gray-400">{t('common.max', 'Max')}</Label>
+              <Input
+                type="number"
+                placeholder="∞"
+                value={filters.maxBuyIn || ''}
+                onChange={(e) => onFilterChange({ 
+                  maxBuyIn: e.target.value ? parseFloat(e.target.value) : undefined 
+                })}
+                className="bg-slate-800/60 border-emerald/20 text-white placeholder-gray-400"
+              />
+            </div>
+          </div>
+        </div>
+
+        <Separator className="bg-emerald/20" />
+
+        {/* Table Options */}
+        <div className="space-y-3">
+          <Label className="text-gray-300">{t('lobby.tableOptions', 'Table Options')}</Label>
+          <div className="flex flex-wrap gap-2">
+            <Badge
+              variant={filters.showFull ? "default" : "outline"}
+              className={`cursor-pointer ${
+                filters.showFull 
+                  ? 'bg-emerald text-white' 
+                  : 'bg-slate-700/50 text-gray-300 border-emerald/20 hover:bg-slate-600/50'
+              }`}
+              onClick={() => onFilterChange({ showFull: !filters.showFull })}
+            >
+              {t('lobby.showFull', 'Show Full')}
+            </Badge>
+            <Badge
+              variant={filters.showEmpty ? "default" : "outline"}
+              className={`cursor-pointer ${
+                filters.showEmpty 
+                  ? 'bg-emerald text-white' 
+                  : 'bg-slate-700/50 text-gray-300 border-emerald/20 hover:bg-slate-600/50'
+              }`}
+              onClick={() => onFilterChange({ showEmpty: !filters.showEmpty })}
+            >
+              {t('lobby.showEmpty', 'Show Empty')}
+            </Badge>
+            <Badge
+              variant={filters.showActive ? "default" : "outline"}
+              className={`cursor-pointer ${
+                filters.showActive 
+                  ? 'bg-emerald text-white' 
+                  : 'bg-slate-700/50 text-gray-300 border-emerald/20 hover:bg-slate-600/50'
+              }`}
+              onClick={() => onFilterChange({ showActive: !filters.showActive })}
+            >
+              {t('lobby.activeOnly', 'Active Only')}
+            </Badge>
+          </div>
+        </div>
+
+        <Separator className="bg-emerald/20" />
+
+        {/* Sort By */}
+        <div className="space-y-2">
+          <Label className="text-gray-300">{t('lobby.sortBy', 'Sort By')}</Label>
+          <Select 
+            value={filters.sortBy || 'activity'} 
+            onValueChange={(value) => onFilterChange({ sortBy: value })}
+          >
+            <SelectTrigger className="bg-slate-800/60 border-emerald/20 text-white">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="bg-slate-800 border-emerald/20">
+              <SelectItem value="activity" className="text-white hover:bg-slate-700">Recent Activity</SelectItem>
+              <SelectItem value="players" className="text-white hover:bg-slate-700">Player Count</SelectItem>
+              <SelectItem value="buyIn" className="text-white hover:bg-slate-700">Buy-in Amount</SelectItem>
+              <SelectItem value="created" className="text-white hover:bg-slate-700">Recently Created</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

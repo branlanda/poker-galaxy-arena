@@ -18,10 +18,10 @@ export const NotificationButton: React.FC = () => {
       <Button
         variant="ghost"
         size="icon"
-        className="relative"
+        className="relative hover:bg-slate-700/50"
         onClick={() => setShowPanel(true)}
       >
-        <Bell className="h-5 w-5" />
+        <Bell className="h-5 w-5 text-gray-300" />
         
         {unreadCount > 0 && (
           <span className="absolute top-1 right-1 h-4 w-4 rounded-full bg-emerald text-[10px] font-medium flex items-center justify-center text-black">
