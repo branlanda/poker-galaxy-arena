@@ -37,16 +37,16 @@ export function useTableManager() {
 
       if (error) throw error;
 
-      const openTables: OpenTable[] = playersAtTables.map(item => ({
+      const openTables: OpenTable[] = playersAtTables?.map(item => ({
         id: item.table_id,
-        name: item.lobby_tables.name,
-        type: item.lobby_tables.table_type as OpenTable['type'],
-        status: item.lobby_tables.status as OpenTable['status'],
-        currentPlayers: item.lobby_tables.current_players,
-        maxPlayers: item.lobby_tables.max_players,
+        name: item.lobby_tables?.name || 'Unknown Table',
+        type: (item.lobby_tables?.table_type as OpenTable['type']) || 'CASH_GAME',
+        status: (item.lobby_tables?.status as OpenTable['status']) || 'WAITING',
+        currentPlayers: item.lobby_tables?.current_players || 0,
+        maxPlayers: item.lobby_tables?.max_players || 9,
         lastActivity: new Date(),
         joinedAt: new Date(item.joined_at)
-      }));
+      })) || [];
 
       setState(prev => ({
         ...prev,
@@ -166,15 +166,16 @@ export function useTableManager() {
           filter: `table_id=eq.${table.id}`
         }, (payload) => {
           // Update table status based on game state changes
-          if (payload.new) {
+          if (payload.new && typeof payload.new === 'object') {
+            const gameData = payload.new as Record<string, any>;
             updateTableStatus(table.id, {
-              pot: payload.new.pot || 0,
-              gamePhase: payload.new.phase,
+              pot: gameData.pot || 0,
+              gamePhase: gameData.phase || undefined,
               lastActivity: new Date()
             });
 
             // Check if it's player's turn
-            const isPlayerTurn = payload.new.active_player_id === user.id;
+            const isPlayerTurn = gameData.active_player_id === user.id;
             updateNotifications(table.id, { isPlayerTurn });
           }
         })
