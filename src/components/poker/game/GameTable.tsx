@@ -32,21 +32,21 @@ export const GameTable: React.FC<GameTableProps> = ({
   // Determine max number of seats
   const maxSeats = 9;
   
-  // Enhanced seat positions for better circular layout
+  // Optimized seat positions for perfect circular layout matching the image
   const seatPositions = [
-    { top: '82%', left: '50%', transform: 'translate(-50%, -50%)' },     // Seat 0 - Bottom center
-    { top: '70%', left: '20%', transform: 'translate(-50%, -50%)' },     // Seat 1 - Bottom left
-    { top: '45%', left: '8%', transform: 'translate(-50%, -50%)' },      // Seat 2 - Middle left
-    { top: '20%', left: '20%', transform: 'translate(-50%, -50%)' },     // Seat 3 - Top left
-    { top: '12%', left: '40%', transform: 'translate(-50%, -50%)' },     // Seat 4 - Top left-center
-    { top: '12%', left: '60%', transform: 'translate(-50%, -50%)' },     // Seat 5 - Top right-center
-    { top: '20%', left: '80%', transform: 'translate(-50%, -50%)' },     // Seat 6 - Top right
-    { top: '45%', left: '92%', transform: 'translate(-50%, -50%)' },     // Seat 7 - Middle right
-    { top: '70%', left: '80%', transform: 'translate(-50%, -50%)' },     // Seat 8 - Bottom right
+    { top: '85%', left: '50%', transform: 'translate(-50%, -50%)' },     // Seat 0 - Bottom center
+    { top: '73%', left: '18%', transform: 'translate(-50%, -50%)' },     // Seat 1 - Bottom left
+    { top: '50%', left: '7%', transform: 'translate(-50%, -50%)' },      // Seat 2 - Middle left
+    { top: '27%', left: '18%', transform: 'translate(-50%, -50%)' },     // Seat 3 - Top left
+    { top: '15%', left: '38%', transform: 'translate(-50%, -50%)' },     // Seat 4 - Top left-center
+    { top: '15%', left: '62%', transform: 'translate(-50%, -50%)' },     // Seat 5 - Top right-center
+    { top: '27%', left: '82%', transform: 'translate(-50%, -50%)' },     // Seat 6 - Top right
+    { top: '50%', left: '93%', transform: 'translate(-50%, -50%)' },     // Seat 7 - Middle right
+    { top: '73%', left: '82%', transform: 'translate(-50%, -50%)' },     // Seat 8 - Bottom right
   ];
 
   return (
-    <div className="relative w-full h-[600px] bg-gradient-to-br from-emerald-900 via-emerald-800 to-emerald-900 rounded-full border-8 border-amber-600/80 shadow-2xl overflow-hidden">
+    <div className="relative w-full h-[600px] bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-full border-8 border-amber-600/80 shadow-2xl overflow-hidden">
       {/* Table felt texture overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-emerald-800/30 to-emerald-900/50 rounded-full"></div>
       
@@ -116,7 +116,7 @@ export const GameTable: React.FC<GameTableProps> = ({
           style={{
             top: seatPositions[game.dealerSeat].top,
             left: seatPositions[game.dealerSeat].left,
-            transform: 'translate(-50%, -80px)'
+            transform: 'translate(-20px, -80px)'
           }}
           initial={{ scale: 0, rotate: -180 }}
           animate={{ scale: 1, rotate: 0 }}

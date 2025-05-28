@@ -6,12 +6,14 @@ import { GameControls } from './game/GameControls';
 import { GameChat } from './GameChat';
 import { GameInfo } from './GameInfo';
 import { PlayerList } from './PlayerList';
+import { AvailableTablesDropdown } from './game/AvailableTablesDropdown';
 import { GameState, PlayerState } from '@/types/poker';
 import { PlayerAtTable, LobbyTable } from '@/types/lobby';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { MessageCircle, Users, BarChart3, RefreshCw, Settings, Plus } from 'lucide-react';
+import { MessageCircle, Users, BarChart3, RefreshCw, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 
 interface GameRoomContentProps {
   tableId: string;
@@ -59,11 +61,17 @@ export const GameRoomContent: React.FC<GameRoomContentProps> = ({
   onAction,
   onLeaveTable
 }) => {
+  const navigate = useNavigate();
+  
   // Transform players data to PlayerState format for GameTable
   const transformedPlayers: PlayerState[] = players.map(transformPlayerAtTableToPlayerState);
   
   const playerState = isPlayerSeated ? 
     transformedPlayers.find(p => p.playerId === userId) : undefined;
+
+  const handleTableSelect = (newTableId: string) => {
+    navigate(`/game/${newTableId}`);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 flex flex-col text-white">
@@ -89,14 +97,10 @@ export const GameRoomContent: React.FC<GameRoomContentProps> = ({
                 </TabsTrigger>
               </TabsList>
             </Tabs>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-emerald-400 hover:text-emerald-300 hover:bg-emerald/10"
-            >
-              <Plus className="w-4 h-4 mr-1" />
-              <span className="hidden sm:inline">Nueva Mesa</span>
-            </Button>
+            <AvailableTablesDropdown 
+              currentTableId={tableId}
+              onTableSelect={handleTableSelect}
+            />
           </div>
           
           <div className="flex items-center gap-2">

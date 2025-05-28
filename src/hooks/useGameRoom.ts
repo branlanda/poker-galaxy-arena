@@ -36,17 +36,20 @@ export function useGameRoom(tableId: string | undefined) {
       // Transform SeatState to PlayerState
       const transformedPlayer: PlayerState = {
         id: `seat-${playerSeatIndex}`,
-        gameId: gameState.id || tableId || '',
+        gameId: tableId || 'temp-game-id',
         playerId: seat.playerId,
         playerName: seat.playerName,
         seatNumber: playerSeatIndex,
         stack: seat.stack,
-        holeCards: seat.cards,
-        status: seat.status === 'SITTING' ? 'SITTING' : 
-               seat.status === 'PLAYING' ? 'PLAYING' :
-               seat.status === 'FOLDED' ? 'FOLDED' :
-               seat.status === 'ALL_IN' ? 'ALL_IN' : 'SITTING',
-        currentBet: seat.currentBet || seat.bet || 0,
+        holeCards: seat.cards?.map((card: any) => ({
+          suit: card.suit,
+          value: card.value,
+          code: card.code || `${card.value}${card.suit.charAt(0).toUpperCase()}`
+        })),
+        status: seat.isFolded ? 'FOLDED' : 
+               seat.isAllIn ? 'ALL_IN' :
+               seat.isActive ? 'PLAYING' : 'SITTING',
+        currentBet: seat.bet || 0,
         isDealer: seat.isDealer || false,
         isSmallBlind: seat.isSmallBlind || false,
         isBigBlind: seat.isBigBlind || false,
@@ -76,8 +79,8 @@ export function useGameRoom(tableId: string | undefined) {
     TURN_TIMEOUT_MS,
     playerState,
     gameState: gameState ? {
-      id: gameState.id || tableId || '',
-      tableId: gameState.tableId || tableId || '',
+      id: tableId || 'temp-game-id',
+      tableId: tableId || 'temp-table-id',
       phase: gameState.phase,
       pot: gameState.pot,
       dealerSeat: gameState.dealer,
@@ -92,7 +95,7 @@ export function useGameRoom(tableId: string | undefined) {
       lastActionTime: new Date().toISOString(),
       lastAction: gameState.lastAction ? {
         id: `action-${Date.now()}`,
-        gameId: gameState.id || tableId || '',
+        gameId: tableId || 'temp-game-id',
         playerId: gameState.lastAction.playerId,
         action: gameState.lastAction.action,
         amount: gameState.lastAction.amount,
