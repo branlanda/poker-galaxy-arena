@@ -21,10 +21,9 @@ export function LobbyFilters({ filters, onFilterChange }: LobbyFiltersProps) {
 
   const hasActiveFilters = () => {
     return filters.searchQuery ||
-           filters.game_type !== 'ALL' ||
-           filters.min_buy_in ||
-           filters.max_buy_in ||
-           filters.max_players ||
+           filters.tableType !== 'ALL' ||
+           filters.buyInRange[0] > 0 ||
+           filters.buyInRange[1] < 10000 ||
            filters.showFull !== true ||
            filters.showEmpty !== true ||
            filters.sortBy !== 'activity';
@@ -33,13 +32,13 @@ export function LobbyFilters({ filters, onFilterChange }: LobbyFiltersProps) {
   const clearFilters = () => {
     onFilterChange({
       searchQuery: '',
-      game_type: 'ALL',
-      min_buy_in: undefined,
-      max_buy_in: undefined,
-      max_players: undefined,
+      tableType: 'ALL',
+      buyInRange: [0, 10000],
+      blindsRange: [0, 1000],
       showFull: true,
       showEmpty: true,
       showActive: false,
+      showPrivate: true,
       sortBy: 'activity'
     });
   };
@@ -87,17 +86,16 @@ export function LobbyFilters({ filters, onFilterChange }: LobbyFiltersProps) {
         <div className="space-y-2">
           <Label className="text-gray-300">{t('lobby.gameType', 'Game Type')}</Label>
           <Select 
-            value={filters.game_type || 'ALL'} 
-            onValueChange={(value) => onFilterChange({ game_type: value })}
+            value={filters.tableType || 'ALL'} 
+            onValueChange={(value) => onFilterChange({ tableType: value as any })}
           >
             <SelectTrigger className="bg-slate-800/60 border-emerald/20 text-white">
               <SelectValue />
             </SelectTrigger>
             <SelectContent className="bg-slate-800 border-emerald/20">
               <SelectItem value="ALL" className="text-white hover:bg-slate-700">All Games</SelectItem>
-              <SelectItem value="TEXAS_HOLDEM" className="text-white hover:bg-slate-700">Texas Hold'em</SelectItem>
-              <SelectItem value="OMAHA" className="text-white hover:bg-slate-700">Omaha</SelectItem>
-              <SelectItem value="SEVEN_CARD_STUD" className="text-white hover:bg-slate-700">Seven Card Stud</SelectItem>
+              <SelectItem value="CASH" className="text-white hover:bg-slate-700">Cash Games</SelectItem>
+              <SelectItem value="TOURNAMENT" className="text-white hover:bg-slate-700">Tournaments</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -111,9 +109,9 @@ export function LobbyFilters({ filters, onFilterChange }: LobbyFiltersProps) {
               <Input
                 type="number"
                 placeholder="0"
-                value={filters.min_buy_in || ''}
+                value={filters.buyInRange[0] || ''}
                 onChange={(e) => onFilterChange({ 
-                  min_buy_in: e.target.value ? parseFloat(e.target.value) : undefined 
+                  buyInRange: [e.target.value ? parseFloat(e.target.value) : 0, filters.buyInRange[1]]
                 })}
                 className="bg-slate-800/60 border-emerald/20 text-white placeholder-gray-400"
               />
@@ -123,9 +121,9 @@ export function LobbyFilters({ filters, onFilterChange }: LobbyFiltersProps) {
               <Input
                 type="number"
                 placeholder="∞"
-                value={filters.max_buy_in || ''}
+                value={filters.buyInRange[1] || ''}
                 onChange={(e) => onFilterChange({ 
-                  max_buy_in: e.target.value ? parseFloat(e.target.value) : undefined 
+                  buyInRange: [filters.buyInRange[0], e.target.value ? parseFloat(e.target.value) : 10000]
                 })}
                 className="bg-slate-800/60 border-emerald/20 text-white placeholder-gray-400"
               />
@@ -172,6 +170,17 @@ export function LobbyFilters({ filters, onFilterChange }: LobbyFiltersProps) {
             >
               {t('lobby.activeOnly', 'Active Only')}
             </Badge>
+            <Badge
+              variant={filters.showPrivate ? "default" : "outline"}
+              className={`cursor-pointer ${
+                filters.showPrivate 
+                  ? 'bg-emerald text-white' 
+                  : 'bg-slate-700/50 text-gray-300 border-emerald/20 hover:bg-slate-600/50'
+              }`}
+              onClick={() => onFilterChange({ showPrivate: !filters.showPrivate })}
+            >
+              {t('lobby.showPrivate', 'Show Private')}
+            </Badge>
           </div>
         </div>
 
@@ -182,7 +191,7 @@ export function LobbyFilters({ filters, onFilterChange }: LobbyFiltersProps) {
           <Label className="text-gray-300">{t('lobby.sortBy', 'Sort By')}</Label>
           <Select 
             value={filters.sortBy || 'activity'} 
-            onValueChange={(value) => onFilterChange({ sortBy: value as 'activity' | 'players' | 'buyIn' | 'created' })}
+            onValueChange={(value) => onFilterChange({ sortBy: value as any })}
           >
             <SelectTrigger className="bg-slate-800/60 border-emerald/20 text-white">
               <SelectValue />
@@ -190,8 +199,9 @@ export function LobbyFilters({ filters, onFilterChange }: LobbyFiltersProps) {
             <SelectContent className="bg-slate-800 border-emerald/20">
               <SelectItem value="activity" className="text-white hover:bg-slate-700">Recent Activity</SelectItem>
               <SelectItem value="players" className="text-white hover:bg-slate-700">Player Count</SelectItem>
-              <SelectItem value="buyIn" className="text-white hover:bg-slate-700">Buy-in Amount</SelectItem>
-              <SelectItem value="created" className="text-white hover:bg-slate-700">Recently Created</SelectItem>
+              <SelectItem value="newest" className="text-white hover:bg-slate-700">Recently Created</SelectItem>
+              <SelectItem value="blinds_asc" className="text-white hover:bg-slate-700">Stakes (Low to High)</SelectItem>
+              <SelectItem value="blinds_desc" className="text-white hover:bg-slate-700">Stakes (High to Low)</SelectItem>
             </SelectContent>
           </Select>
         </div>
