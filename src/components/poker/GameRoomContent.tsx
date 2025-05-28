@@ -3,8 +3,14 @@ import React from 'react';
 import { GameTitleBar } from './GameTitleBar';
 import { GameTable } from './game/GameTable';
 import { GameControls } from './game/GameControls';
+import { GameChat } from './GameChat';
+import { GameInfo } from './GameInfo';
+import { PlayerList } from './PlayerList';
 import { GameState, PlayerState } from '@/types/poker';
 import { PlayerAtTable, LobbyTable } from '@/types/lobby';
+import { Card, CardContent } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { MessageCircle, Users, BarChart3 } from 'lucide-react';
 
 interface GameRoomContentProps {
   tableId: string;
@@ -69,10 +75,48 @@ export const GameRoomContent: React.FC<GameRoomContentProps> = ({
       />
       
       {/* Main Game Area */}
-      <div className="flex-1 flex items-center justify-center p-6">
-        <div className="w-full max-w-7xl mx-auto">
-          {/* Game Table - Centered and properly sized */}
-          <div className="mb-6">
+      <div className="flex-1 flex">
+        {/* Left Sidebar - Game Info and Chat */}
+        <div className="w-80 border-r border-emerald/20 bg-slate-900/50 flex flex-col">
+          <Tabs defaultValue="chat" className="flex-1 flex flex-col">
+            <TabsList className="grid w-full grid-cols-3 bg-slate-800/50 border-b border-emerald/20">
+              <TabsTrigger value="chat" className="text-white data-[state=active]:bg-emerald/20 data-[state=active]:text-emerald-300">
+                <MessageCircle className="w-4 h-4 mr-2" />
+                Chat
+              </TabsTrigger>
+              <TabsTrigger value="players" className="text-white data-[state=active]:bg-emerald/20 data-[state=active]:text-emerald-300">
+                <Users className="w-4 h-4 mr-2" />
+                Jugadores
+              </TabsTrigger>
+              <TabsTrigger value="info" className="text-white data-[state=active]:bg-emerald/20 data-[state=active]:text-emerald-300">
+                <BarChart3 className="w-4 h-4 mr-2" />
+                Info
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="chat" className="flex-1 m-0 p-0">
+              <GameChat tableId={tableId} userId={userId} />
+            </TabsContent>
+            
+            <TabsContent value="players" className="flex-1 m-0 p-2">
+              <PlayerList players={transformedPlayers} currentUserId={userId} />
+            </TabsContent>
+            
+            <TabsContent value="info" className="flex-1 m-0 p-2">
+              {gameState && (
+                <GameInfo 
+                  gameState={gameState} 
+                  players={transformedPlayers}
+                  tableData={tableData}
+                />
+              )}
+            </TabsContent>
+          </Tabs>
+        </div>
+
+        {/* Center - Game Table */}
+        <div className="flex-1 flex flex-col items-center justify-center p-6">
+          <div className="w-full max-w-4xl">
             {gameState ? (
               <GameTable
                 game={gameState}
@@ -83,36 +127,38 @@ export const GameRoomContent: React.FC<GameRoomContentProps> = ({
                 onSitDown={onSitDown}
               />
             ) : (
-              <div className="h-96 flex items-center justify-center">
-                <div className="text-center text-gray-400">
-                  <div className="animate-spin w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-                  <p>Loading game table...</p>
-                </div>
-              </div>
+              <Card className="bg-slate-800/50 border-emerald/20">
+                <CardContent className="h-96 flex items-center justify-center">
+                  <div className="text-center text-gray-400">
+                    <div className="animate-spin w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+                    <p>Cargando mesa de juego...</p>
+                  </div>
+                </CardContent>
+              </Card>
             )}
           </div>
-          
-          {/* Game Controls - Fixed at bottom */}
-          {isPlayerSeated && gameState && (
-            <div className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-sm border-t border-emerald/20 p-4">
-              <div className="max-w-7xl mx-auto">
-                <GameControls
-                  isPlayerSeated={isPlayerSeated}
-                  isPlayerTurn={isPlayerTurn}
-                  playerState={playerState}
-                  currentBet={gameState.currentBet}
-                  gamePhase={gameState.phase}
-                  lastAction={undefined}
-                  onAction={async (action, amount) => {
-                    onAction(action, amount);
-                  }}
-                  onLeaveTable={onLeaveTable}
-                />
-              </div>
-            </div>
-          )}
         </div>
       </div>
+      
+      {/* Game Controls - Fixed at bottom */}
+      {isPlayerSeated && gameState && (
+        <div className="bg-slate-900/95 backdrop-blur-sm border-t border-emerald/20 p-4">
+          <div className="max-w-7xl mx-auto">
+            <GameControls
+              isPlayerSeated={isPlayerSeated}
+              isPlayerTurn={isPlayerTurn}
+              playerState={playerState}
+              currentBet={gameState.currentBet}
+              gamePhase={gameState.phase}
+              lastAction={undefined}
+              onAction={async (action, amount) => {
+                onAction(action, amount);
+              }}
+              onLeaveTable={onLeaveTable}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
