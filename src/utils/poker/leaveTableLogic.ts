@@ -1,3 +1,4 @@
+
 import { PlayerState, GameState } from '@/types/poker';
 import { supabase } from '@/lib/supabase';
 
@@ -157,13 +158,23 @@ export class LeaveTableLogic {
   }
 
   /**
-   * Applies reputation penalty
+   * Applies reputation penalty using direct SQL update
    */
   private static async applyReputationPenalty(playerId: string, penalty: number): Promise<void> {
+    // Get current score first
+    const { data: currentRep } = await supabase
+      .from('player_reputation')
+      .select('score')
+      .eq('player_id', playerId)
+      .single();
+
+    const currentScore = currentRep?.score || 50;
+    const newScore = Math.max(0, currentScore - penalty);
+
     await supabase
       .from('player_reputation')
       .update({
-        score: supabase.raw(`GREATEST(score - ${penalty}, 0)`),
+        score: newScore,
         updated_at: new Date().toISOString()
       })
       .eq('player_id', playerId);
