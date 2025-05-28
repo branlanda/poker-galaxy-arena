@@ -3,7 +3,7 @@ import React from 'react';
 import { TableHeader } from '../TableHeader';
 import { GameTabs } from '../GameTabs';
 import { LobbyTable, PlayerAtTable } from '@/types/lobby';
-import { GameState } from '@/types/game';
+import { GameState } from '@/types/poker';
 
 interface GameSidebarProps {
   tableData: LobbyTable;
