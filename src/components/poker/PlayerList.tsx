@@ -1,6 +1,6 @@
 
 import { PlayerAtTable } from '@/types/lobby';
-import { GameState } from '@/types/game';
+import { GameState } from '@/types/poker';
 
 interface PlayerListProps {
   players: PlayerAtTable[];
