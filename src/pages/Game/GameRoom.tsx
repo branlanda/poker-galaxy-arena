@@ -63,12 +63,32 @@ export default function GameRoom() {
     return <GameRoomError error={errorMessage} onBack={() => navigate('/lobby')} />;
   }
 
+  // Transform gameState to include required properties for poker GameState
+  const transformedGameState = gameState ? {
+    id: gameState.id || table.id,
+    tableId: gameState.tableId,
+    phase: gameState.phase,
+    pot: gameState.pot,
+    dealerSeat: gameState.dealerSeat,
+    activeSeat: gameState.activeSeat,
+    activePlayerId: gameState.activePlayerId,
+    communityCards: gameState.communityCards || [],
+    currentBet: gameState.currentBet,
+    lastActionTime: gameState.lastActionTime || new Date().toISOString(),
+    lastAction: gameState.lastAction,
+    seats: gameState.seats,
+    createdAt: gameState.createdAt || new Date().toISOString(),
+    dealer: gameState.dealer || gameState.dealerSeat,
+    smallBlind: table.small_blind,
+    bigBlind: table.big_blind
+  } : null;
+
   return (
     <GameRoomContent
       tableId={tableId!}
       tableData={table}
       players={players}
-      gameState={gameState}
+      gameState={transformedGameState}
       isPlayerSeated={isPlayerSeated}
       isPlayerTurn={isPlayerTurn}
       isJoining={false}
