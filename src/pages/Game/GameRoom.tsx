@@ -18,7 +18,7 @@ export default function GameRoom() {
     gameError
   } = useGameRoom(tableId);
 
-  // Redirect to login if not authenticated
+  // Redirect to login if not authenticated - always run this effect first
   useEffect(() => {
     if (!user && !loading) {
       toast({
@@ -30,18 +30,7 @@ export default function GameRoom() {
     }
   }, [user, loading, navigate]);
 
-  // Show loading state
-  if (loading) {
-    return <GameRoomLoader />;
-  }
-
-  // Show error state if there's an issue
-  if (gameError || !table) {
-    const errorMessage = gameError || 'Mesa no encontrada o no tienes permisos para acceder';
-    return <GameRoomError error={errorMessage} onBack={() => navigate('/lobby')} />;
-  }
-
-  // Redirect if table closed
+  // Handle table closure - always run this effect
   useEffect(() => {
     if (!loading && table?.status === 'CLOSED') {
       toast({
@@ -51,7 +40,7 @@ export default function GameRoom() {
       });
       navigate('/lobby');
     }
-  }, [table, loading, navigate]);
+  }, [table?.status, loading, navigate]);
 
   const handleTableChange = (newTableId: string) => {
     if (newTableId !== tableId) {
@@ -64,6 +53,17 @@ export default function GameRoom() {
       navigate('/lobby', { replace: true });
     }
   };
+
+  // Show loading state
+  if (loading) {
+    return <GameRoomLoader />;
+  }
+
+  // Show error state if there's an issue
+  if (gameError || !table) {
+    const errorMessage = gameError || 'Mesa no encontrada o no tienes permisos para acceder';
+    return <GameRoomError error={errorMessage} onBack={() => navigate('/lobby')} />;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">

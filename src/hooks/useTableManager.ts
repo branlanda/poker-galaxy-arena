@@ -37,7 +37,7 @@ export function useTableManager() {
 
       if (error) throw error;
 
-      const openTables: OpenTable[] = playersAtTables?.map(item => ({
+      const openTables: OpenTable[] = (playersAtTables || []).map(item => ({
         id: item.table_id,
         name: item.lobby_tables?.name || 'Unknown Table',
         type: (item.lobby_tables?.table_type as OpenTable['type']) || 'CASH_GAME',
@@ -46,7 +46,7 @@ export function useTableManager() {
         maxPlayers: item.lobby_tables?.max_players || 9,
         lastActivity: new Date(),
         joinedAt: new Date(item.joined_at)
-      })) || [];
+      }));
 
       setState(prev => ({
         ...prev,
