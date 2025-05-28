@@ -1,9 +1,10 @@
 
 import React from 'react';
 import { ActionControls } from '../ActionControls';
-import { GameInfo } from '../GameInfo';
-import { Button } from '@/components/ui/button';
+import { LeaveTableButton } from './LeaveTableButton';
 import { PlayerState, PlayerAction, GameAction } from '@/types/poker';
+import { Card, CardContent } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
 
 interface GameControlsProps {
   isPlayerSeated: boolean;
@@ -26,44 +27,73 @@ export const GameControls: React.FC<GameControlsProps> = ({
   onAction,
   onLeaveTable
 }) => {
+  const isInHand = gamePhase !== 'WAITING' && playerState?.status === 'PLAYING';
+
   return (
-    <>
-      {/* Player action controls */}
-      {isPlayerSeated && isPlayerTurn && playerState && (
-        <div className="mt-4">
-          <ActionControls
-            playerState={playerState}
-            currentBet={currentBet}
-            onAction={onAction}
-          />
-        </div>
-      )}
-      
-      {/* Game info and action buttons */}
-      <div className="mt-6 flex items-start justify-between">
-        <GameInfo 
-          gamePhase={gamePhase}
-          lastAction={lastAction}
-          smallBlind={10} // This should come from table settings
-          bigBlind={20}   // This should come from table settings
-        />
-        
-        <div className="space-y-2">
-          {isPlayerSeated ? (
-            <Button 
-              variant="outline"
-              onClick={onLeaveTable}
-              className="w-full"
-            >
-              Leave Table
-            </Button>
-          ) : (
-            <p className="text-sm text-gray-400 text-center px-4">
-              Select an empty seat to join the game
-            </p>
+    <Card className="bg-slate-800/90 border-emerald/20 backdrop-blur-sm">
+      <CardContent className="p-4">
+        <div className="flex items-center justify-between">
+          {/* Left side - Player action controls or waiting message */}
+          <div className="flex-1">
+            {isPlayerSeated && isPlayerTurn && playerState ? (
+              <div className="mr-4">
+                <ActionControls
+                  playerState={playerState}
+                  currentBet={currentBet}
+                  onAction={onAction}
+                />
+              </div>
+            ) : isPlayerSeated ? (
+              <div className="text-center py-4">
+                <p className="text-gray-400 text-sm">
+                  {isInHand ? 'Esperando tu turno...' : 'Esperando que comience la siguiente mano'}
+                </p>
+                {playerState && (
+                  <div className="mt-2 text-emerald-400 text-sm font-medium">
+                    Stack: ${playerState.stack.toLocaleString()}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="text-center py-4">
+                <p className="text-gray-400 text-sm">
+                  Selecciona un asiento vacío para unirte al juego
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Separator */}
+          {isPlayerSeated && (
+            <Separator orientation="vertical" className="h-12 bg-slate-600" />
+          )}
+
+          {/* Right side - Leave table button */}
+          {isPlayerSeated && (
+            <div className="ml-4">
+              <LeaveTableButton
+                onLeaveTable={onLeaveTable}
+                isPlayerTurn={isPlayerTurn}
+                playerStack={playerState?.stack}
+                gamePhase={gamePhase}
+                isInHand={isInHand}
+              />
+            </div>
           )}
         </div>
-      </div>
-    </>
+
+        {/* Additional game info */}
+        {lastAction && (
+          <div className="mt-3 pt-3 border-t border-slate-600">
+            <div className="text-xs text-gray-400 text-center">
+              Última acción: <span className="text-emerald-400">{lastAction.action}</span>
+              {lastAction.amount && lastAction.amount > 0 && (
+                <span className="text-white"> - ${lastAction.amount.toLocaleString()}</span>
+              )}
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 };

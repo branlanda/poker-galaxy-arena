@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { toast } from '@/hooks/use-toast';
 import { LobbyTable } from '@/types/lobby';
-import { PlayerAction } from '@/types/poker';
+import { PlayerAction, PlayerState, GameState } from '@/types/poker';
 import { useGameStore } from '@/stores/game';
+import { LeaveTableLogic } from '@/utils/poker/leaveTableLogic';
 
 interface PlayerActionsProps {
   tableId?: string;
@@ -13,6 +14,8 @@ interface PlayerActionsProps {
   isPlayerTurn: boolean;
   setTurnTimeRemaining: (time: number) => void;
   TURN_TIMEOUT_MS: number;
+  playerState?: PlayerState;
+  gameState?: GameState | null;
 }
 
 export function usePlayerActions({
@@ -21,7 +24,9 @@ export function usePlayerActions({
   table,
   isPlayerTurn,
   setTurnTimeRemaining,
-  TURN_TIMEOUT_MS
+  TURN_TIMEOUT_MS,
+  playerState,
+  gameState
 }: PlayerActionsProps) {
   const navigate = useNavigate();
   
@@ -123,37 +128,33 @@ export function usePlayerActions({
   };
   
   const leaveTable = async () => {
-    if (!userId || !tableId) return;
+    if (!userId || !tableId || !playerState || !gameState) return;
     
     try {
-      // If player is seated, first leave the seat
-      await leaveSeat(userId);
+      // Use advanced poker logic for leaving
+      const result = await LeaveTableLogic.processLeaveTable(
+        userId,
+        tableId,
+        playerState,
+        gameState
+      );
       
-      // Delete the player_at_table entry
-      const { error } = await supabase
-        .from('players_at_table')
-        .delete()
-        .eq('table_id', tableId)
-        .eq('player_id', userId);
+      if (result.success) {
+        toast({
+          title: 'Table Left Successfully',
+          description: result.message,
+          duration: 5000,
+        });
         
-      if (error) throw error;
-      
-      // Broadcast to all players that someone left
-      await supabase.channel(`game:${tableId}`).send({
-        type: 'broadcast',
-        event: 'player_left',
-        payload: {
-          playerId: userId,
-          playerName: 'Player',
-        },
-      });
-      
-      toast({
-        title: 'Success',
-        description: 'You have left the table',
-      });
-      
-      navigate('/tables');
+        // Navigate back to lobby
+        navigate('/lobby');
+      } else {
+        toast({
+          title: 'Error Leaving Table',
+          description: result.message,
+          variant: 'destructive',
+        });
+      }
     } catch (error: any) {
       toast({
         title: 'Error',

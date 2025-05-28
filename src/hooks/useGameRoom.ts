@@ -26,6 +26,10 @@ export function useGameRoom(tableId: string | undefined) {
     userId
   } = useGameData(tableId);
 
+  // Get player state
+  const playerState = isPlayerSeated && gameState?.seats && playerSeatIndex !== -1 ? 
+    gameState.seats[playerSeatIndex] : undefined;
+
   // Set up real-time subscriptions
   useGameSubscriptions({
     tableId, 
@@ -37,14 +41,16 @@ export function useGameRoom(tableId: string | undefined) {
     TURN_TIMEOUT_MS
   });
 
-  // Get player action handlers
+  // Get player action handlers with enhanced parameters
   const { handleSitDown, handleAction, leaveTable } = usePlayerActions({
     tableId,
     userId,
     table,
     isPlayerTurn,
     setTurnTimeRemaining,
-    TURN_TIMEOUT_MS
+    TURN_TIMEOUT_MS,
+    playerState,
+    gameState
   });
 
   // Enhanced error handling for RLS issues
@@ -63,6 +69,7 @@ export function useGameRoom(tableId: string | undefined) {
     playerSeatIndex,
     turnTimeRemaining,
     userId,
+    playerState,
     handleSitDown,
     handleAction,
     leaveTable
