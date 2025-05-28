@@ -216,7 +216,7 @@ const StarfallEffect: React.FC = () => {
         return (
           <div
             key={particle.id}
-            className="absolute pointer-events-none"
+            className="absolute pointer-events-none starfall-nebula"
             style={baseStyle}
           >
             <div
@@ -225,7 +225,6 @@ const StarfallEffect: React.FC = () => {
                 background: `radial-gradient(ellipse, ${particle.color}30 0%, ${particle.color}10 50%, transparent 100%)`,
                 borderRadius: '50%',
                 filter: 'blur(1px)',
-                animation: `pulse 3s ease-in-out infinite`,
               }}
             />
           </div>
@@ -259,7 +258,7 @@ const StarfallEffect: React.FC = () => {
       </div>
 
       {/* CSS personalizado para animaciones */}
-      <style jsx>{`
+      <style>{`
         @keyframes pulse {
           0%, 100% { 
             transform: scale(1) rotate(0deg);
@@ -269,6 +268,9 @@ const StarfallEffect: React.FC = () => {
             transform: scale(1.2) rotate(180deg);
             opacity: 0.9;
           }
+        }
+        .starfall-nebula .w-full {
+          animation: pulse 3s ease-in-out infinite;
         }
       `}</style>
     </>
