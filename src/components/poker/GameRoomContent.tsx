@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { GameTitleBar } from './GameTitleBar';
-import { GameTabs } from './GameTabs';
 import { GameTable } from './game/GameTable';
 import { GameControls } from './game/GameControls';
 import { GameState, PlayerState } from '@/types/poker';
@@ -70,57 +69,48 @@ export const GameRoomContent: React.FC<GameRoomContentProps> = ({
       />
       
       {/* Main Game Area */}
-      <div className="flex-1 flex flex-col">
-        {/* Game Table - Takes most of the space */}
-        <div className="flex-1 p-6">
-          <div className="h-full flex flex-col">
-            {/* Game Table */}
-            <div className="flex-1 mb-4">
-              {gameState ? (
-                <GameTable
-                  game={gameState}
-                  players={transformedPlayers}
-                  userId={userId}
-                  playerHandVisible={true}
-                  isJoining={isJoining}
-                  onSitDown={onSitDown}
-                />
-              ) : (
-                <div className="h-full flex items-center justify-center">
-                  <div className="text-center text-gray-400">
-                    <div className="animate-spin w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-                    <p>Cargando mesa de juego...</p>
-                  </div>
-                </div>
-              )}
-            </div>
-            
-            {/* Game Controls */}
-            {isPlayerSeated && gameState && (
-              <GameControls
-                isPlayerSeated={isPlayerSeated}
-                isPlayerTurn={isPlayerTurn}
-                playerState={playerState}
-                currentBet={gameState.currentBet}
-                gamePhase={gameState.phase}
-                lastAction={undefined}
-                onAction={async (action, amount) => {
-                  onAction(action, amount);
-                }}
-                onLeaveTable={onLeaveTable}
+      <div className="flex-1 flex items-center justify-center p-6">
+        <div className="w-full max-w-7xl mx-auto">
+          {/* Game Table - Centered and properly sized */}
+          <div className="mb-6">
+            {gameState ? (
+              <GameTable
+                game={gameState}
+                players={transformedPlayers}
+                userId={userId}
+                playerHandVisible={true}
+                isJoining={isJoining}
+                onSitDown={onSitDown}
               />
+            ) : (
+              <div className="h-96 flex items-center justify-center">
+                <div className="text-center text-gray-400">
+                  <div className="animate-spin w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+                  <p>Loading game table...</p>
+                </div>
+              </div>
             )}
           </div>
-        </div>
-        
-        {/* Game Tabs - Fixed height at bottom */}
-        <div className="h-80">
-          <GameTabs
-            tableId={tableId}
-            players={players}
-            gameState={gameState}
-            userId={userId}
-          />
+          
+          {/* Game Controls - Fixed at bottom */}
+          {isPlayerSeated && gameState && (
+            <div className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-sm border-t border-emerald/20 p-4">
+              <div className="max-w-7xl mx-auto">
+                <GameControls
+                  isPlayerSeated={isPlayerSeated}
+                  isPlayerTurn={isPlayerTurn}
+                  playerState={playerState}
+                  currentBet={gameState.currentBet}
+                  gamePhase={gameState.phase}
+                  lastAction={undefined}
+                  onAction={async (action, amount) => {
+                    onAction(action, amount);
+                  }}
+                  onLeaveTable={onLeaveTable}
+                />
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
