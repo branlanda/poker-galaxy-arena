@@ -80,7 +80,14 @@ export default function GameRoom() {
     })),
     currentBet: gameState.currentBet,
     lastActionTime: new Date().toISOString(),
-    lastAction: gameState.lastAction,
+    lastAction: gameState.lastAction ? {
+      id: `action-${Date.now()}`,
+      gameId: table.id,
+      playerId: gameState.lastAction.playerId,
+      action: gameState.lastAction.action,
+      amount: gameState.lastAction.amount,
+      createdAt: new Date().toISOString()
+    } : undefined,
     seats: gameState.seats,
     createdAt: new Date().toISOString(),
     dealer: gameState.dealer,
