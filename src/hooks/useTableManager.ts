@@ -5,6 +5,19 @@ import { supabase } from '@/lib/supabase';
 import { toast } from '@/hooks/use-toast';
 import { OpenTable, TableNotifications, TableManagerState } from '@/types/tableManager';
 
+interface PlayerAtTableWithTable {
+  table_id: string;
+  joined_at: string;
+  lobby_tables: {
+    id: string;
+    name: string;
+    table_type: string;
+    status: string;
+    current_players: number;
+    max_players: number;
+  } | null;
+}
+
 export function useTableManager() {
   const { user } = useAuth();
   const [state, setState] = useState<TableManagerState>({
@@ -37,7 +50,7 @@ export function useTableManager() {
 
       if (error) throw error;
 
-      const openTables: OpenTable[] = (playersAtTables || []).map(item => ({
+      const openTables: OpenTable[] = (playersAtTables as PlayerAtTableWithTable[] || []).map(item => ({
         id: item.table_id,
         name: item.lobby_tables?.name || 'Unknown Table',
         type: (item.lobby_tables?.table_type as OpenTable['type']) || 'CASH_GAME',
