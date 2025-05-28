@@ -10,7 +10,7 @@ import { GameChat } from './GameChat';
 import { PlayerList } from './PlayerList';
 import { HandHistory } from './HandHistory';
 import { PlayerAtTable } from '@/types/lobby';
-import { GameState } from '@/types/game';
+import { GameState } from '@/types/poker';
 
 interface ActiveTable {
   id: string;
