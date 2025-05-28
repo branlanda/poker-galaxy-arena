@@ -10,7 +10,8 @@ import { GameState, PlayerState } from '@/types/poker';
 import { PlayerAtTable, LobbyTable } from '@/types/lobby';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { MessageCircle, Users, BarChart3 } from 'lucide-react';
+import { MessageCircle, Users, BarChart3, RefreshCw, Settings, Plus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface GameRoomContentProps {
   tableId: string;
@@ -30,7 +31,7 @@ interface GameRoomContentProps {
 const transformPlayerAtTableToPlayerState = (player: PlayerAtTable): PlayerState => {
   return {
     id: player.id,
-    gameId: '', // This will be set by the game state
+    gameId: '',
     playerId: player.player_id,
     playerName: player.player_name || `Player ${player.player_id.substring(0, 4)}`,
     seatNumber: player.seat_number || 0,
@@ -65,14 +66,59 @@ export const GameRoomContent: React.FC<GameRoomContentProps> = ({
     transformedPlayers.find(p => p.playerId === userId) : undefined;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 flex flex-col">
-      {/* Title Bar */}
+    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 flex flex-col text-white">
+      {/* Enhanced Title Bar */}
       <GameTitleBar 
         table={tableData}
         currentPlayers={players.length}
         gamePhase={gameState?.phase}
         pot={gameState?.pot}
       />
+      
+      {/* Table Tabs Bar */}
+      <div className="bg-slate-800/60 border-b border-emerald/20 px-6 py-2">
+        <div className="flex items-center justify-between max-w-7xl mx-auto">
+          <div className="flex items-center gap-2">
+            <Tabs defaultValue={tableId} className="flex-1">
+              <TabsList className="bg-slate-700/50 border border-emerald/20">
+                <TabsTrigger 
+                  value={tableId} 
+                  className="text-white data-[state=active]:bg-emerald/20 data-[state=active]:text-emerald-300"
+                >
+                  {tableData.name}
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-emerald-400 hover:text-emerald-300 hover:bg-emerald/10"
+            >
+              <Plus className="w-4 h-4 mr-1" />
+              <span className="hidden sm:inline">Nueva Mesa</span>
+            </Button>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => window.location.reload()}
+              className="text-emerald-400 hover:text-emerald-300 hover:bg-emerald/10"
+            >
+              <RefreshCw className="w-4 h-4 mr-1" />
+              <span className="hidden sm:inline">Recargar</span>
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-gray-400 hover:text-white hover:bg-slate-700/50"
+            >
+              <Settings className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+      </div>
       
       {/* Main Game Area */}
       <div className="flex-1 flex">
@@ -105,9 +151,10 @@ export const GameRoomContent: React.FC<GameRoomContentProps> = ({
             <TabsContent value="info" className="flex-1 m-0 p-2">
               {gameState && (
                 <GameInfo 
-                  gameState={gameState} 
-                  players={transformedPlayers}
-                  tableData={tableData}
+                  gamePhase={gameState.phase}
+                  lastAction={gameState.lastAction}
+                  smallBlind={tableData.small_blind}
+                  bigBlind={tableData.big_blind}
                 />
               )}
             </TabsContent>
@@ -129,9 +176,9 @@ export const GameRoomContent: React.FC<GameRoomContentProps> = ({
             ) : (
               <Card className="bg-slate-800/50 border-emerald/20">
                 <CardContent className="h-96 flex items-center justify-center">
-                  <div className="text-center text-gray-400">
+                  <div className="text-center text-emerald-400">
                     <div className="animate-spin w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-                    <p>Cargando mesa de juego...</p>
+                    <p className="text-white">Cargando mesa de juego...</p>
                   </div>
                 </CardContent>
               </Card>
@@ -150,7 +197,7 @@ export const GameRoomContent: React.FC<GameRoomContentProps> = ({
               playerState={playerState}
               currentBet={gameState.currentBet}
               gamePhase={gameState.phase}
-              lastAction={undefined}
+              lastAction={gameState.lastAction}
               onAction={async (action, amount) => {
                 onAction(action, amount);
               }}

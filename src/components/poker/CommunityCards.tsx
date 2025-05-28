@@ -30,15 +30,15 @@ export const CommunityCards: React.FC<CommunityCardsProps> = ({ cards, phase }) 
   };
 
   return (
-    <div className="absolute top-[35%] left-1/2 transform -translate-x-1/2 z-15">
+    <div className="relative">
       <motion.div 
         className="relative"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        {/* Community cards container with glow effect */}
-        <div className="relative p-4 rounded-2xl bg-gradient-to-br from-black/40 to-black/60 backdrop-blur-sm border border-emerald/20 shadow-[0_8px_32px_0_rgba(6,95,70,0.3)]">
+        {/* Community cards container with enhanced glow effect */}
+        <div className="relative p-4 rounded-2xl bg-gradient-to-br from-black/40 to-black/60 backdrop-blur-sm border border-emerald/30 shadow-[0_8px_32px_0_rgba(6,95,70,0.4)]">
           {/* Phase indicator */}
           {phase !== 'PREFLOP' && phase !== 'WAITING' && (
             <motion.div
@@ -146,7 +146,7 @@ export const CommunityCards: React.FC<CommunityCardsProps> = ({ cards, phase }) 
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5 }}
             >
-              {visibleCards} of 5 cards
+              <span className="text-white">{visibleCards} of 5 cards</span>
             </motion.div>
           )}
         </div>
