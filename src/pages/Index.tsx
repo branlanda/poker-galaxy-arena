@@ -6,42 +6,26 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import StarfallEffect from '@/components/effects/StarfallEffect';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
-import { 
-  Play, 
-  Trophy, 
-  Users, 
-  TrendingUp, 
-  Target,
-  Settings,
-  User,
-  ArrowRight,
-  Star,
-  Clock,
-  Twitter,
-  Facebook,
-  MessageCircle
-} from 'lucide-react';
-
+import { Play, Trophy, Users, TrendingUp, Target, Settings, User, ArrowRight, Star, Clock, Twitter, Facebook, MessageCircle } from 'lucide-react';
 export default function Index() {
-  const { user } = useAuth();
-  const { t } = useTranslation();
+  const {
+    user
+  } = useAuth();
+  const {
+    t
+  } = useTranslation();
   const navigate = useNavigate();
 
   // Si no hay usuario, mostrar la página de bienvenida pública
   if (!user) {
-    return (
-      <div className="min-h-screen bg-navy flex flex-col">
+    return <div className="min-h-screen bg-navy flex flex-col">
         <Navbar />
         <div className="flex-grow flex items-center justify-center relative">
           <StarfallEffect />
           <div className="max-w-6xl mx-auto px-4 text-center relative z-10">
             <div className="mb-12">
-              <h1 className="text-6xl font-bold text-emerald mb-6">
-                🌌 Poker Galaxy 🎰
-              </h1>
-              <p className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto">
-                Welcome to the ultimate online poker experience. Join thousands of players in exciting games and tournaments. ♠️♥️♦️♣️
-              </p>
+              <h1 className="text-6xl font-bold text-emerald mb-6">Poker Galaxy </h1>
+              <p className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto">Welcome to the ultimate online poker experience. Join thousands of players in exciting games and tournaments. </p>
               
               {/* Social Media Icons */}
               <div className="flex justify-center space-x-4 mb-8">
@@ -112,7 +96,7 @@ export default function Index() {
             {/* Call to Action */}
             <div className="mt-12 p-8 bg-gradient-to-r from-emerald/10 to-gold/10 rounded-lg border border-emerald/20">
               <h2 className="text-2xl font-bold text-white mb-4">🎯 Ready to Play?</h2>
-              <p className="text-gray-300 mb-6">Join the action now and experience the thrill of professional poker. ♠️♥️♦️♣️</p>
+              <p className="text-gray-300 mb-6">Join the action now and experience the thrill of professional poker. </p>
               <Button size="lg" className="px-8 py-4" onClick={() => navigate('/register')}>
                 🚀 Get Started
                 <ArrowRight className="h-5 w-5 ml-2" />
@@ -121,13 +105,11 @@ export default function Index() {
           </div>
         </div>
         <Footer />
-      </div>
-    );
+      </div>;
   }
 
   // Dashboard para usuarios autenticados
-  return (
-    <div className="min-h-screen bg-navy flex flex-col">
+  return <div className="min-h-screen bg-navy flex flex-col">
       <Navbar />
       <main className="flex-1 container mx-auto px-4 py-8 relative">
         <StarfallEffect />
@@ -297,6 +279,5 @@ export default function Index() {
         </div>
       </main>
       <Footer />
-    </div>
-  );
+    </div>;
 }
