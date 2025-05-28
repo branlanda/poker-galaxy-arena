@@ -6,7 +6,7 @@ import { X, Trophy, Gamepad2, Zap, Users, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { TableTab } from './table-manager/TableTab';
 import { ActiveTableView } from './table-manager/ActiveTableView';
-import { useTableManager } from '@/hooks/useTableManager';
+import { useTableManager } from '@/hooks/tableManager/useTableManager';
 import { OpenTable } from '@/types/tableManager';
 
 interface TableManagerProps {
