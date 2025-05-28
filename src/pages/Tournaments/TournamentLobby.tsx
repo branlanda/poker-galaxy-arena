@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTournaments } from '@/hooks/useTournaments';
@@ -60,7 +61,7 @@ export default function TournamentLobby() {
                 {t('tournaments.errorLoading', 'Error loading tournaments')}
               </h2>
               <p className="text-gray-400 mb-4">{error}</p>
-              <Button onClick={refreshTournaments}>
+              <Button onClick={refreshTournaments} className="bg-emerald hover:bg-emerald/90 text-white">
                 <RefreshCw className="h-4 w-4 mr-2" />
                 {t('common.refresh', 'Retry')}
               </Button>
@@ -77,20 +78,20 @@ export default function TournamentLobby() {
         <div className="space-y-6">
           {/* Action buttons */}
           <div className="flex justify-end gap-2">
-            <Button variant="outline" size="sm" className="bg-slate-800/40 border-emerald/20 hover:bg-slate-700/50">
+            <Button variant="outline" size="sm" className="bg-slate-800/60 border-emerald/20 hover:bg-slate-700/50 text-white">
               <Link to="/lobby" className="flex items-center">
                 <Users className="h-4 w-4 mr-2" />
                 {t('lobby.title', 'Lobby')}
               </Link>
             </Button>
-            <Button variant="outline" size="sm" className="bg-slate-800/40 border-emerald/20 hover:bg-slate-700/50">
+            <Button variant="outline" size="sm" className="bg-slate-800/60 border-emerald/20 hover:bg-slate-700/50 text-white">
               <Link to="/leaderboards" className="flex items-center">
                 <Target className="h-4 w-4 mr-2" />
                 {t('leaderboards.title', 'Leaderboards')}
               </Link>
             </Button>
             {user && (
-              <Button onClick={() => setShowCreateDialog(true)}>
+              <Button onClick={() => setShowCreateDialog(true)} className="bg-emerald hover:bg-emerald/90 text-white">
                 <Plus className="h-4 w-4 mr-2" />
                 {t('tournaments.createTournament', 'Create Tournament')}
               </Button>
@@ -127,7 +128,7 @@ export default function TournamentLobby() {
                   ))}
                 </div>
               ) : tournaments.length === 0 ? (
-                <div className="text-center py-12 bg-slate-800/50 rounded-lg border border-emerald/20">
+                <div className="text-center py-12 bg-slate-800/70 rounded-lg border border-emerald/20">
                   <h3 className="text-xl font-semibold text-white mb-2">
                     {t('tournaments.noTournaments', 'No Tournaments Available')}
                   </h3>
@@ -135,7 +136,7 @@ export default function TournamentLobby() {
                     {t('tournaments.noTournamentsDescription', 'Be the first to create an exciting tournament!')}
                   </p>
                   {user ? (
-                    <Button onClick={() => setShowCreateDialog(true)}>
+                    <Button onClick={() => setShowCreateDialog(true)} className="bg-emerald hover:bg-emerald/90 text-white">
                       <Plus className="h-4 w-4 mr-2" />
                       {t('tournaments.createFirstTournament', 'Create First Tournament')}
                     </Button>
@@ -144,7 +145,7 @@ export default function TournamentLobby() {
                       <p className="text-gray-400">
                         {t('tournaments.loginToCreate', 'Log in to create tournaments')}
                       </p>
-                      <Button>
+                      <Button className="bg-emerald hover:bg-emerald/90 text-white">
                         <Link to="/login">
                           {t('auth.signIn', 'Sign In')}
                         </Link>

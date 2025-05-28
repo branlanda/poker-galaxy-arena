@@ -85,7 +85,7 @@ const LeaderboardsPage = () => {
           <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
             <div className="flex flex-col sm:flex-row gap-4 items-center">
               <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
-                <SelectTrigger className="w-[180px] bg-slate-800/60 border-emerald/20">
+                <SelectTrigger className="w-[180px] bg-slate-800/60 border-emerald/20 text-white">
                   <SelectValue placeholder={t('leaderboards.selectPeriod', 'Select Period')} />
                 </SelectTrigger>
                 <SelectContent>
@@ -103,7 +103,7 @@ const LeaderboardsPage = () => {
               </Select>
 
               <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                <SelectTrigger className="w-[180px] bg-slate-800/60 border-emerald/20">
+                <SelectTrigger className="w-[180px] bg-slate-800/60 border-emerald/20 text-white">
                   <SelectValue placeholder={t('leaderboards.selectCategory', 'Leaderboard Categories')} />
                 </SelectTrigger>
                 <SelectContent>
@@ -152,7 +152,7 @@ const LeaderboardsPage = () => {
           ) : (leaderboardEntries?.filter(player =>
             player.player_name?.toLowerCase().includes(searchQuery.toLowerCase())
           ) || []).length === 0 ? (
-            <div className="text-center py-12 bg-slate-800/50 rounded-lg border border-emerald/20">
+            <div className="text-center py-12 bg-slate-800/70 rounded-lg border border-emerald/20">
               <Trophy className="h-16 w-16 text-gray-400 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-white mb-2">
                 {searchQuery 
@@ -165,7 +165,7 @@ const LeaderboardsPage = () => {
                   : t('leaderboards.noPlayersYet', 'No players have been ranked in this category yet.')}
               </p>
               {searchQuery ? (
-                <Button onClick={() => setSearchQuery('')} variant="outline">
+                <Button onClick={() => setSearchQuery('')} variant="outline" className="bg-slate-800/60 border-emerald/20 hover:bg-slate-700/50 text-white">
                   {t('leaderboards.clearSearch', 'Clear Search')}
                 </Button>
               ) : (

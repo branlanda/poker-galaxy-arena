@@ -43,11 +43,11 @@ export default function Index() {
               </div>
               
               <div className="flex gap-4 justify-center">
-                <Button size="lg" className="px-8 py-4" onClick={() => navigate('/login')}>
+                <Button size="lg" className="px-8 py-4 bg-emerald hover:bg-emerald/90 text-white" onClick={() => navigate('/login')}>
                   <ArrowRight className="h-5 w-5 mr-2" />
                   🎮 {t('auth.signIn', 'Sign In')}
                 </Button>
-                <Button size="lg" variant="outline" className="px-8 py-4" onClick={() => navigate('/register')}>
+                <Button size="lg" variant="outline" className="px-8 py-4 bg-slate-800/60 border-emerald/20 hover:bg-slate-700/50 text-white" onClick={() => navigate('/register')}>
                   ⭐ {t('auth.signUp', 'Sign Up')}
                 </Button>
               </div>
@@ -55,7 +55,7 @@ export default function Index() {
             
             {/* Features Grid */}
             <div className="grid md:grid-cols-3 gap-8">
-              <Card className="bg-slate-800/40 border-emerald/30 hover:border-emerald/50 transition-colors backdrop-blur-sm">
+              <Card className="bg-slate-800/70 border-emerald/20 hover:border-emerald/40 transition-colors backdrop-blur-sm">
                 <CardHeader className="text-center">
                   <Play className="h-12 w-12 text-emerald mx-auto mb-4" />
                   <CardTitle className="text-white text-xl">🎲 Quick Games</CardTitle>
@@ -67,7 +67,7 @@ export default function Index() {
                 </CardContent>
               </Card>
               
-              <Card className="bg-slate-800/40 border-gold/30 hover:border-gold/50 transition-colors backdrop-blur-sm">
+              <Card className="bg-slate-800/70 border-gold/20 hover:border-gold/40 transition-colors backdrop-blur-sm">
                 <CardHeader className="text-center">
                   <Trophy className="h-12 w-12 text-gold mx-auto mb-4" />
                   <CardTitle className="text-white text-xl">🏆 Tournaments</CardTitle>
@@ -79,7 +79,7 @@ export default function Index() {
                 </CardContent>
               </Card>
               
-              <Card className="bg-slate-800/40 border-accent/30 hover:border-accent/50 transition-colors backdrop-blur-sm">
+              <Card className="bg-slate-800/70 border-accent/20 hover:border-accent/40 transition-colors backdrop-blur-sm">
                 <CardHeader className="text-center">
                   <TrendingUp className="h-12 w-12 text-accent mx-auto mb-4" />
                   <CardTitle className="text-white text-xl">📊 Rankings</CardTitle>
@@ -96,7 +96,7 @@ export default function Index() {
             <div className="mt-12 p-8 bg-gradient-to-r from-emerald/10 to-gold/10 rounded-lg border border-emerald/20 backdrop-blur-sm">
               <h2 className="text-2xl font-bold text-white mb-4">🎯 Ready to Play?</h2>
               <p className="text-gray-300 mb-6">Join the action now and experience the thrill of professional poker. </p>
-              <Button size="lg" className="px-8 py-4" onClick={() => navigate('/register')}>
+              <Button size="lg" className="px-8 py-4 bg-emerald hover:bg-emerald/90 text-white" onClick={() => navigate('/register')}>
                 🚀 Get Started
                 <ArrowRight className="h-5 w-5 ml-2" />
               </Button>
@@ -125,15 +125,15 @@ export default function Index() {
           
           {/* Quick Action Buttons */}
           <div className="flex flex-wrap justify-center gap-4 mb-8">
-            <Button size="lg" className="px-6" onClick={() => navigate('/lobby')}>
+            <Button size="lg" className="px-6 bg-emerald hover:bg-emerald/90 text-white" onClick={() => navigate('/lobby')}>
               <Play className="h-5 w-5 mr-2" />
               🎮 {t('quickPlay', 'Quick Play')}
             </Button>
-            <Button size="lg" variant="secondary" className="px-6" onClick={() => navigate('/tournaments')}>
+            <Button size="lg" className="px-6 bg-slate-800/60 border-emerald/20 hover:bg-slate-700/50 text-white border" onClick={() => navigate('/tournaments')}>
               <Trophy className="h-5 w-5 mr-2" />
               🏆 {t('tournaments.lobby', 'Tournaments')}
             </Button>
-            <Button size="lg" variant="outline" className="px-6" onClick={() => navigate('/leaderboards')}>
+            <Button size="lg" variant="outline" className="px-6 bg-slate-800/60 border-emerald/20 hover:bg-slate-700/50 text-white" onClick={() => navigate('/leaderboards')}>
               <TrendingUp className="h-5 w-5 mr-2" />
               📊 {t('leaderboards.title', 'Leaderboards')}
             </Button>
@@ -146,7 +146,7 @@ export default function Index() {
           <div className="lg:col-span-2 space-y-6">
             <div className="grid md:grid-cols-2 gap-6">
               {/* Lobby Card */}
-              <Card className="bg-slate-800/60 border-emerald/30 hover:border-emerald/50 transition-all duration-300 group cursor-pointer backdrop-blur-sm" onClick={() => navigate('/lobby')}>
+              <Card className="bg-slate-800/70 border-emerald/20 hover:border-emerald/40 transition-all duration-300 group cursor-pointer backdrop-blur-sm" onClick={() => navigate('/lobby')}>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-lg font-semibold text-white">🎰 Poker Lobby</CardTitle>
                   <Play className="h-6 w-6 text-emerald group-hover:scale-110 transition-transform" />
@@ -156,7 +156,7 @@ export default function Index() {
                   <p className="text-sm text-gray-300 mb-4">
                     Find and join poker tables instantly. Choose from cash games or sit & go tournaments. 💰
                   </p>
-                  <Button className="w-full group-hover:bg-emerald/90">
+                  <Button className="w-full group-hover:bg-emerald/90 bg-emerald text-white">
                     {t('goToLobby', 'Go to Lobby')}
                     <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
                   </Button>
@@ -164,7 +164,7 @@ export default function Index() {
               </Card>
 
               {/* Tournaments Card */}
-              <Card className="bg-slate-800/60 border-gold/30 hover:border-gold/50 transition-all duration-300 group cursor-pointer backdrop-blur-sm" onClick={() => navigate('/tournaments')}>
+              <Card className="bg-slate-800/70 border-gold/20 hover:border-gold/40 transition-all duration-300 group cursor-pointer backdrop-blur-sm" onClick={() => navigate('/tournaments')}>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-lg font-semibold text-white">🏆 Tournaments</CardTitle>
                   <Trophy className="h-6 w-6 text-gold group-hover:scale-110 transition-transform" />
@@ -174,7 +174,7 @@ export default function Index() {
                   <p className="text-sm text-gray-300 mb-4">
                     Join exciting tournaments with guaranteed prize pools and structured play.
                   </p>
-                  <Button variant="secondary" className="w-full">
+                  <Button className="w-full bg-slate-800/60 border-gold/20 hover:bg-slate-700/50 text-white border">
                     {t('viewTournaments', 'View Tournaments')}
                     <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
                   </Button>
@@ -184,7 +184,7 @@ export default function Index() {
 
             {/* Secondary Actions */}
             <div className="grid md:grid-cols-2 gap-6">
-              <Card className="bg-slate-800/60 border-accent/30 hover:border-accent/50 transition-all duration-300 group cursor-pointer backdrop-blur-sm" onClick={() => navigate('/achievements')}>
+              <Card className="bg-slate-800/70 border-accent/20 hover:border-accent/40 transition-all duration-300 group cursor-pointer backdrop-blur-sm" onClick={() => navigate('/achievements')}>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-lg font-semibold text-white">🎯 Achievements</CardTitle>
                   <Target className="h-6 w-6 text-accent group-hover:scale-110 transition-transform" />
@@ -194,14 +194,14 @@ export default function Index() {
                   <p className="text-sm text-gray-300 mb-4">
                     Track your progress, complete challenges, and unlock rewards.
                   </p>
-                  <Button variant="accent" className="w-full">
+                  <Button className="w-full bg-slate-800/60 border-accent/20 hover:bg-slate-700/50 text-white border">
                     {t('viewAchievements', 'View Achievements')}
                     <ArrowRight className="h-4 w-4 ml-2" />
                   </Button>
                 </CardContent>
               </Card>
 
-              <Card className="bg-slate-800/60 border-blue-500/30 hover:border-blue-500/50 transition-all duration-300 group cursor-pointer backdrop-blur-sm" onClick={() => navigate('/leaderboards')}>
+              <Card className="bg-slate-800/70 border-blue-500/20 hover:border-blue-500/40 transition-all duration-300 group cursor-pointer backdrop-blur-sm" onClick={() => navigate('/leaderboards')}>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-lg font-semibold text-white">📊 Leaderboards</CardTitle>
                   <TrendingUp className="h-6 w-6 text-blue-400 group-hover:scale-110 transition-transform" />
@@ -211,7 +211,7 @@ export default function Index() {
                   <p className="text-sm text-gray-300 mb-4">
                     See how you rank against other players globally.
                   </p>
-                  <Button variant="outline" className="w-full border-blue-400/30 text-blue-400 hover:bg-blue-400/10">
+                  <Button variant="outline" className="w-full border-blue-400/20 text-blue-400 hover:bg-blue-400/10 bg-slate-800/60">
                     {t('viewLeaderboards', 'View Leaderboards')}
                     <ArrowRight className="h-4 w-4 ml-2" />
                   </Button>
@@ -223,7 +223,7 @@ export default function Index() {
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Quick Actions */}
-            <Card className="bg-slate-800/60 border-emerald/20 backdrop-blur-sm">
+            <Card className="bg-slate-800/70 border-emerald/20 backdrop-blur-sm">
               <CardHeader>
                 <CardTitle className="text-white flex items-center">
                   <Star className="h-5 w-5 mr-2 text-emerald" />
@@ -231,15 +231,15 @@ export default function Index() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <Button variant="outline" className="w-full justify-start border-slate-600 hover:bg-slate-700/50" onClick={() => navigate('/profile')}>
+                <Button variant="outline" className="w-full justify-start border-emerald/20 hover:bg-slate-700/50 bg-slate-800/60 text-white" onClick={() => navigate('/profile')}>
                   <User className="h-4 w-4 mr-3" />
                   👤 {t('common.profile', 'View Profile')}
                 </Button>
-                <Button variant="outline" className="w-full justify-start border-slate-600 hover:bg-slate-700/50" onClick={() => navigate('/funds')}>
+                <Button variant="outline" className="w-full justify-start border-emerald/20 hover:bg-slate-700/50 bg-slate-800/60 text-white" onClick={() => navigate('/funds')}>
                   <Target className="h-4 w-4 mr-3" />
                   💰 {t('manageFunds', 'Manage Funds')}
                 </Button>
-                <Button variant="outline" className="w-full justify-start border-slate-600 hover:bg-slate-700/50" onClick={() => navigate('/settings')}>
+                <Button variant="outline" className="w-full justify-start border-emerald/20 hover:bg-slate-700/50 bg-slate-800/60 text-white" onClick={() => navigate('/settings')}>
                   <Settings className="h-4 w-4 mr-3" />
                   ⚙️ {t('common.settings', 'Settings')}
                 </Button>
@@ -247,7 +247,7 @@ export default function Index() {
             </Card>
 
             {/* Recent Activity */}
-            <Card className="bg-slate-800/60 border-emerald/20 backdrop-blur-sm">
+            <Card className="bg-slate-800/70 border-emerald/20 backdrop-blur-sm">
               <CardHeader>
                 <CardTitle className="text-white flex items-center">
                   <Clock className="h-5 w-5 mr-2 text-emerald" />

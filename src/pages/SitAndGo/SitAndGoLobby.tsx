@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { SitAndGoCard } from '@/components/sitAndGo/SitAndGoCard';
@@ -53,13 +54,13 @@ export default function SitAndGoLobby() {
             </div>
             
             <div className="flex items-center gap-3">
-              <Button variant="outline" size="sm" className="bg-slate-800/40 border-emerald/20 hover:bg-slate-700/50">
+              <Button variant="outline" size="sm" className="bg-slate-800/60 border-emerald/20 hover:bg-slate-700/50 text-white">
                 <Link to="/tournaments" className="flex items-center">
                   <Trophy className="h-4 w-4 mr-2" />
                   Multi-Table Tournaments
                 </Link>
               </Button>
-              <Button variant="outline" size="sm" className="bg-slate-800/40 border-emerald/20 hover:bg-slate-700/50">
+              <Button variant="outline" size="sm" className="bg-slate-800/60 border-emerald/20 hover:bg-slate-700/50 text-white">
                 <Link to="/lobby" className="flex items-center">
                   <Trophy className="h-4 w-4 mr-2" />
                   Cash Games
@@ -70,7 +71,7 @@ export default function SitAndGoLobby() {
                 size="sm" 
                 onClick={refreshGames}
                 disabled={loading}
-                className="bg-slate-800/40 border-emerald/20 hover:bg-slate-700/50"
+                className="bg-slate-800/60 border-emerald/20 hover:bg-slate-700/50 text-white"
               >
                 <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
                 Refresh
@@ -81,21 +82,21 @@ export default function SitAndGoLobby() {
 
           {/* Game Type Info */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-slate-800/30 rounded-lg p-4 border border-emerald/20">
+            <div className="bg-slate-800/70 rounded-lg p-4 border border-emerald/20">
               <div className="flex items-center gap-2 mb-2">
                 <Clock className="h-5 w-5 text-blue-400" />
                 <h3 className="font-semibold text-white">Regular</h3>
               </div>
               <p className="text-sm text-gray-400">10 minute blind levels for strategic play</p>
             </div>
-            <div className="bg-slate-800/30 rounded-lg p-4 border border-emerald/20">
+            <div className="bg-slate-800/70 rounded-lg p-4 border border-emerald/20">
               <div className="flex items-center gap-2 mb-2">
                 <Zap className="h-5 w-5 text-yellow-400" />
                 <h3 className="font-semibold text-white">Turbo</h3>
               </div>
               <p className="text-sm text-gray-400">5 minute blind levels for faster action</p>
             </div>
-            <div className="bg-slate-800/30 rounded-lg p-4 border border-emerald/20">
+            <div className="bg-slate-800/70 rounded-lg p-4 border border-emerald/20">
               <div className="flex items-center gap-2 mb-2">
                 <Zap className="h-5 w-5 text-orange-400" />
                 <h3 className="font-semibold text-white">Hyper Turbo</h3>
@@ -117,7 +118,7 @@ export default function SitAndGoLobby() {
             </div>
             
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-40 bg-slate-800/60 border-emerald/20">
+              <SelectTrigger className="w-40 bg-slate-800/60 border-emerald/20 text-white">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
@@ -129,7 +130,7 @@ export default function SitAndGoLobby() {
             </Select>
 
             <Select value={typeFilter} onValueChange={setTypeFilter}>
-              <SelectTrigger className="w-40 bg-slate-800/60 border-emerald/20">
+              <SelectTrigger className="w-40 bg-slate-800/60 border-emerald/20 text-white">
                 <SelectValue placeholder="Type" />
               </SelectTrigger>
               <SelectContent>
@@ -199,7 +200,7 @@ export default function SitAndGoLobby() {
           )}
 
           {filteredGames.length === 0 && (
-            <div className="text-center py-12 bg-navy/50 rounded-lg border border-emerald/20">
+            <div className="text-center py-12 bg-slate-800/70 rounded-lg border border-emerald/20">
               <Trophy className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-white mb-2">
                 No Sit & Go Games Found
