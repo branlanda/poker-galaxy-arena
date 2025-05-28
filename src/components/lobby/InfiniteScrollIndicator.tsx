@@ -1,3 +1,4 @@
+
 import { useTranslation } from '@/hooks/useTranslation';
 import { LoaderCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -34,12 +35,12 @@ export function InfiniteScrollIndicator({
         <Button 
           variant="outline" 
           onClick={onLoadMore}
-          className="border-emerald/30 hover:border-emerald/50"
+          className="border-emerald/30 hover:border-emerald/50 text-white hover:text-white"
         >
           {t('lobby.loadMore')}
         </Button>
       ) : (
-        <p className="text-gray-500 text-sm">{t('lobby.noMoreTables')}</p>
+        <p className="text-gray-400 text-sm">{t('lobby.noMoreTables')}</p>
       )}
     </div>
   );

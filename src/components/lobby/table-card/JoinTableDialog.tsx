@@ -137,7 +137,7 @@ export function JoinTableDialog({ table }: JoinTableDialogProps) {
             <Button
               variant="outline"
               onClick={() => setIsOpen(false)}
-              className="flex-1 border-emerald/20 text-gray-300 hover:bg-slate-700/50"
+              className="flex-1 border-emerald/20 text-gray-300 hover:bg-slate-700/50 hover:text-white"
             >
               Cancel
             </Button>

@@ -26,12 +26,12 @@ export function TableInfoGrid({
     <div className="p-4 space-y-4">
       <div className="grid grid-cols-2 gap-y-2">
         <div className="text-xs text-gray-400">{t('blinds', 'Blinds')}</div>
-        <div className="text-xs font-semibold text-right">
+        <div className="text-xs font-semibold text-right text-white">
           ${table.small_blind}/{table.big_blind}
         </div>
         
         <div className="text-xs text-gray-400">{t('buyIn', 'Buy-in')}</div>
-        <div className="text-xs font-semibold text-right">
+        <div className="text-xs font-semibold text-right text-white">
           ${table.min_buy_in} - ${table.max_buy_in}
         </div>
         
@@ -52,8 +52,8 @@ export function TableInfoGrid({
             <Users className="h-3 w-3" />
             <span>{t('players', 'Jugadores')}</span>
           </div>
-          <div className="font-medium">
-            <span className={table.current_players === table.max_players ? "text-amber-500" : ""}>
+          <div className="font-medium text-white">
+            <span className={table.current_players === table.max_players ? "text-amber-500" : "text-white"}>
               {table.current_players}
             </span>/{table.max_players}
           </div>
@@ -64,7 +64,7 @@ export function TableInfoGrid({
             <Clock className="h-3 w-3" />
             <span>{t('activity', 'Actividad')}</span>
           </div>
-          <div className="font-medium text-xs">
+          <div className="font-medium text-xs text-gray-300">
             {t('timeAgo', lastActivityTime)}
           </div>
         </div>
@@ -76,7 +76,7 @@ export function TableInfoGrid({
           </div>
           <div 
             className={`font-medium ${
-              activePlayerCount > 0 ? "text-emerald-500" : "text-gray-500"
+              activePlayerCount > 0 ? "text-emerald-500" : "text-gray-400"
             }`}
           >
             {activePlayerCount}
