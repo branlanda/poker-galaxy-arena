@@ -22,14 +22,14 @@ export const CenterArea: React.FC<CenterAreaProps> = ({ communityCards, phase, p
       {/* Pot display */}
       {pot > 0 && (
         <motion.div
-          className="mt-4 bg-white rounded-lg px-4 py-2 border-2 border-black shadow-lg"
+          className="mt-4 bg-gradient-to-r from-amber-600/90 to-amber-500/90 rounded-lg px-4 py-2 border border-amber-400/60 shadow-lg"
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.3 }}
         >
           <div className="text-center">
-            <div className="text-xs text-black font-medium">Bote Total</div>
-            <div className="text-lg font-bold text-black">
+            <div className="text-xs text-amber-100 font-medium">Bote Total</div>
+            <div className="text-lg font-bold text-white">
               ${pot.toLocaleString()}
             </div>
           </div>

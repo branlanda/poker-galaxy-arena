@@ -47,7 +47,7 @@ export const GameTable: React.FC<GameTableProps> = ({
   ];
 
   return (
-    <div className="relative w-full h-[600px] bg-white rounded-full border-8 border-black shadow-2xl overflow-hidden">
+    <div className="relative w-full h-[600px] bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-full border-8 border-amber-600/80 shadow-2xl overflow-hidden">
       <TableBackground />
       
       <CenterArea 

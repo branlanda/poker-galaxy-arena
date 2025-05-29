@@ -21,19 +21,23 @@ export function PlayerAvatar({
     <div className="flex flex-col items-center mb-3">
       <div className="relative">
         <motion.div 
-          className={`p-1 rounded-full border-2 ${
+          className={`p-1 rounded-full ${
             isCurrentPlayer 
-              ? 'border-black bg-white' 
-              : 'border-gray-400 bg-white'
+              ? 'bg-gradient-to-r from-emerald-400 to-emerald-600' 
+              : 'bg-gradient-to-r from-slate-600 to-slate-700'
           }`}
           animate={isActive ? {
-            borderColor: ['#000000', '#404040', '#000000']
+            background: [
+              'linear-gradient(to right, #10b981, #059669)', 
+              'linear-gradient(to right, #34d399, #10b981)', 
+              'linear-gradient(to right, #10b981, #059669)'
+            ]
           } : {}}
           transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
         >
-          <Avatar className="h-14 w-14 border-2 border-black">
+          <Avatar className="h-14 w-14 border-2 border-white/20">
             <AvatarImage src="#" />
-            <AvatarFallback className="bg-white text-black font-bold text-lg border border-black">
+            <AvatarFallback className="bg-gradient-to-br from-slate-700 to-slate-800 text-white font-bold text-lg">
               {initials}
             </AvatarFallback>
           </Avatar>
@@ -41,17 +45,17 @@ export function PlayerAvatar({
         
         {/* Online status indicator */}
         {onlineStatus && (
-          <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-black shadow-sm"></div>
+          <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white shadow-sm"></div>
         )}
         
         {/* Turn timer */}
         {isActive && (
           <motion.div 
-            className="absolute -top-2 -right-2 w-7 h-7 bg-amber-500 rounded-full flex items-center justify-center shadow-lg border border-black"
+            className="absolute -top-2 -right-2 w-7 h-7 bg-amber-500 rounded-full flex items-center justify-center shadow-lg"
             animate={{ rotate: 360 }}
             transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
           >
-            <Timer className="w-4 h-4 text-black" />
+            <Timer className="w-4 h-4 text-white" />
           </motion.div>
         )}
       </div>

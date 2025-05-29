@@ -32,10 +32,10 @@ export default {
 				ring: 'hsl(var(--ring))',
 				background: 'hsl(var(--background))',
 				foreground: 'hsl(var(--foreground))',
-				navy: '#ffffff',
-				emerald: '#000000',
-				gold: '#000000',
-				accent: '#000000',
+				navy: '#0B1F32',
+				emerald: '#1CC29F',
+				gold: '#E4C770',
+				accent: '#F45B69',
 				primary: {
 					DEFAULT: 'hsl(var(--primary))',
 					foreground: 'hsl(var(--primary-foreground))'
@@ -99,10 +99,10 @@ export default {
 				},
 				'pulse-glow': {
 					'0%, 100%': {
-						boxShadow: '0 0 5px #000000, 0 0 10px #000000'
+						boxShadow: '0 0 5px #1CC29F, 0 0 10px #1CC29F'
 					},
 					'50%': {
-						boxShadow: '0 0 20px #000000, 0 0 30px #000000'
+						boxShadow: '0 0 20px #1CC29F, 0 0 30px #1CC29F'
 					}
 				},
 				'float': {
