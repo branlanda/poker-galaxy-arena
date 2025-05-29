@@ -13,24 +13,25 @@ export function PokerCard({ card, size = 'md', faceDown = false }: PokerCardProp
   const { suit, value } = card;
   
   const sizeClasses = {
-    sm: 'w-8 h-12',
-    md: 'w-16 h-24',
-    lg: 'w-20 h-30'
+    sm: 'w-9 h-13',
+    md: 'w-12 h-16',
+    lg: 'w-16 h-24'
   };
   
   const textSize = {
     sm: 'text-xs',
-    md: 'text-lg',
-    lg: 'text-xl'
+    md: 'text-sm',
+    lg: 'text-lg'
   };
   
   // Enhanced face-down card design
   if (faceDown) {
     return (
       <motion.div 
-        className={`${sizeClasses[size]} relative rounded-lg overflow-hidden shadow-lg`}
+        className={`${sizeClasses[size]} relative rounded-lg overflow-hidden shadow-lg z-50`}
         whileHover={{ scale: 1.05, rotateY: 5 }}
         transition={{ duration: 0.2 }}
+        style={{ zIndex: 100 }}
       >
         <div className="w-full h-full bg-gradient-to-br from-blue-800 via-blue-900 to-indigo-900 border border-blue-700">
           {/* Card back pattern */}
@@ -68,32 +69,33 @@ export function PokerCard({ card, size = 'md', faceDown = false }: PokerCardProp
     clubs: '♣'
   }[suit];
   
-  // Enhanced face-up card design
+  // Enhanced face-up card design with better contrast
   return (
     <motion.div 
-      className={`${sizeClasses[size]} relative rounded-lg overflow-hidden shadow-lg cursor-pointer`}
+      className={`${sizeClasses[size]} relative rounded-lg overflow-hidden shadow-xl cursor-pointer z-50`}
       whileHover={{ 
         scale: 1.05, 
         rotateY: 5,
-        boxShadow: "0 10px 25px rgba(0,0,0,0.3)"
+        boxShadow: "0 10px 25px rgba(0,0,0,0.5)"
       }}
       transition={{ duration: 0.2 }}
+      style={{ zIndex: 100 }}
     >
-      {/* Card background with gradient */}
-      <div className="w-full h-full bg-gradient-to-br from-white via-gray-50 to-gray-100 border border-gray-300 rounded-lg relative">
-        {/* Subtle card texture */}
-        <div className="absolute inset-0 bg-gradient-to-br from-white/80 to-transparent"></div>
+      {/* Card background with strong white background */}
+      <div className="w-full h-full bg-white border-2 border-gray-400 rounded-lg relative shadow-lg">
+        {/* Card shine effect */}
+        <div className="absolute inset-0 bg-gradient-to-br from-white/80 to-gray-50/30"></div>
         
         {/* Top-left corner */}
-        <div className={`absolute top-1 left-1 ${textSize[size]} ${suitColor} font-bold leading-none`}>
-          <div>{value}</div>
-          <div className="text-xs leading-none">{suitSymbol}</div>
+        <div className={`absolute top-1 left-1 ${textSize[size]} ${suitColor} font-bold leading-none z-10`}>
+          <div className="font-extrabold">{value}</div>
+          <div className={`${size === 'sm' ? 'text-xs' : 'text-sm'} leading-none`}>{suitSymbol}</div>
         </div>
         
         {/* Center suit symbol */}
-        <div className={`absolute inset-0 flex items-center justify-center ${suitColor}`}>
+        <div className={`absolute inset-0 flex items-center justify-center ${suitColor} z-10`}>
           <motion.div
-            className={size === 'sm' ? 'text-xl' : size === 'md' ? 'text-3xl' : 'text-4xl'}
+            className={size === 'sm' ? 'text-lg' : size === 'md' ? 'text-2xl' : 'text-4xl'}
             whileHover={{ scale: 1.1 }}
             transition={{ duration: 0.2 }}
           >
@@ -102,20 +104,20 @@ export function PokerCard({ card, size = 'md', faceDown = false }: PokerCardProp
         </div>
         
         {/* Bottom-right corner (rotated) */}
-        <div className={`absolute bottom-1 right-1 ${textSize[size]} ${suitColor} font-bold leading-none transform rotate-180`}>
-          <div>{value}</div>
-          <div className="text-xs leading-none">{suitSymbol}</div>
+        <div className={`absolute bottom-1 right-1 ${textSize[size]} ${suitColor} font-bold leading-none transform rotate-180 z-10`}>
+          <div className="font-extrabold">{value}</div>
+          <div className={`${size === 'sm' ? 'text-xs' : 'text-sm'} leading-none`}>{suitSymbol}</div>
         </div>
         
-        {/* Card shine effect */}
+        {/* Card shine effect on hover */}
         <motion.div
-          className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent opacity-0"
+          className="absolute inset-0 bg-gradient-to-br from-white/30 via-transparent to-transparent opacity-0"
           whileHover={{ opacity: 1 }}
           transition={{ duration: 0.3 }}
         />
         
         {/* Premium card border highlight */}
-        <div className="absolute inset-0 rounded-lg border border-white/20 pointer-events-none"></div>
+        <div className="absolute inset-0 rounded-lg border border-white/40 pointer-events-none"></div>
       </div>
     </motion.div>
   );
