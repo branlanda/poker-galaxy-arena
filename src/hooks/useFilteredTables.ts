@@ -10,21 +10,21 @@ export function useFilteredTables(tables: LobbyTable[], filters: TableFilters) {
     if (filters.searchQuery) {
       const searchLower = filters.searchQuery.toLowerCase();
       filteredTables = filteredTables.filter(table => 
-        table.name.toLowerCase().includes(searchLower) ||
-        table.creator_name?.toLowerCase().includes(searchLower) ||
-        table.description?.toLowerCase().includes(searchLower)
+        table.name.toLowerCase().includes(searchLower)
+        // Note: creator_name and description don't exist in LobbyTable schema
+        // We can only search by table name for now
       );
     }
 
     // Filtro por tipo de mesa
     if (filters.tableType !== 'ALL') {
-      filteredTables = filteredTables.filter(table => table.type === filters.tableType);
+      filteredTables = filteredTables.filter(table => table.table_type === filters.tableType);
     }
 
     // Filtro por rango de buy-in
     if (filters.buyInRange) {
       filteredTables = filteredTables.filter(table => 
-        table.buy_in >= filters.buyInRange[0] && table.buy_in <= filters.buyInRange[1]
+        table.min_buy_in >= filters.buyInRange[0] && table.max_buy_in <= filters.buyInRange[1]
       );
     }
 
@@ -47,7 +47,7 @@ export function useFilteredTables(tables: LobbyTable[], filters: TableFilters) {
 
     // Filtro por mesas activas solamente
     if (filters.showActive) {
-      filteredTables = filteredTables.filter(table => table.active_players > 0);
+      filteredTables = filteredTables.filter(table => table.status === 'ACTIVE');
     }
 
     // Filtro por mesas privadas
@@ -72,9 +72,9 @@ export function useFilteredTables(tables: LobbyTable[], filters: TableFilters) {
       case 'activity':
       default:
         filteredTables.sort((a, b) => {
-          // Priorizar mesas con más actividad
-          const activityA = a.active_players + (a.current_players * 0.5);
-          const activityB = b.active_players + (b.current_players * 0.5);
+          // Priorizar mesas con más jugadores activos
+          const activityA = a.current_players + (a.status === 'ACTIVE' ? 10 : 0);
+          const activityB = b.current_players + (b.status === 'ACTIVE' ? 10 : 0);
           return activityB - activityA;
         });
         break;
