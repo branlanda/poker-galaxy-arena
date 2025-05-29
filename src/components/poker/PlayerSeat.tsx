@@ -1,12 +1,13 @@
 
 import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Card, PlayerState } from '@/types/poker';
-import { PokerCard } from './PokerCard';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { DollarSign, UserCircle2, Crown, Timer, Zap } from 'lucide-react';
+import { UserCircle2 } from 'lucide-react';
+import { PlayerAvatar } from './player/PlayerAvatar';
+import { PlayerBadges } from './player/PlayerBadges';
+import { PlayerChipDisplay } from './player/PlayerChipDisplay';
+import { PlayerCards } from './player/PlayerCards';
 
 interface PlayerSeatProps {
   position: number;
@@ -105,170 +106,31 @@ export function PlayerSeat({
         )}
         
         <div className="relative">
-          {/* Player indicators */}
-          <div className="flex flex-wrap gap-1 mb-3 justify-center">
-            <AnimatePresence>
-              {isDealer && (
-                <motion.div
-                  initial={{ scale: 0, rotate: -180 }}
-                  animate={{ scale: 1, rotate: 0 }}
-                  exit={{ scale: 0, rotate: 180 }}
-                  transition={{ type: "spring", damping: 10 }}
-                >
-                  <Badge className="bg-gradient-to-r from-yellow-500 to-yellow-600 text-black text-xs px-2 py-1 shadow-lg">
-                    <Crown className="w-3 h-3 mr-1" />
-                    D
-                  </Badge>
-                </motion.div>
-              )}
-              {isSmallBlind && (
-                <Badge className="bg-gradient-to-r from-blue-500 to-blue-600 text-white text-xs px-2 py-1">
-                  SB
-                </Badge>
-              )}
-              {isBigBlind && (
-                <Badge className="bg-gradient-to-r from-red-500 to-red-600 text-white text-xs px-2 py-1">
-                  BB
-                </Badge>
-              )}
-              {playerState.status === 'FOLDED' && (
-                <Badge className="bg-gray-700 text-gray-300 text-xs px-2 py-1">
-                  Folded
-                </Badge>
-              )}
-              {playerState.status === 'ALL_IN' && (
-                <motion.div
-                  animate={{ scale: [1, 1.1, 1] }}
-                  transition={{ duration: 1, repeat: Infinity }}
-                >
-                  <Badge className="bg-gradient-to-r from-amber-500 to-amber-600 text-white text-xs px-2 py-1">
-                    <Zap className="w-3 h-3 mr-1" />
-                    ALL IN!
-                  </Badge>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+          <PlayerBadges
+            isDealer={isDealer}
+            isSmallBlind={isSmallBlind}
+            isBigBlind={isBigBlind}
+            status={playerState.status}
+          />
           
-          {/* Enhanced avatar with status ring */}
-          <div className="flex flex-col items-center mb-3">
-            <div className="relative">
-              <motion.div 
-                className={`p-1 rounded-full ${
-                  isCurrentPlayer 
-                    ? 'bg-gradient-to-r from-emerald-400 to-emerald-600' 
-                    : 'bg-gradient-to-r from-slate-600 to-slate-700'
-                }`}
-                animate={isActive ? {
-                  background: [
-                    'linear-gradient(to right, #10b981, #059669)', 
-                    'linear-gradient(to right, #34d399, #10b981)', 
-                    'linear-gradient(to right, #10b981, #059669)'
-                  ]
-                } : {}}
-                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-              >
-                <Avatar className="h-14 w-14 border-2 border-white/20">
-                  <AvatarImage src="#" />
-                  <AvatarFallback className="bg-gradient-to-br from-slate-700 to-slate-800 text-white font-bold text-lg">
-                    {initials}
-                  </AvatarFallback>
-                </Avatar>
-              </motion.div>
-              
-              {/* Online status indicator */}
-              <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white shadow-sm"></div>
-              
-              {/* Turn timer */}
-              {isActive && (
-                <motion.div 
-                  className="absolute -top-2 -right-2 w-7 h-7 bg-amber-500 rounded-full flex items-center justify-center shadow-lg"
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-                >
-                  <Timer className="w-4 h-4 text-white" />
-                </motion.div>
-              )}
-            </div>
-            
-            {/* Player name and chip count - enhanced visibility */}
-            <div className="text-center mt-2">
-              <div className="text-sm font-bold text-white truncate max-w-24">
-                {isCurrentPlayer ? 'You' : playerState.playerName || `Player ${playerState.playerId?.substring(0, 4) || '?'}`}
-              </div>
-              {/* Enhanced chip count display */}
-              <motion.div 
-                className="flex items-center justify-center text-lg font-bold gap-1 mt-1 bg-gradient-to-r from-amber-500/20 to-amber-600/20 rounded-lg px-2 py-1 border border-amber-400/30"
-                animate={{
-                  color: playerState.stack < 100 ? ['#fbbf24', '#ef4444', '#fbbf24'] : '#fbbf24'
-                }}
-                transition={{ duration: 1, repeat: playerState.stack < 100 ? Infinity : 0 }}
-              >
-                <DollarSign className="h-4 w-4" />
-                <span className="text-amber-300 font-extrabold text-base">
-                  {playerState.stack.toLocaleString()}
-                </span>
-              </motion.div>
-            </div>
-          </div>
+          <PlayerAvatar
+            initials={initials}
+            isCurrentPlayer={isCurrentPlayer}
+            isActive={isActive}
+          />
           
-          {/* Current bet display */}
-          <AnimatePresence>
-            {playerState.currentBet > 0 && (
-              <motion.div 
-                className="mb-3"
-                initial={{ scale: 0, y: 15 }}
-                animate={{ scale: 1, y: 0 }}
-                exit={{ scale: 0, y: -15 }}
-                transition={{ type: "spring", damping: 15 }}
-              >
-                <div className="flex items-center justify-center p-2 bg-gradient-to-r from-amber-500/90 to-amber-600/90 rounded-lg border border-amber-400/60 shadow-lg">
-                  <div className="w-4 h-4 bg-gradient-to-br from-amber-300 to-amber-500 rounded-full mr-2"></div>
-                  <span className="font-bold text-white text-sm">
-                    ${playerState.currentBet.toLocaleString()}
-                  </span>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          <PlayerChipDisplay
+            playerName={playerState.playerName}
+            playerId={playerState.playerId}
+            isCurrentPlayer={isCurrentPlayer}
+            stack={playerState.stack}
+            currentBet={playerState.currentBet}
+          />
           
-          {/* Player cards - más grandes y con z-index más alto para estar por encima */}
-          {playerState.status !== 'FOLDED' && (
-            <div className="flex justify-center gap-3 relative" style={{ zIndex: 200 }}>
-              <AnimatePresence>
-                {holeCards && holeCards.length === 2 ? (
-                  holeCards.map((card, index) => (
-                    <motion.div
-                      key={`${card.code}-${index}`}
-                      className="relative"
-                      initial={{ rotateY: 180, x: index === 0 ? -30 : 30, opacity: 0 }}
-                      animate={{ rotateY: 0, x: 0, opacity: 1 }}
-                      transition={{ delay: index * 0.2, duration: 0.6, ease: "easeOut" }}
-                      style={{ zIndex: 200 + index }}
-                    >
-                      <PokerCard card={card} size="lg" />
-                    </motion.div>
-                  ))
-                ) : (
-                  // Face-down cards - más grandes
-                  [0, 1].map(index => (
-                    <motion.div
-                      key={`facedown-${index}`}
-                      className="w-16 h-22 bg-gradient-to-br from-blue-800 to-blue-900 rounded border border-blue-700 shadow-md flex items-center justify-center relative"
-                      initial={{ rotateY: 180, x: index === 0 ? -30 : 30, opacity: 0 }}
-                      animate={{ rotateY: 0, x: 0, opacity: 1 }}
-                      transition={{ delay: index * 0.1, duration: 0.5 }}
-                      style={{ zIndex: 200 + index }}
-                    >
-                      <div className="w-8 h-10 bg-blue-600 rounded border border-blue-500 flex items-center justify-center">
-                        <div className="text-lg text-blue-200 font-bold">♠</div>
-                      </div>
-                    </motion.div>
-                  ))
-                )}
-              </AnimatePresence>
-            </div>
-          )}
+          <PlayerCards
+            holeCards={holeCards}
+            status={playerState.status}
+          />
         </div>
       </div>
     </motion.div>
