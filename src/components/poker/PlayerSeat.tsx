@@ -37,17 +37,17 @@ export function PlayerSeat({
 }: PlayerSeatProps) {
   const playerState = state || player;
 
-  // Enhanced position calculation - moved up and to upper left (9 seats)
+  // Posiciones actualizadas - movidas significativamente hacia arriba y a la izquierda superior
   const positions = [
-    { top: '75%', left: '45%' },    // bottom center (0) - moved up and left
-    { top: '65%', left: '10%' },    // bottom left (1) - moved up and left
-    { top: '40%', left: '2%' },     // middle left (2) - moved up and left  
-    { top: '15%', left: '10%' },    // top left (3) - moved up and left
-    { top: '5%', left: '30%' },     // top left-center (4) - moved up and left
-    { top: '5%', left: '60%' },     // top right-center (5) - moved up and left
-    { top: '15%', left: '80%' },    // top right (6) - moved up and left
-    { top: '40%', left: '88%' },    // middle right (7) - moved up and left
-    { top: '65%', left: '80%' }     // bottom right (8) - moved up and left
+    { top: '60%', left: '35%' },    // bottom center (0) - movido arriba y izquierda
+    { top: '50%', left: '5%' },     // bottom left (1) - movido arriba y izquierda
+    { top: '25%', left: '0%' },     // middle left (2) - movido arriba y izquierda  
+    { top: '5%', left: '5%' },      // top left (3) - movido arriba y izquierda
+    { top: '0%', left: '20%' },     // top left-center (4) - movido arriba y izquierda
+    { top: '0%', left: '50%' },     // top right-center (5) - movido arriba y izquierda
+    { top: '5%', left: '70%' },     // top right (6) - movido arriba y izquierda
+    { top: '25%', left: '78%' },    // middle right (7) - movido arriba y izquierda
+    { top: '50%', left: '70%' }     // bottom right (8) - movido arriba y izquierda
   ];
 
   const seatStyle = positions[position % positions.length];
@@ -232,36 +232,36 @@ export function PlayerSeat({
             )}
           </AnimatePresence>
           
-          {/* Player cards - larger and with higher z-index */}
+          {/* Player cards - más grandes y con z-index más alto para estar por encima */}
           {playerState.status !== 'FOLDED' && (
-            <div className="flex justify-center gap-2 z-50 relative">
+            <div className="flex justify-center gap-3 relative" style={{ zIndex: 200 }}>
               <AnimatePresence>
                 {holeCards && holeCards.length === 2 ? (
                   holeCards.map((card, index) => (
                     <motion.div
                       key={`${card.code}-${index}`}
-                      className="z-50 relative"
+                      className="relative"
                       initial={{ rotateY: 180, x: index === 0 ? -30 : 30, opacity: 0 }}
                       animate={{ rotateY: 0, x: 0, opacity: 1 }}
                       transition={{ delay: index * 0.2, duration: 0.6, ease: "easeOut" }}
-                      style={{ zIndex: 100 + index }}
+                      style={{ zIndex: 200 + index }}
                     >
-                      <PokerCard card={card} size="md" />
+                      <PokerCard card={card} size="lg" />
                     </motion.div>
                   ))
                 ) : (
-                  // Face-down cards - larger
+                  // Face-down cards - más grandes
                   [0, 1].map(index => (
                     <motion.div
                       key={`facedown-${index}`}
-                      className="w-12 h-16 bg-gradient-to-br from-blue-800 to-blue-900 rounded border border-blue-700 shadow-md flex items-center justify-center z-50 relative"
+                      className="w-16 h-22 bg-gradient-to-br from-blue-800 to-blue-900 rounded border border-blue-700 shadow-md flex items-center justify-center relative"
                       initial={{ rotateY: 180, x: index === 0 ? -30 : 30, opacity: 0 }}
                       animate={{ rotateY: 0, x: 0, opacity: 1 }}
                       transition={{ delay: index * 0.1, duration: 0.5 }}
-                      style={{ zIndex: 100 + index }}
+                      style={{ zIndex: 200 + index }}
                     >
-                      <div className="w-6 h-8 bg-blue-600 rounded border border-blue-500 flex items-center justify-center">
-                        <div className="text-sm text-blue-200 font-bold">♠</div>
+                      <div className="w-8 h-10 bg-blue-600 rounded border border-blue-500 flex items-center justify-center">
+                        <div className="text-lg text-blue-200 font-bold">♠</div>
                       </div>
                     </motion.div>
                   ))
