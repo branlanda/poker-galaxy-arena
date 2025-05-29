@@ -1,10 +1,11 @@
 
 import React from 'react';
-import { motion } from 'framer-motion';
-import { TableLayout } from '../TableLayout';
 import { PlayerSeat } from '../PlayerSeat';
-import { CommunityCards } from '../CommunityCards';
 import { GameState, PlayerState, GamePhase } from '@/types/poker';
+import { TableBackground } from './table/TableBackground';
+import { CenterArea } from './table/CenterArea';
+import { TableStats } from './table/TableStats';
+import { DealerButton } from './table/DealerButton';
 
 interface GameTableProps {
   game: GameState;
@@ -47,34 +48,13 @@ export const GameTable: React.FC<GameTableProps> = ({
 
   return (
     <div className="relative w-full h-[600px] bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-full border-8 border-amber-600/80 shadow-2xl overflow-hidden">
-      {/* Table felt texture overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-emerald-800/30 to-emerald-900/50 rounded-full"></div>
+      <TableBackground />
       
-      {/* Center area for community cards and pot */}
-      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-40 flex flex-col items-center justify-center">
-        {/* Community cards */}
-        <CommunityCards 
-          cards={game.communityCards || []} 
-          phase={game.phase as GamePhase} 
-        />
-        
-        {/* Pot display */}
-        {game.pot > 0 && (
-          <motion.div
-            className="mt-4 bg-gradient-to-r from-amber-600/90 to-amber-500/90 rounded-lg px-4 py-2 border border-amber-400/60 shadow-lg"
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.3 }}
-          >
-            <div className="text-center">
-              <div className="text-xs text-amber-100 font-medium">Bote Total</div>
-              <div className="text-lg font-bold text-white">
-                ${game.pot.toLocaleString()}
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </div>
+      <CenterArea 
+        communityCards={game.communityCards || []}
+        phase={game.phase as GamePhase}
+        pot={game.pot}
+      />
       
       {/* Render all seats */}
       {Array.from({ length: maxSeats }, (_, seatIndex) => {
@@ -111,43 +91,15 @@ export const GameTable: React.FC<GameTableProps> = ({
       
       {/* Dealer button */}
       {game.dealerSeat !== undefined && occupiedSeats[game.dealerSeat] && (
-        <motion.div
-          className="absolute z-20"
-          style={{
-            top: seatPositions[game.dealerSeat].top,
-            left: seatPositions[game.dealerSeat].left,
-            transform: 'translate(-20px, -80px)'
-          }}
-          initial={{ scale: 0, rotate: -180 }}
-          animate={{ scale: 1, rotate: 0 }}
-          transition={{ type: "spring", damping: 10 }}
-        >
-          <div className="bg-white text-black font-bold rounded-full w-8 h-8 flex items-center justify-center border-2 border-black shadow-lg">
-            D
-          </div>
-        </motion.div>
+        <DealerButton position={seatPositions[game.dealerSeat]} />
       )}
       
-      {/* Game statistics overlay */}
-      <motion.div
-        className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-sm rounded-lg p-3 border border-emerald/20"
-        initial={{ opacity: 0, x: 20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: 1 }}
-      >
-        <div className="text-xs text-emerald-300 space-y-1">
-          <div className="text-white">Jugadores: {players.length}/{maxSeats}</div>
-          <div className="text-emerald-400">Fase: {game.phase}</div>
-          {game.activeSeat !== undefined && (
-            <div className="text-amber-400">Turno: Asiento {game.activeSeat + 1}</div>
-          )}
-        </div>
-      </motion.div>
-      
-      {/* Table logo in center */}
-      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-24 h-24 rounded-full bg-emerald-800/20 flex items-center justify-center pointer-events-none z-0">
-        <span className="text-emerald-200/30 font-bold text-sm">POKER</span>
-      </div>
+      <TableStats
+        players={players}
+        maxSeats={maxSeats}
+        phase={game.phase as GamePhase}
+        activeSeat={game.activeSeat}
+      />
     </div>
   );
 };
