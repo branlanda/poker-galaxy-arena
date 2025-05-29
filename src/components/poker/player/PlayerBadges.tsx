@@ -28,24 +28,24 @@ export function PlayerBadges({
             exit={{ scale: 0, rotate: 180 }}
             transition={{ type: "spring", damping: 10 }}
           >
-            <Badge className="bg-gradient-to-r from-yellow-500 to-yellow-600 text-black text-xs px-2 py-1 shadow-lg">
-              <Crown className="w-3 h-3 mr-1" />
+            <Badge className="bg-yellow-400 border-black text-black text-xs px-2 py-1 shadow-lg">
+              <Crown className="w-3 h-3 mr-1 text-black" />
               D
             </Badge>
           </motion.div>
         )}
         {isSmallBlind && (
-          <Badge className="bg-gradient-to-r from-blue-500 to-blue-600 text-white text-xs px-2 py-1">
+          <Badge className="bg-blue-400 border-black text-black text-xs px-2 py-1">
             SB
           </Badge>
         )}
         {isBigBlind && (
-          <Badge className="bg-gradient-to-r from-red-500 to-red-600 text-white text-xs px-2 py-1">
+          <Badge className="bg-red-400 border-black text-black text-xs px-2 py-1">
             BB
           </Badge>
         )}
         {status === 'FOLDED' && (
-          <Badge className="bg-gray-700 text-gray-300 text-xs px-2 py-1">
+          <Badge className="bg-gray-300 border-black text-black text-xs px-2 py-1">
             Folded
           </Badge>
         )}
@@ -54,8 +54,8 @@ export function PlayerBadges({
             animate={{ scale: [1, 1.1, 1] }}
             transition={{ duration: 1, repeat: Infinity }}
           >
-            <Badge className="bg-gradient-to-r from-amber-500 to-amber-600 text-white text-xs px-2 py-1">
-              <Zap className="w-3 h-3 mr-1" />
+            <Badge className="bg-amber-400 border-black text-black text-xs px-2 py-1">
+              <Zap className="w-3 h-3 mr-1 text-black" />
               ALL IN!
             </Badge>
           </motion.div>

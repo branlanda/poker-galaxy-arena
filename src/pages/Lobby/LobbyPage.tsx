@@ -105,7 +105,7 @@ export default function LobbyPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
+    <div className="min-h-screen bg-white">
       <AppLayout showBreadcrumbs={false}>
         <motion.div 
           initial="hidden"
@@ -129,22 +129,22 @@ export default function LobbyPage() {
           <motion.div variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0, transition: { duration: 0.4 } } }} className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <nav className="flex items-center gap-2">
-                <Button variant="ghost" size="sm" className="bg-slate-800/40 border-emerald/20 hover:bg-slate-700/50">
-                  <Link to="/tournaments" className="flex items-center text-gray-300 hover:text-emerald">
-                    <Trophy className="h-4 w-4 mr-2" />
+                <Button variant="ghost" size="sm" className="bg-white border-black hover:bg-gray-100">
+                  <Link to="/tournaments" className="flex items-center text-black hover:text-black">
+                    <Trophy className="h-4 w-4 mr-2 text-black" />
                     {t('tournaments.lobby', 'Tournaments')}
                   </Link>
                 </Button>
-                <Button variant="ghost" size="sm" className="bg-slate-800/40 border-emerald/20 hover:bg-slate-700/50">
-                  <Link to="/leaderboards" className="flex items-center text-gray-300 hover:text-emerald">
-                    <Users className="h-4 w-4 mr-2" />
+                <Button variant="ghost" size="sm" className="bg-white border-black hover:bg-gray-100">
+                  <Link to="/leaderboards" className="flex items-center text-black hover:text-black">
+                    <Users className="h-4 w-4 mr-2 text-black" />
                     {t('leaderboards.title', 'Leaderboards')}
                   </Link>
                 </Button>
                 {user && (
-                  <Button variant="ghost" size="sm" className="bg-slate-800/40 border-emerald/20 hover:bg-slate-700/50">
-                    <Link to="/achievements" className="flex items-center text-gray-300 hover:text-emerald">
-                      <Target className="h-4 w-4 mr-2" />
+                  <Button variant="ghost" size="sm" className="bg-white border-black hover:bg-gray-100">
+                    <Link to="/achievements" className="flex items-center text-black hover:text-black">
+                      <Target className="h-4 w-4 mr-2 text-black" />
                       {t('achievements.title', 'Achievements')}
                     </Link>
                   </Button>
@@ -158,16 +158,16 @@ export default function LobbyPage() {
                 size="sm" 
                 onClick={refreshTables}
                 disabled={loading}
-                className="hidden sm:flex bg-slate-800/40 border-emerald/20 hover:bg-slate-700/50"
+                className="hidden sm:flex bg-white border-black hover:bg-gray-100 text-black"
               >
-                <RefreshCcw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                <RefreshCcw className={`h-4 w-4 mr-2 text-black ${loading ? 'animate-spin' : ''}`} />
                 {t('common.refresh', 'Refresh')}
               </Button>
               
               {user ? (
                 <CreateTableDialog />
               ) : (
-                <Button onClick={() => window.location.href = '/login'}>
+                <Button onClick={() => window.location.href = '/login'} className="bg-black text-white hover:bg-gray-800">
                   {t('auth.login', 'Log In to Create Tables')}
                 </Button>
               )}
@@ -176,10 +176,10 @@ export default function LobbyPage() {
 
           {/* Page Header */}
           <motion.div variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0, transition: { duration: 0.4 } } }} className="text-center">
-            <h1 className="text-3xl font-bold text-emerald mb-2">
+            <h1 className="text-3xl font-bold text-black mb-2">
               {t('lobby.title', 'Poker Tables Lobby')}
             </h1>
-            <p className="text-gray-400">
+            <p className="text-black">
               {t('lobby.joinTable', 'Join an existing table or create your own')}
             </p>
           </motion.div>
@@ -230,7 +230,7 @@ export default function LobbyPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1, duration: 0.5 }}
             >
-              <div className="bg-slate-800/80 backdrop-blur-sm text-white px-4 py-2 rounded-full shadow-lg text-sm border border-emerald/20">
+              <div className="bg-white border border-black text-black px-4 py-2 rounded-full shadow-lg text-sm">
                 {t('lobby.swipeToNavigate')} ↔️
               </div>
             </motion.div>

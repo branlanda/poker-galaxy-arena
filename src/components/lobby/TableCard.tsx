@@ -64,7 +64,7 @@ export function TableCard({ table, isNew = false }: TableCardProps) {
       className="h-full"
       layout
     >
-      <Card className={`bg-slate-800/90 border ${isNew ? 'border-amber-500/50' : isHot ? 'border-emerald/50' : 'border-emerald/20'} h-full relative overflow-hidden backdrop-blur-sm hover:border-emerald/40 transition-all duration-300`}>
+      <Card className={`bg-white border-2 ${isNew ? 'border-amber-500' : isHot ? 'border-black' : 'border-gray-400'} h-full relative overflow-hidden hover:border-black transition-all duration-300`}>
         {isNew && <HotTableIndicator isNew={true} />}
         {isHot && !isNew && <HotTableIndicator />}
         <TableFillIndicator fillPercentage={fillPercentage} />
