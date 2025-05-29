@@ -2,6 +2,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { TableFilters, DEFAULT_FILTERS } from '@/types/lobby';
 import { useLobbyTables } from '@/hooks/useLobbyTables';
+import { useFilteredTables } from '@/hooks/useFilteredTables';
 import { LobbyFilters } from '@/components/lobby/LobbyFilters';
 import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -34,17 +35,20 @@ export default function LobbyPage() {
   };
   
   const { 
-    tables, 
+    tables: allTables, 
     loading, 
     hasMore, 
     loadMore, 
     refreshTables, 
     error 
-  } = useLobbyTables(filters);
+  } = useLobbyTables();
+  
+  // Aplicar filtros a las mesas
+  const filteredTables = useFilteredTables(allTables, filters);
   
   const { t } = useTranslation();
   const bottomRef = useRef<HTMLDivElement>(null);
-  const { newTableIds, groupAndSortTables } = useTableGrouping(tables);
+  const { newTableIds, groupAndSortTables } = useTableGrouping(filteredTables);
   const { isMobile, deviceType } = useDeviceInfo();
   const { toast } = useToast();
   const { user } = useAuth();
@@ -190,18 +194,18 @@ export default function LobbyPage() {
           <AnimatePresence mode="wait">
             <motion.div 
               className="space-y-8"
-              key={loading && tables.length === 0 ? 'loading' : 'content'}
+              key={loading && allTables.length === 0 ? 'loading' : 'content'}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
             >
-              {loading && tables.length === 0 ? (
+              {loading && allTables.length === 0 ? (
                 <LoadingState />
-              ) : tables.length > 0 ? (
+              ) : filteredTables.length > 0 ? (
                 <>
                   <TableGroups 
-                    tables={tables}
+                    tables={filteredTables}
                     groupAndSortTables={groupAndSortTables}
                     newTableIds={newTableIds}
                   />
@@ -213,7 +217,7 @@ export default function LobbyPage() {
                   />
                 </>
               ) : (
-                <EmptyState onResetFilters={() => setFilters({...DEFAULT_FILTERS, showActive: false, sortBy: 'activity'})} />
+                <EmptyState onResetFilters={handleResetFilters} />
               )}
             </motion.div>
           </AnimatePresence>

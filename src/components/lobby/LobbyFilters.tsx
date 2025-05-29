@@ -21,15 +21,19 @@ interface LobbyFiltersProps {
 
 export function LobbyFilters({ filters, onFilterChange }: LobbyFiltersProps) {
   const { t } = useTranslation();
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false); // Cambiado a false para que esté retraído por defecto
 
   const hasActiveFilters = () => {
     return filters.searchQuery ||
            filters.tableType !== 'ALL' ||
            filters.buyInRange[0] > 0 ||
            filters.buyInRange[1] < 10000 ||
+           filters.blindsRange[0] > 0 ||
+           filters.blindsRange[1] < 1000 ||
            filters.showFull !== true ||
            filters.showEmpty !== true ||
+           filters.showActive !== false ||
+           filters.showPrivate !== true ||
            filters.sortBy !== 'activity';
   };
 
@@ -60,6 +64,44 @@ export function LobbyFilters({ filters, onFilterChange }: LobbyFiltersProps) {
     return count;
   };
 
+  // Funciones para los filtros rápidos
+  const applyLowStakesCash = () => {
+    onFilterChange({
+      tableType: 'CASH',
+      buyInRange: [0, 500],
+      blindsRange: [0, 25],
+      showEmpty: true,
+      showFull: false,
+      sortBy: 'activity'
+    });
+  };
+
+  const applyNewTournaments = () => {
+    onFilterChange({
+      tableType: 'TOURNAMENT',
+      sortBy: 'newest',
+      showEmpty: true,
+      showFull: true
+    });
+  };
+
+  const applyPopularTables = () => {
+    onFilterChange({
+      showActive: true,
+      showEmpty: false,
+      sortBy: 'players',
+      showFull: true
+    });
+  };
+
+  const applyHighStakes = () => {
+    onFilterChange({
+      buyInRange: [1000, 10000],
+      blindsRange: [50, 1000],
+      tableType: 'CASH'
+    });
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: -20 }}
@@ -85,7 +127,7 @@ export function LobbyFilters({ filters, onFilterChange }: LobbyFiltersProps) {
                       )}
                     </CardTitle>
                     <p className="text-sm text-gray-400 mt-1">
-                      Personaliza tu búsqueda de mesas
+                      {isOpen ? 'Personaliza tu búsqueda de mesas' : 'Haz clic para expandir filtros'}
                     </p>
                   </div>
                 </div>
@@ -168,7 +210,7 @@ export function LobbyFilters({ filters, onFilterChange }: LobbyFiltersProps) {
                           <SelectTrigger className="bg-slate-800/60 border-emerald/30 text-white hover:border-emerald/50 focus:ring-emerald/20">
                             <SelectValue />
                           </SelectTrigger>
-                          <SelectContent className="bg-slate-800 border-emerald/30">
+                          <SelectContent className="bg-slate-800 border-emerald/30 z-50">
                             <SelectItem value="ALL" className="text-white hover:bg-slate-700 focus:bg-slate-700">
                               🎯 Todos los Juegos
                             </SelectItem>
@@ -194,7 +236,7 @@ export function LobbyFilters({ filters, onFilterChange }: LobbyFiltersProps) {
                           <SelectTrigger className="bg-slate-800/60 border-emerald/30 text-white hover:border-emerald/50 focus:ring-emerald/20">
                             <SelectValue />
                           </SelectTrigger>
-                          <SelectContent className="bg-slate-800 border-emerald/30">
+                          <SelectContent className="bg-slate-800 border-emerald/30 z-50">
                             <SelectItem value="activity" className="text-white hover:bg-slate-700 focus:bg-slate-700">
                               ⚡ Actividad Reciente
                             </SelectItem>
@@ -362,12 +404,7 @@ export function LobbyFilters({ filters, onFilterChange }: LobbyFiltersProps) {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => onFilterChange({ 
-                            tableType: 'CASH', 
-                            buyInRange: [0, 500],
-                            showEmpty: true,
-                            showFull: false
-                          })}
+                          onClick={applyLowStakesCash}
                           className="bg-slate-800/40 border-emerald/20 text-emerald-400 hover:bg-emerald/10"
                         >
                           💰 Cash Bajos
@@ -375,10 +412,7 @@ export function LobbyFilters({ filters, onFilterChange }: LobbyFiltersProps) {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => onFilterChange({ 
-                            tableType: 'TOURNAMENT',
-                            sortBy: 'newest'
-                          })}
+                          onClick={applyNewTournaments}
                           className="bg-slate-800/40 border-orange/20 text-orange-400 hover:bg-orange/10"
                         >
                           🏆 Torneos Nuevos
@@ -386,16 +420,33 @@ export function LobbyFilters({ filters, onFilterChange }: LobbyFiltersProps) {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => onFilterChange({ 
-                            showActive: true,
-                            showEmpty: false,
-                            sortBy: 'players'
-                          })}
+                          onClick={applyPopularTables}
                           className="bg-slate-800/40 border-blue/20 text-blue-400 hover:bg-blue/10"
                         >
                           🔥 Mesas Populares
                         </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={applyHighStakes}
+                          className="bg-slate-800/40 border-purple/20 text-purple-400 hover:bg-purple/10"
+                        >
+                          💎 Stakes Altos
+                        </Button>
                       </div>
+                    </div>
+
+                    {/* Reset All Filters */}
+                    <div className="pt-4 border-t border-emerald/10">
+                      <Button
+                        variant="ghost"
+                        onClick={clearFilters}
+                        className="w-full text-gray-400 hover:text-white hover:bg-slate-700/50"
+                        disabled={!hasActiveFilters()}
+                      >
+                        <X className="h-4 w-4 mr-2" />
+                        Resetear todos los filtros
+                      </Button>
                     </div>
                   </CardContent>
                 </motion.div>
