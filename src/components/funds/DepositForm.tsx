@@ -23,7 +23,7 @@ const DepositForm: React.FC<DepositFormProps> = ({
 
   return (
     <div className="mb-6">
-      <label className="block mb-2 text-sm font-medium">Cantidad a depositar (USDT)</label>
+      <label className="block mb-2 text-sm font-medium text-white">Cantidad a depositar (USDT)</label>
       <div className="flex items-center gap-4">
         <div className="flex-1">
           <Slider
@@ -40,7 +40,7 @@ const DepositForm: React.FC<DepositFormProps> = ({
             type="number"
             value={amount}
             onChange={(e) => onAmountChange(Number(e.target.value))}
-            className="w-full border rounded p-2"
+            className="w-full border border-emerald/20 rounded p-2 bg-transparent text-white placeholder-gray-300"
             min={5}
           />
         </div>
@@ -48,7 +48,7 @@ const DepositForm: React.FC<DepositFormProps> = ({
 
       <div className="mt-6">
         <Button
-          className="w-full sm:w-auto"
+          className="w-full sm:w-auto bg-emerald hover:bg-emerald/90 text-white"
           onClick={onRequestDeposit}
           disabled={isLoading}
         >

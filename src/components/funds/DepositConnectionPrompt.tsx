@@ -9,25 +9,25 @@ const DepositConnectionPrompt: React.FC = () => {
   const { t } = useTranslation();
 
   return (
-    <div className="p-8 text-center rounded-lg border border-dashed border-muted-foreground/50 bg-muted/20">
-      <div className="mx-auto w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
-        <AlertCircle className="h-8 w-8 text-muted-foreground" />
+    <div className="p-8 text-center rounded-lg border border-emerald/20 bg-slate-800/30">
+      <div className="mx-auto w-16 h-16 bg-slate-700/50 rounded-full flex items-center justify-center mb-4 border border-emerald/20">
+        <AlertCircle className="h-8 w-8 text-emerald" />
       </div>
-      <h3 className="text-lg font-medium mb-2">{t('funds.connectWallet', 'Conecta tu wallet para continuar')}</h3>
-      <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+      <h3 className="text-lg font-medium mb-2 text-white">{t('funds.connectWallet', 'Conecta tu wallet para continuar')}</h3>
+      <p className="text-gray-300 mb-6 max-w-md mx-auto">
         {t('funds.depositDescription', 'Para depositar fondos a tu cuenta, primero debes conectar tu wallet Web3.')}
       </p>
       
       <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
         <WalletConnect />
-        <Button variant="outline">
+        <Button variant="outline" className="border-emerald/20 text-white hover:bg-emerald/10 bg-transparent">
           <a href="/funds" className="inline-flex items-center">
             {t('funds.learnMore', 'Aprender más')}
           </a>
         </Button>
       </div>
       
-      <p className="mt-6 text-xs text-muted-foreground">
+      <p className="mt-6 text-xs text-gray-300">
         {t('funds.supportedWallets', 'Soportamos MetaMask, WalletConnect y más')}
       </p>
     </div>

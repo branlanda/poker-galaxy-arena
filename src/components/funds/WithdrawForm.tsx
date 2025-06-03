@@ -63,22 +63,22 @@ const WithdrawForm: React.FC<WithdrawFormProps> = ({ onWithdrawRequest, isLoadin
   return (
     <>
       <div className="mb-6">
-        <label htmlFor="address" className="block mb-2 text-sm font-medium">Dirección TRON (TRC20)</label>
+        <label htmlFor="address" className="block mb-2 text-sm font-medium text-white">Dirección TRON (TRC20)</label>
         <input
           id="address"
           type="text"
           placeholder="Comienza con T..."
           value={address}
           onChange={(e) => setAddress(e.target.value)}
-          className="w-full border rounded p-2"
+          className="w-full border border-emerald/20 rounded p-2 bg-transparent text-white placeholder-gray-300"
         />
-        <p className="text-sm text-muted-foreground mt-1">
+        <p className="text-sm text-gray-300 mt-1">
           Solo se aceptan direcciones TRON (TRC20)
         </p>
       </div>
       
       <div className="mb-6">
-        <label className="block mb-2 text-sm font-medium">
+        <label className="block mb-2 text-sm font-medium text-white">
           Cantidad a retirar (USDT) - Disponible: {isBalanceLoading ? "Cargando..." : `${maxWithdraw} USDT`}
         </label>
         <div className="flex items-center gap-4">
@@ -98,7 +98,7 @@ const WithdrawForm: React.FC<WithdrawFormProps> = ({ onWithdrawRequest, isLoadin
               type="number"
               value={amount}
               onChange={(e) => setAmount(Math.min(Number(e.target.value), maxWithdraw))}
-              className="w-full border rounded p-2"
+              className="w-full border border-emerald/20 rounded p-2 bg-transparent text-white placeholder-gray-300"
               min={10}
               max={maxWithdraw}
               disabled={maxWithdraw < 10 || isBalanceLoading}
@@ -107,9 +107,9 @@ const WithdrawForm: React.FC<WithdrawFormProps> = ({ onWithdrawRequest, isLoadin
         </div>
       </div>
 
-      <div className="mb-6 p-4 bg-muted/50 rounded text-sm">
-        <p className="font-medium mb-1">Información importante:</p>
-        <ul className="list-disc list-inside space-y-1">
+      <div className="mb-6 p-4 bg-slate-800/30 rounded text-sm border border-emerald/20">
+        <p className="font-medium mb-1 text-white">Información importante:</p>
+        <ul className="list-disc list-inside space-y-1 text-gray-300">
           <li>El retiro mínimo es de 10 USDT</li>
           <li>Los retiros se procesan en un plazo de 24 horas</li>
           <li>Comisión por retiro: 1 USDT</li>
@@ -117,7 +117,7 @@ const WithdrawForm: React.FC<WithdrawFormProps> = ({ onWithdrawRequest, isLoadin
       </div>
       
       <Button
-        className="w-full sm:w-auto"
+        className="w-full sm:w-auto bg-emerald hover:bg-emerald/90 text-white"
         onClick={handleSubmit}
         disabled={isLoading || maxWithdraw < 10 || isBalanceLoading}
       >

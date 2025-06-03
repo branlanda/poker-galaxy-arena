@@ -56,8 +56,8 @@ const DepositTab: React.FC = () => {
   };
 
   return (
-    <div className="mt-6 bg-card p-6 rounded-lg border">
-      <h2 className="text-xl font-semibold mb-4">Depositar fondos</h2>
+    <div className="mt-6 bg-transparent border border-emerald/20 p-6 rounded-lg backdrop-blur-sm">
+      <h2 className="text-xl font-semibold mb-4 text-white">Depositar fondos</h2>
       
       {!walletAddress ? (
         <DepositConnectionPrompt />
