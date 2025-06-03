@@ -17,20 +17,22 @@ export const useProductionFeatures = () => {
     if ('PerformanceObserver' in window) {
       const observer = new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
+          // Type assertion for performance entries that have value property
+          const performanceEntry = entry as PerformanceEntry & { value?: number };
           const metric = {
             name: entry.name,
-            value: entry.value || entry.duration,
+            value: performanceEntry.value || entry.duration || 0,
             rating: 'good' // This would be calculated based on thresholds
           };
 
           analytics.track('performance_metric', metric);
           
-          // Log poor performance
-          if (entry.name === 'LCP' && (entry.value || 0) > 2500) {
+          // Log poor performance - check for LCP specifically
+          if (entry.name === 'LCP' && (performanceEntry.value || 0) > 2500) {
             logger.warn('Poor LCP performance detected', { 
               component: 'PerformanceMonitoring',
               metric: entry.name,
-              value: entry.value 
+              value: performanceEntry.value || 0
             });
           }
         }

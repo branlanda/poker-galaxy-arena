@@ -55,27 +55,29 @@ export const UserMetrics: React.FC = () => {
 
           // Calculate popular pages
           const pageViews = events.filter(e => e.event_name === 'page_view');
-          const pageCount = pageViews.reduce((acc, event) => {
+          const pageCount: Record<string, number> = {};
+          
+          pageViews.forEach(event => {
             const page = event.properties?.page || 'unknown';
-            acc[page] = (acc[page] || 0) + 1;
-            return acc;
-          }, {} as Record<string, number>);
+            pageCount[page] = (pageCount[page] || 0) + 1;
+          });
 
           const popularPages = Object.entries(pageCount)
-            .map(([page, views]) => ({ page, views }))
+            .map(([page, views]) => ({ page, views: Number(views) }))
             .sort((a, b) => b.views - a.views)
             .slice(0, 5);
 
           // Calculate user actions
-          const userActions = events.filter(e => e.event_name === 'user_action');
-          const actionCount = userActions.reduce((acc, event) => {
+          const userActionEvents = events.filter(e => e.event_name === 'user_action');
+          const actionCount: Record<string, number> = {};
+          
+          userActionEvents.forEach(event => {
             const action = event.properties?.action || 'unknown';
-            acc[action] = (acc[action] || 0) + 1;
-            return acc;
-          }, {} as Record<string, number>);
+            actionCount[action] = (actionCount[action] || 0) + 1;
+          });
 
           const topActions = Object.entries(actionCount)
-            .map(([action, count]) => ({ action, count }))
+            .map(([action, count]) => ({ action, count: Number(count) }))
             .sort((a, b) => b.count - a.count)
             .slice(0, 5);
 
