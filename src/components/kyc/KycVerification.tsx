@@ -87,11 +87,11 @@ const KycVerification: React.FC = () => {
   const getStatusIcon = (status: KycLevel['status']) => {
     switch (status) {
       case 'completed':
-        return <CheckCircle className="h-5 w-5 text-green-500" />;
+        return <CheckCircle className="h-5 w-5 text-green-400" />;
       case 'pending':
-        return <Clock className="h-5 w-5 text-yellow-500" />;
+        return <Clock className="h-5 w-5 text-yellow-400" />;
       case 'rejected':
-        return <AlertCircle className="h-5 w-5 text-red-500" />;
+        return <AlertCircle className="h-5 w-5 text-red-400" />;
       default:
         return <Shield className="h-5 w-5 text-gray-400" />;
     }
@@ -100,46 +100,50 @@ const KycVerification: React.FC = () => {
   const getStatusBadge = (status: KycLevel['status']) => {
     switch (status) {
       case 'completed':
-        return <Badge className="bg-green-100 text-green-800">Completado</Badge>;
+        return <Badge className="bg-green-500/20 text-green-400 border-green-500/20">Completado</Badge>;
       case 'pending':
-        return <Badge className="bg-yellow-100 text-yellow-800">Pendiente</Badge>;
+        return <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/20">Pendiente</Badge>;
       case 'rejected':
-        return <Badge className="bg-red-100 text-red-800">Rechazado</Badge>;
+        return <Badge className="bg-red-500/20 text-red-400 border-red-500/20">Rechazado</Badge>;
       default:
-        return <Badge variant="secondary">No iniciado</Badge>;
+        return <Badge className="bg-gray-500/20 text-gray-400 border-gray-500/20">No iniciado</Badge>;
     }
   };
 
   return (
     <div className="space-y-6">
-      <Card>
+      <Card className="bg-transparent border-emerald/20 backdrop-blur-sm">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-white">
             <Shield className="h-5 w-5" />
             Verificación KYC (Know Your Customer)
           </CardTitle>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-gray-300">
             Verifica tu identidad para aumentar los límites de tu cuenta y acceder a todas las funcionalidades.
           </p>
         </CardHeader>
       </Card>
 
       <Tabs defaultValue="levels" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="levels">Niveles de Verificación</TabsTrigger>
-          <TabsTrigger value="upload">Subir Documentos</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2 bg-transparent border border-emerald/20">
+          <TabsTrigger value="levels" className="text-white data-[state=active]:bg-emerald data-[state=active]:text-white">
+            Niveles de Verificación
+          </TabsTrigger>
+          <TabsTrigger value="upload" className="text-white data-[state=active]:bg-emerald data-[state=active]:text-white">
+            Subir Documentos
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="levels" className="space-y-4">
           {kycLevels.map((level) => (
-            <Card key={level.level} className="relative">
+            <Card key={level.level} className="bg-transparent border-emerald/20 backdrop-blur-sm">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     {getStatusIcon(level.status)}
                     <div>
-                      <CardTitle className="text-lg">Nivel {level.level} - {level.name}</CardTitle>
-                      <p className="text-sm text-muted-foreground">{level.description}</p>
+                      <CardTitle className="text-lg text-white">Nivel {level.level} - {level.name}</CardTitle>
+                      <p className="text-gray-300">{level.description}</p>
                     </div>
                   </div>
                   {getStatusBadge(level.status)}
@@ -148,19 +152,19 @@ const KycVerification: React.FC = () => {
               <CardContent>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <h4 className="font-medium mb-2">Requisitos:</h4>
+                    <h4 className="font-medium mb-2 text-white">Requisitos:</h4>
                     <ul className="space-y-1">
                       {level.requirements.map((req, index) => (
-                        <li key={index} className="text-sm flex items-center gap-2">
-                          <CheckCircle className="h-3 w-3 text-green-500" />
+                        <li key={index} className="text-sm flex items-center gap-2 text-gray-300">
+                          <CheckCircle className="h-3 w-3 text-green-400" />
                           {req}
                         </li>
                       ))}
                     </ul>
                   </div>
                   <div>
-                    <h4 className="font-medium mb-2">Límites:</h4>
-                    <p className="text-sm text-muted-foreground">{level.limits}</p>
+                    <h4 className="font-medium mb-2 text-white">Límites:</h4>
+                    <p className="text-sm text-gray-300">{level.limits}</p>
                   </div>
                 </div>
               </CardContent>
@@ -169,18 +173,18 @@ const KycVerification: React.FC = () => {
         </TabsContent>
 
         <TabsContent value="upload" className="space-y-6">
-          <Card>
+          <Card className="bg-transparent border-emerald/20 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle>Subir Documentos</CardTitle>
-              <p className="text-sm text-muted-foreground">
+              <CardTitle className="text-white">Subir Documentos</CardTitle>
+              <p className="text-gray-300">
                 Sube los documentos requeridos para completar tu verificación KYC.
               </p>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="id-front">Documento de Identidad (Frente)</Label>
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                  <Label htmlFor="id-front" className="text-white">Documento de Identidad (Frente)</Label>
+                  <div className="border-2 border-dashed border-emerald/20 rounded-lg p-6 text-center bg-slate-800/30">
                     <FileText className="h-12 w-12 mx-auto text-gray-400 mb-4" />
                     <Input
                       id="id-front"
@@ -193,7 +197,7 @@ const KycVerification: React.FC = () => {
                       className="hidden"
                     />
                     <Label htmlFor="id-front" className="cursor-pointer">
-                      <Button variant="outline" asChild>
+                      <Button variant="outline" asChild className="border-emerald/20 text-white hover:bg-emerald/10 bg-transparent">
                         <span>
                           <Upload className="h-4 w-4 mr-2" />
                           Seleccionar archivo
@@ -201,7 +205,7 @@ const KycVerification: React.FC = () => {
                       </Button>
                     </Label>
                     {documents.id_front && (
-                      <p className="text-sm text-green-600 mt-2">
+                      <p className="text-sm text-green-400 mt-2">
                         ✓ {documents.id_front.name}
                       </p>
                     )}
@@ -209,8 +213,8 @@ const KycVerification: React.FC = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="id-back">Documento de Identidad (Reverso)</Label>
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                  <Label htmlFor="id-back" className="text-white">Documento de Identidad (Reverso)</Label>
+                  <div className="border-2 border-dashed border-emerald/20 rounded-lg p-6 text-center bg-slate-800/30">
                     <FileText className="h-12 w-12 mx-auto text-gray-400 mb-4" />
                     <Input
                       id="id-back"
@@ -223,7 +227,7 @@ const KycVerification: React.FC = () => {
                       className="hidden"
                     />
                     <Label htmlFor="id-back" className="cursor-pointer">
-                      <Button variant="outline" asChild>
+                      <Button variant="outline" asChild className="border-emerald/20 text-white hover:bg-emerald/10 bg-transparent">
                         <span>
                           <Upload className="h-4 w-4 mr-2" />
                           Seleccionar archivo
@@ -231,7 +235,7 @@ const KycVerification: React.FC = () => {
                       </Button>
                     </Label>
                     {documents.id_back && (
-                      <p className="text-sm text-green-600 mt-2">
+                      <p className="text-sm text-green-400 mt-2">
                         ✓ {documents.id_back.name}
                       </p>
                     )}
@@ -239,8 +243,8 @@ const KycVerification: React.FC = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="selfie">Selfie con Documento</Label>
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                  <Label htmlFor="selfie" className="text-white">Selfie con Documento</Label>
+                  <div className="border-2 border-dashed border-emerald/20 rounded-lg p-6 text-center bg-slate-800/30">
                     <Camera className="h-12 w-12 mx-auto text-gray-400 mb-4" />
                     <Input
                       id="selfie"
@@ -253,7 +257,7 @@ const KycVerification: React.FC = () => {
                       className="hidden"
                     />
                     <Label htmlFor="selfie" className="cursor-pointer">
-                      <Button variant="outline" asChild>
+                      <Button variant="outline" asChild className="border-emerald/20 text-white hover:bg-emerald/10 bg-transparent">
                         <span>
                           <Camera className="h-4 w-4 mr-2" />
                           Tomar/Seleccionar foto
@@ -261,7 +265,7 @@ const KycVerification: React.FC = () => {
                       </Button>
                     </Label>
                     {documents.selfie && (
-                      <p className="text-sm text-green-600 mt-2">
+                      <p className="text-sm text-green-400 mt-2">
                         ✓ {documents.selfie.name}
                       </p>
                     )}
@@ -269,8 +273,8 @@ const KycVerification: React.FC = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="proof-address">Comprobante de Domicilio</Label>
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                  <Label htmlFor="proof-address" className="text-white">Comprobante de Domicilio</Label>
+                  <div className="border-2 border-dashed border-emerald/20 rounded-lg p-6 text-center bg-slate-800/30">
                     <FileText className="h-12 w-12 mx-auto text-gray-400 mb-4" />
                     <Input
                       id="proof-address"
@@ -283,7 +287,7 @@ const KycVerification: React.FC = () => {
                       className="hidden"
                     />
                     <Label htmlFor="proof-address" className="cursor-pointer">
-                      <Button variant="outline" asChild>
+                      <Button variant="outline" asChild className="border-emerald/20 text-white hover:bg-emerald/10 bg-transparent">
                         <span>
                           <Upload className="h-4 w-4 mr-2" />
                           Seleccionar archivo
@@ -291,7 +295,7 @@ const KycVerification: React.FC = () => {
                       </Button>
                     </Label>
                     {documents.proof_of_address && (
-                      <p className="text-sm text-green-600 mt-2">
+                      <p className="text-sm text-green-400 mt-2">
                         ✓ {documents.proof_of_address.name}
                       </p>
                     )}
@@ -299,9 +303,9 @@ const KycVerification: React.FC = () => {
                 </div>
               </div>
 
-              <div className="border rounded-lg p-4 bg-blue-50">
-                <h4 className="font-medium text-blue-900 mb-2">Información importante:</h4>
-                <ul className="text-sm text-blue-800 space-y-1">
+              <div className="border border-emerald/20 rounded-lg p-4 bg-slate-800/30">
+                <h4 className="font-medium text-white mb-2">Información importante:</h4>
+                <ul className="text-sm text-gray-300 space-y-1">
                   <li>• Los documentos deben estar en formato JPG, PNG o PDF</li>
                   <li>• Asegúrate de que la información sea legible y no esté borrosa</li>
                   <li>• Los documentos deben estar vigentes</li>
@@ -312,7 +316,7 @@ const KycVerification: React.FC = () => {
               <Button
                 onClick={handleSubmitVerification}
                 disabled={uploading || !documents.id_front}
-                className="w-full"
+                className="w-full bg-emerald hover:bg-emerald/90 text-white"
               >
                 {uploading ? "Enviando..." : "Enviar Documentos para Verificación"}
               </Button>
