@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useOptimizedQuery } from '@/hooks/useOptimizedQuery';
 import { optimizedSupabase } from '@/lib/optimizedSupabase';
@@ -61,7 +60,7 @@ export function useLobbyTablesOptimized(filters?: TableFilters) {
         },
         {
           cache: true,
-          ttl: reducedData ? 10000 : 5000, // Longer cache for slow connections
+          ttl: reducedData ? 10000 : 5000,
           limit: pageSize,
           useIndex: ['created_at', 'status', 'table_type']
         }

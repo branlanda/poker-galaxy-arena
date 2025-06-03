@@ -1,6 +1,5 @@
 
 import { supabase } from '@/lib/supabase';
-import { PostgrestBuilder } from '@supabase/postgrest-js';
 
 interface QueryCache {
   [key: string]: {
@@ -12,7 +11,7 @@ interface QueryCache {
 
 class OptimizedSupabaseClient {
   private cache: QueryCache = {};
-  private defaultTTL = 5 * 60 * 1000; // 5 minutes
+  private defaultTTL = 5 * 60 * 1000;
   
   private generateCacheKey(query: string, params: any): string {
     return `${query}_${JSON.stringify(params)}`;
@@ -24,7 +23,7 @@ class OptimizedSupabaseClient {
   
   async optimizedQuery<T>(
     tableName: string,
-    queryBuilder: (query: any) => PostgrestBuilder<any>,
+    queryBuilder: (query: any) => any,
     options: {
       cache?: boolean;
       ttl?: number;
@@ -41,34 +40,27 @@ class OptimizedSupabaseClient {
       useIndex = []
     } = options;
     
-    // Build optimized query
     let query = supabase.from(tableName).select(select);
     
-    // Apply query builder
-    query = queryBuilder(query);
+    const builtQuery = queryBuilder(query);
     
-    // Apply limit for performance
     if (limit) {
-      query = query.limit(limit);
+      builtQuery.limit(limit);
     }
     
-    // Generate cache key
-    const cacheKey = this.generateCacheKey(tableName, { select, limit, query: query.toString() });
+    const cacheKey = this.generateCacheKey(tableName, { select, limit, query: builtQuery.toString() });
     
-    // Check cache first
     if (cache && this.cache[cacheKey] && this.isValidCache(this.cache[cacheKey])) {
       return this.cache[cacheKey].data;
     }
     
-    // Execute query with error handling
-    const { data, error } = await query;
+    const { data, error } = await builtQuery;
     
     if (error) {
       console.error('Supabase query error:', error);
       throw error;
     }
     
-    // Cache the result
     if (cache) {
       this.cache[cacheKey] = {
         data,
@@ -80,7 +72,6 @@ class OptimizedSupabaseClient {
     return data as T;
   }
   
-  // Optimized real-time subscription
   optimizedSubscription(
     tableName: string,
     callback: (payload: any) => void,
@@ -141,7 +132,6 @@ class OptimizedSupabaseClient {
     }
   }
   
-  // Prefetch data for better UX
   async prefetchData(queries: Array<{ table: string; queryFn: (q: any) => any; key: string }>) {
     const prefetchPromises = queries.map(async ({ table, queryFn, key }) => {
       try {

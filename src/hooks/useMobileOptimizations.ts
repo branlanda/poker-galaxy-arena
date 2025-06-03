@@ -22,10 +22,8 @@ export function useMobileOptimizations(): MobileOptimizations {
   
   useEffect(() => {
     const updateOptimizations = () => {
-      // Check for reduced motion preference
       const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       
-      // Check connection type for data saving
       const connection = (navigator as any).connection;
       const isSlowConnection = connection && (
         connection.effectiveType === 'slow-2g' || 
@@ -33,7 +31,6 @@ export function useMobileOptimizations(): MobileOptimizations {
         connection.saveData
       );
       
-      // Check for low-power mode or low-end device
       const isLowPowerMode = (navigator as any).deviceMemory && (navigator as any).deviceMemory < 4;
       
       setOptimizations({
@@ -47,7 +44,6 @@ export function useMobileOptimizations(): MobileOptimizations {
     
     updateOptimizations();
     
-    // Listen for changes
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     mediaQuery.addEventListener('change', updateOptimizations);
     
@@ -63,7 +59,6 @@ export function useMobileOptimizations(): MobileOptimizations {
 export function usePerformanceMonitor() {
   useEffect(() => {
     if ('performance' in window && 'PerformanceObserver' in window) {
-      // Monitor Largest Contentful Paint
       const lcpObserver = new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
           console.log('LCP:', entry.startTime);
@@ -71,19 +66,21 @@ export function usePerformanceMonitor() {
       });
       lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] });
       
-      // Monitor First Input Delay
       const fidObserver = new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
-          console.log('FID:', entry.processingStart - entry.startTime);
+          const fidEntry = entry as any;
+          if (fidEntry.processingStart) {
+            console.log('FID:', fidEntry.processingStart - fidEntry.startTime);
+          }
         }
       });
       fidObserver.observe({ entryTypes: ['first-input'] });
       
-      // Monitor Cumulative Layout Shift
       const clsObserver = new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
-          if (!(entry as any).hadRecentInput) {
-            console.log('CLS:', (entry as any).value);
+          const clsEntry = entry as any;
+          if (!clsEntry.hadRecentInput) {
+            console.log('CLS:', clsEntry.value);
           }
         }
       });
