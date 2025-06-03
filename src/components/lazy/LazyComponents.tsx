@@ -4,12 +4,12 @@ import { lazy } from 'react';
 // Poker Game Components
 export const LazyGameTable = lazy(() => import('@/components/poker/game/GameTable').then(module => ({ default: module.GameTable })));
 export const LazyGameModal = lazy(() => import('@/components/poker/game/GameModal').then(module => ({ default: module.GameModal })));
-export const LazyPokerGame = lazy(() => import('@/components/poker/PokerGame').then(module => ({ default: module.default })));
+export const LazyPokerGame = lazy(() => import('@/components/poker/PokerGame').then(module => ({ default: module.PokerGame })));
 
 // Admin Components
 export const LazyAdminDashboard = lazy(() => import('@/pages/Admin/Dashboard').then(module => ({ default: module.default })));
 export const LazyUserTable = lazy(() => import('@/components/admin/UserTable').then(module => ({ default: module.default })));
-export const LazyLedgerTable = lazy(() => import('@/components/admin/LedgerTable').then(module => ({ default: module.default })));
+export const LazyLedgerTable = lazy(() => import('@/components/admin/LedgerTable').then(module => ({ default: module.LedgerTable })));
 
 // Funds Components
 export const LazyPaymentIntegration = lazy(() => import('@/components/payments/PaymentIntegration').then(module => ({ default: module.default })));

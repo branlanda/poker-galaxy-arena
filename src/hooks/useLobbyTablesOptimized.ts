@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useOptimizedQuery } from '@/hooks/useOptimizedQuery';
 import { optimizedSupabase } from '@/lib/optimizedSupabase';
@@ -51,8 +52,8 @@ export function useLobbyTablesOptimized(filters?: TableFilters) {
             q = q.in('status', ['WAITING', 'ACTIVE']);
           }
           
-          if (filters?.blindRange) {
-            const [min, max] = filters.blindRange;
+          if (filters?.blindsRange) {
+            const [min, max] = filters.blindsRange;
             q = q.gte('big_blind', min).lte('big_blind', max);
           }
           
