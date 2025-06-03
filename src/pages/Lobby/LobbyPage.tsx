@@ -17,8 +17,9 @@ import { Toaster } from '@/components/ui/toaster';
 import { useToast } from '@/hooks/use-toast';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
-import { RefreshCcw, Trophy, Target, Users } from 'lucide-react';
+import { RefreshCcw, Trophy, Target, Users, BarChart3 } from 'lucide-react';
 import { CreateTableDialog } from '@/components/lobby/CreateTableDialog';
+import { PrivateTableCreator } from '@/components/lobby/PrivateTableCreator';
 import { useAuth } from '@/stores/auth';
 import { Link } from 'react-router-dom';
 
@@ -93,17 +94,6 @@ export default function LobbyPage() {
     }
   };
 
-  // Animations for page elements
-  const containerAnimation = {
-    hidden: { opacity: 0 },
-    show: { opacity: 1, transition: { duration: 0.3, staggerChildren: 0.1 } }
-  };
-
-  const itemAnimation = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.4 } }
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
       <AppLayout showBreadcrumbs={false}>
@@ -142,12 +132,20 @@ export default function LobbyPage() {
                   </Link>
                 </Button>
                 {user && (
-                  <Button variant="ghost" size="sm" className="bg-slate-800/40 border-emerald/20 hover:bg-slate-700/50">
-                    <Link to="/achievements" className="flex items-center text-gray-300 hover:text-emerald">
-                      <Target className="h-4 w-4 mr-2" />
-                      {t('achievements.title', 'Achievements')}
-                    </Link>
-                  </Button>
+                  <>
+                    <Button variant="ghost" size="sm" className="bg-slate-800/40 border-emerald/20 hover:bg-slate-700/50">
+                      <Link to="/achievements" className="flex items-center text-gray-300 hover:text-emerald">
+                        <Target className="h-4 w-4 mr-2" />
+                        {t('achievements.title', 'Achievements')}
+                      </Link>
+                    </Button>
+                    <Button variant="ghost" size="sm" className="bg-slate-800/40 border-emerald/20 hover:bg-slate-700/50">
+                      <Link to="/stats" className="flex items-center text-gray-300 hover:text-emerald">
+                        <BarChart3 className="h-4 w-4 mr-2" />
+                        Estadísticas
+                      </Link>
+                    </Button>
+                  </>
                 )}
               </nav>
             </div>
@@ -165,7 +163,10 @@ export default function LobbyPage() {
               </Button>
               
               {user ? (
-                <CreateTableDialog />
+                <div className="flex gap-2">
+                  <CreateTableDialog />
+                  <PrivateTableCreator />
+                </div>
               ) : (
                 <Button onClick={() => window.location.href = '/login'}>
                   {t('auth.login', 'Log In to Create Tables')}
