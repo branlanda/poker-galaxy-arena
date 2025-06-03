@@ -92,11 +92,11 @@ const SettingsPage = () => {
         <div className="max-w-4xl mx-auto space-y-6">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-white mb-2">{t('settings.title', 'Account Settings')}</h1>
-            <p className="text-gray-400">Manage your account preferences and privacy settings</p>
+            <p className="text-gray-300">Manage your account preferences and privacy settings</p>
           </div>
           
           {/* Personal Information */}
-          <Card className="bg-slate-800/90 border-emerald/20 backdrop-blur-sm">
+          <Card className="bg-transparent border-emerald/20 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="text-white flex items-center">
                 <User className="h-5 w-5 mr-2 text-emerald" />
@@ -106,21 +106,21 @@ const SettingsPage = () => {
             <CardContent className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-gray-300">{t('email', 'Email')}</Label>
+                  <Label htmlFor="email" className="text-white">{t('email', 'Email')}</Label>
                   <Input
                     id="email"
                     type="email"
                     value={user.email || ''}
                     disabled
-                    className="bg-slate-700/60 border-emerald/20 text-gray-400"
+                    className="bg-transparent border-emerald/20 text-white placeholder-gray-300"
                   />
-                  <p className="text-xs text-gray-500">{t('settings.emailHelp', 'Contact support to change your email')}</p>
+                  <p className="text-xs text-gray-300">{t('settings.emailHelp', 'Contact support to change your email')}</p>
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="alias" className="text-gray-300">
+                  <Label htmlFor="alias" className="text-white">
                     {t('settings.pokerAlias', 'Poker Alias')}
-                    <span className="text-xs text-gray-400 ml-2">({t('settings.aliasLength', '3-24 characters')})</span>
+                    <span className="text-xs text-gray-300 ml-2">({t('settings.aliasLength', '3-24 characters')})</span>
                   </Label>
                   <Input
                     id="alias"
@@ -129,7 +129,7 @@ const SettingsPage = () => {
                     onChange={(e) => setAlias(e.target.value)}
                     minLength={3}
                     maxLength={24}
-                    className="bg-slate-700/60 border-emerald/20 text-white placeholder-gray-400"
+                    className="bg-transparent border-emerald/20 text-white placeholder-gray-300"
                   />
                 </div>
               </div>
@@ -143,7 +143,7 @@ const SettingsPage = () => {
                 />
                 <Label 
                   htmlFor="show-in-leaderboard" 
-                  className="text-gray-300 cursor-pointer"
+                  className="text-white cursor-pointer"
                 >
                   {t('settings.showInLeaderboard', 'Show me in public leaderboards')}
                 </Label>
@@ -152,7 +152,7 @@ const SettingsPage = () => {
           </Card>
 
           {/* Privacy Settings */}
-          <Card className="bg-slate-800/90 border-emerald/20 backdrop-blur-sm">
+          <Card className="bg-transparent border-emerald/20 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="text-white flex items-center">
                 <Shield className="h-5 w-5 mr-2 text-emerald" />
@@ -162,8 +162,8 @@ const SettingsPage = () => {
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <Label className="text-gray-300">Show Public Statistics</Label>
-                  <p className="text-sm text-gray-400">Allow your statistics to be visible on leaderboards</p>
+                  <Label className="text-white">Show Public Statistics</Label>
+                  <p className="text-sm text-gray-300">Allow your statistics to be visible on leaderboards</p>
                 </div>
                 <Checkbox
                   checked={showInLeaderboard}
@@ -175,7 +175,7 @@ const SettingsPage = () => {
           </Card>
 
           {/* Preferences */}
-          <Card className="bg-slate-800/90 border-emerald/20 backdrop-blur-sm">
+          <Card className="bg-transparent border-emerald/20 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="text-white flex items-center">
                 <Globe className="h-5 w-5 mr-2 text-emerald" />
@@ -184,9 +184,9 @@ const SettingsPage = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="language" className="text-gray-300">{t('settings.language', 'Language')}</Label>
+                <Label htmlFor="language" className="text-white">{t('settings.language', 'Language')}</Label>
                 <Select value={currentLanguage.code} onValueChange={handleLanguageChange}>
-                  <SelectTrigger className="bg-slate-700/60 border-emerald/20 text-white">
+                  <SelectTrigger className="bg-transparent border-emerald/20 text-white">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="bg-slate-800 border-emerald/20">
@@ -202,7 +202,7 @@ const SettingsPage = () => {
           </Card>
 
           {/* Notifications */}
-          <Card className="bg-slate-800/90 border-emerald/20 backdrop-blur-sm">
+          <Card className="bg-transparent border-emerald/20 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="text-white flex items-center">
                 <Bell className="h-5 w-5 mr-2 text-emerald" />
@@ -212,8 +212,8 @@ const SettingsPage = () => {
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <Label className="text-gray-300">Email Notifications</Label>
-                  <p className="text-sm text-gray-400">Receive important updates via email</p>
+                  <Label className="text-white">Email Notifications</Label>
+                  <p className="text-sm text-gray-300">Receive important updates via email</p>
                 </div>
                 <Checkbox
                   defaultChecked={true}
@@ -222,8 +222,8 @@ const SettingsPage = () => {
               </div>
               <div className="flex items-center justify-between">
                 <div>
-                  <Label className="text-gray-300">Tournament Notifications</Label>
-                  <p className="text-sm text-gray-400">Get notified about upcoming tournaments</p>
+                  <Label className="text-white">Tournament Notifications</Label>
+                  <p className="text-sm text-gray-300">Get notified about upcoming tournaments</p>
                 </div>
                 <Checkbox
                   defaultChecked={true}

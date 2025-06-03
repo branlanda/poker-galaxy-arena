@@ -39,7 +39,7 @@ export default function ProfilePage() {
         <div className="container mx-auto px-4 py-8 relative z-10">
           {/* Navigation Header */}
           <div className="flex items-center justify-between mb-8">
-            <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white">
+            <Button variant="ghost" size="sm" className="text-white hover:text-emerald">
               <Link to="/" className="flex items-center">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 {t('common.backToHome', 'Volver al inicio')}
@@ -50,7 +50,7 @@ export default function ProfilePage() {
             <Button 
               variant="outline" 
               size="sm" 
-              className="border-emerald/20 text-white hover:bg-emerald/10"
+              className="border-emerald/20 text-white hover:bg-emerald/10 bg-transparent"
             >
               <Link to="/hand-history" className="flex items-center">
                 <BarChart3 className="h-4 w-4 mr-2" />
@@ -70,20 +70,20 @@ export default function ProfilePage() {
 
           {/* Main Content Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-5 mb-8">
-              <TabsTrigger value="overview" className="text-white">
+            <TabsList className="grid w-full grid-cols-5 mb-8 bg-transparent border border-emerald/20">
+              <TabsTrigger value="overview" className="text-white data-[state=active]:bg-emerald data-[state=active]:text-white">
                 {t('profile.overview', 'Resumen')}
               </TabsTrigger>
-              <TabsTrigger value="history" className="text-white">
+              <TabsTrigger value="history" className="text-white data-[state=active]:bg-emerald data-[state=active]:text-white">
                 {t('profile.gameHistory', 'Historial')}
               </TabsTrigger>
-              <TabsTrigger value="friends" className="text-white">
+              <TabsTrigger value="friends" className="text-white data-[state=active]:bg-emerald data-[state=active]:text-white">
                 {t('profile.friends', 'Amigos')}
               </TabsTrigger>
-              <TabsTrigger value="settings" className="text-white">
+              <TabsTrigger value="settings" className="text-white data-[state=active]:bg-emerald data-[state=active]:text-white">
                 {t('profile.settings', 'Configuración')}
               </TabsTrigger>
-              <TabsTrigger value="security" className="text-white">
+              <TabsTrigger value="security" className="text-white data-[state=active]:bg-emerald data-[state=active]:text-white">
                 <Shield className="h-4 w-4 mr-2" />
                 Seguridad
               </TabsTrigger>
@@ -93,7 +93,7 @@ export default function ProfilePage() {
               <StatisticsSection stats={statistics} loading={loading} />
               
               {/* Quick access card */}
-              <Card className="bg-navy/70 border-emerald/20">
+              <Card className="bg-transparent border-emerald/20 backdrop-blur-sm">
                 <CardHeader>
                   <CardTitle className="text-white">Acceso Rápido</CardTitle>
                 </CardHeader>
@@ -101,7 +101,7 @@ export default function ProfilePage() {
                   <div className="flex space-x-4">
                     <Button 
                       variant="outline" 
-                      className="border-emerald/20 text-white hover:bg-emerald/10"
+                      className="border-emerald/20 text-white hover:bg-emerald/10 bg-transparent"
                     >
                       <Link to="/hand-history" className="flex items-center">
                         <BarChart3 className="h-4 w-4 mr-2" />

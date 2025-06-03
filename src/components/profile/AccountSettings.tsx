@@ -55,44 +55,44 @@ export const AccountSettings: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Personal Information */}
-      <Card className="bg-slate-800/90 border-emerald/20">
+      <Card className="bg-transparent border-emerald/20 backdrop-blur-sm">
         <CardHeader>
           <CardTitle className="text-white flex items-center">
-            <Settings className="h-5 w-5 mr-2" />
+            <Settings className="h-5 w-5 mr-2 text-emerald" />
             Personal Information
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="email" className="text-gray-300">Email</Label>
+              <Label htmlFor="email" className="text-white">Email</Label>
               <Input
                 id="email"
                 type="email"
                 value={user?.email || ''}
                 disabled
-                className="bg-slate-700/60 border-emerald/20 text-gray-400"
+                className="bg-transparent border-emerald/20 text-white placeholder-gray-300"
               />
-              <p className="text-xs text-gray-500 mt-1">Email cannot be changed</p>
+              <p className="text-xs text-gray-300 mt-1">Email cannot be changed</p>
             </div>
             
             <div>
-              <Label htmlFor="alias" className="text-gray-300">Display Name</Label>
+              <Label htmlFor="alias" className="text-white">Display Name</Label>
               <Input
                 id="alias"
                 type="text"
                 value={formData.alias}
                 onChange={(e) => setFormData(prev => ({ ...prev, alias: e.target.value }))}
                 placeholder="Enter your display name"
-                className="bg-slate-700/60 border-emerald/20 text-white"
+                className="bg-transparent border-emerald/20 text-white placeholder-gray-300"
               />
             </div>
           </div>
 
           <div>
-            <Label htmlFor="language" className="text-gray-300">Language</Label>
+            <Label htmlFor="language" className="text-white">Language</Label>
             <Select value={formData.language} onValueChange={(value) => setFormData(prev => ({ ...prev, language: value }))}>
-              <SelectTrigger className="bg-slate-700/60 border-emerald/20 text-white">
+              <SelectTrigger className="bg-transparent border-emerald/20 text-white">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="bg-slate-800 border-emerald/20">
@@ -107,18 +107,18 @@ export const AccountSettings: React.FC = () => {
       </Card>
 
       {/* Privacy Settings */}
-      <Card className="bg-slate-800/90 border-emerald/20">
+      <Card className="bg-transparent border-emerald/20 backdrop-blur-sm">
         <CardHeader>
           <CardTitle className="text-white flex items-center">
-            <Shield className="h-5 w-5 mr-2" />
+            <Shield className="h-5 w-5 mr-2 text-emerald" />
             Privacy Settings
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <Label className="text-gray-300">Show Public Statistics</Label>
-              <p className="text-sm text-gray-400">Allow your statistics to be visible on leaderboards</p>
+              <Label className="text-white">Show Public Statistics</Label>
+              <p className="text-sm text-gray-300">Allow your statistics to be visible on leaderboards</p>
             </div>
             <Switch
               checked={formData.showPublicStats}
@@ -129,18 +129,18 @@ export const AccountSettings: React.FC = () => {
       </Card>
 
       {/* Notification Settings */}
-      <Card className="bg-slate-800/90 border-emerald/20">
+      <Card className="bg-transparent border-emerald/20 backdrop-blur-sm">
         <CardHeader>
           <CardTitle className="text-white flex items-center">
-            <Bell className="h-5 w-5 mr-2" />
+            <Bell className="h-5 w-5 mr-2 text-emerald" />
             Notifications
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <Label className="text-gray-300">Email Notifications</Label>
-              <p className="text-sm text-gray-400">Receive important updates via email</p>
+              <Label className="text-white">Email Notifications</Label>
+              <p className="text-sm text-gray-300">Receive important updates via email</p>
             </div>
             <Switch
               checked={formData.emailNotifications}
@@ -150,8 +150,8 @@ export const AccountSettings: React.FC = () => {
 
           <div className="flex items-center justify-between">
             <div>
-              <Label className="text-gray-300">Tournament Notifications</Label>
-              <p className="text-sm text-gray-400">Get notified about upcoming tournaments</p>
+              <Label className="text-white">Tournament Notifications</Label>
+              <p className="text-sm text-gray-300">Get notified about upcoming tournaments</p>
             </div>
             <Switch
               checked={formData.tournamentNotifications}
@@ -166,7 +166,7 @@ export const AccountSettings: React.FC = () => {
         <Button 
           onClick={handleSave} 
           disabled={saving || loading}
-          className="px-8"
+          className="px-8 bg-emerald hover:bg-emerald/90 text-white"
         >
           {saving ? 'Saving...' : 'Save Changes'}
         </Button>
