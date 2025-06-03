@@ -23,6 +23,6 @@ export const LazyTournamentDetail = lazy(() => import('@/pages/Tournaments/Tourn
 export const LazyRakeChart = lazy(() => import('@/components/admin/RakeChart').then(module => ({ default: module.default })));
 export const LazyTransactionVolumeChart = lazy(() => import('@/components/admin/TransactionVolumeChart').then(module => ({ default: module.default })));
 
-// Hand History
-export const LazyHandHistoryList = lazy(() => import('@/components/handHistory/HandHistoryList').then(module => ({ default: module.default })));
-export const LazyHandReplayViewer = lazy(() => import('@/components/handHistory/HandReplayViewer').then(module => ({ default: module.default })));
+// Hand History - these use named exports
+export const LazyHandHistoryList = lazy(() => import('@/components/handHistory/HandHistoryList').then(module => ({ default: module.HandHistoryList })));
+export const LazyHandReplayViewer = lazy(() => import('@/components/handHistory/HandReplayViewer').then(module => ({ default: module.HandReplayViewer })));
