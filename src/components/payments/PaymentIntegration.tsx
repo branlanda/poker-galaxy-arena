@@ -104,10 +104,10 @@ const PaymentIntegration: React.FC = () => {
       <Card className="bg-transparent border-emerald/20 backdrop-blur-sm">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-white">
-            <DollarSign className="h-5 w-5" />
+            <DollarSign className="h-5 w-5 text-white" />
             Sistema de Pagos Integrado
           </CardTitle>
-          <p className="text-gray-300">
+          <p className="text-white">
             Realiza depósitos seguros usando Stripe y otros métodos de pago confiables.
           </p>
         </CardHeader>
@@ -127,7 +127,7 @@ const PaymentIntegration: React.FC = () => {
           <Card className="bg-transparent border-emerald/20 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="text-white">Realizar Depósito</CardTitle>
-              <p className="text-gray-300">
+              <p className="text-white">
                 Agrega fondos a tu cuenta de forma segura
               </p>
             </CardHeader>
@@ -144,18 +144,18 @@ const PaymentIntegration: React.FC = () => {
                   onChange={(e) => setAmount(e.target.value)}
                   className="bg-transparent border-emerald/20 text-white placeholder-gray-300"
                 />
-                <p className="text-sm text-gray-300">
+                <p className="text-sm text-white">
                   Monto mínimo: $10 USD
                 </p>
               </div>
 
               <div className="border border-emerald/20 rounded-lg p-4 bg-slate-800/30">
                 <h4 className="font-medium text-white mb-2">Información de Seguridad</h4>
-                <div className="flex items-center gap-2 text-sm text-gray-300">
+                <div className="flex items-center gap-2 text-sm text-white">
                   <Shield className="h-4 w-4 text-emerald" />
                   <span>Pagos procesados de forma segura por Stripe</span>
                 </div>
-                <div className="flex items-center gap-2 text-sm text-gray-300 mt-1">
+                <div className="flex items-center gap-2 text-sm text-white mt-1">
                   <Shield className="h-4 w-4 text-emerald" />
                   <span>Cifrado SSL de 256 bits</span>
                 </div>
@@ -183,7 +183,7 @@ const PaymentIntegration: React.FC = () => {
                     </div>
                     <div>
                       <h4 className="font-medium text-white">{method.name}</h4>
-                      <p className="text-sm text-gray-300">
+                      <p className="text-sm text-white">
                         {method.lastUsed ? `Último uso: ${method.lastUsed}` : 'Nunca usado'}
                       </p>
                     </div>
@@ -199,9 +199,9 @@ const PaymentIntegration: React.FC = () => {
 
           <Card className="bg-transparent border-emerald/20 backdrop-blur-sm border-dashed">
             <CardContent className="p-6 text-center">
-              <CreditCard className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+              <CreditCard className="h-12 w-12 mx-auto text-white mb-4" />
               <h4 className="font-medium text-white mb-2">Agregar Método de Pago</h4>
-              <p className="text-gray-300 mb-4">
+              <p className="text-white mb-4">
                 Conecta una nueva tarjeta de crédito o método de pago
               </p>
               <Button variant="outline" className="border-emerald/20 text-white hover:bg-emerald/10 bg-transparent">

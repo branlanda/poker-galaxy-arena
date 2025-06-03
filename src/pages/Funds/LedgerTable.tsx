@@ -1,108 +1,93 @@
 
 import React from 'react';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
 
 interface LedgerEntry {
   id: string;
-  type: string;
+  type: 'deposit' | 'withdraw' | 'game_win' | 'game_loss' | 'bonus';
   amount: number;
-  created_at: string;
-  status: string;
-  tx_hash?: string;
+  status: 'completed' | 'pending' | 'failed';
+  timestamp: string;
+  description: string;
+  txHash?: string;
 }
 
 interface LedgerTableProps {
   entries: LedgerEntry[];
 }
 
-const LedgerTable: React.FC<LedgerTableProps> = ({ entries = [] }) => {
-  // Helper function to format transaction types
-  const formatType = (type: string) => {
-    const types: Record<string, string> = {
-      'DEPOSIT': 'Depósito',
-      'WITHDRAW': 'Retiro',
-      'RAKE': 'Rake',
-      'PAYOUT': 'Pago',
-      'REFERRAL': 'Referido',
-      'HOLD': 'Retenido',
-      'RELEASE': 'Liberado'
-    };
-    return types[type] || type;
-  };
-
-  // Helper function to format transaction status
-  const getStatusBadge = (status: string) => {
-    switch(status) {
-      case 'COMPLETED':
-        return <Badge variant="default" className="bg-green-500">Completado</Badge>;
-      case 'PENDING':
-        return <Badge variant="outline" className="border-yellow-500 text-yellow-500">Pendiente</Badge>;
-      case 'FAILED':
-        return <Badge variant="destructive">Fallido</Badge>;
-      default:
-        return <Badge variant="secondary">{status}</Badge>;
+const LedgerTable: React.FC<LedgerTableProps> = ({ entries }) => {
+  const getTypeLabel = (type: LedgerEntry['type']) => {
+    switch (type) {
+      case 'deposit': return 'Depósito';
+      case 'withdraw': return 'Retiro';
+      case 'game_win': return 'Ganancia';
+      case 'game_loss': return 'Pérdida';
+      case 'bonus': return 'Bonus';
+      default: return type;
     }
   };
 
-  // Helper function to format transaction hash
-  const formatTxHash = (hash?: string) => {
-    if (!hash) return "N/A";
-    return `${hash.substring(0, 8)}...${hash.substring(hash.length - 8)}`;
+  const getStatusBadge = (status: LedgerEntry['status']) => {
+    switch (status) {
+      case 'completed':
+        return <Badge className="bg-green-500/20 text-green-400 border-green-500/20">Completado</Badge>;
+      case 'pending':
+        return <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/20">Pendiente</Badge>;
+      case 'failed':
+        return <Badge className="bg-red-500/20 text-red-400 border-red-500/20">Fallido</Badge>;
+    }
+  };
+
+  const getAmountColor = (type: LedgerEntry['type']) => {
+    return ['deposit', 'game_win', 'bonus'].includes(type) ? 'text-green-400' : 'text-red-400';
+  };
+
+  const getAmountPrefix = (type: LedgerEntry['type']) => {
+    return ['deposit', 'game_win', 'bonus'].includes(type) ? '+' : '-';
   };
 
   return (
-    <div className="mt-8">
-      <h2 className="text-xl font-semibold mb-4">Movimientos recientes</h2>
-      <div className="overflow-x-auto rounded-lg border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Fecha</TableHead>
-              <TableHead>Tipo</TableHead>
-              <TableHead>Monto</TableHead>
-              <TableHead>Hash</TableHead>
-              <TableHead>Estado</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {entries.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center py-6">No hay movimientos recientes</TableCell>
-              </TableRow>
-            ) : (
-              entries.map((entry) => (
-                <TableRow key={entry.id}>
-                  <TableCell>{new Date(entry.created_at).toLocaleString()}</TableCell>
-                  <TableCell>{formatType(entry.type)}</TableCell>
-                  <TableCell className={entry.type === 'DEPOSIT' || entry.type === 'PAYOUT' ? 'text-green-500' : entry.type === 'WITHDRAW' || entry.type === 'RAKE' ? 'text-red-500' : ''}>
-                    {entry.type === 'DEPOSIT' || entry.type === 'PAYOUT' ? '+' : entry.type === 'WITHDRAW' || entry.type === 'RAKE' ? '-' : ''}
-                    {Math.abs(entry.amount).toFixed(2)} USDT
-                  </TableCell>
-                  <TableCell>
-                    {entry.tx_hash ? (
-                      <a 
-                        href={`https://tronscan.org/#/transaction/${entry.tx_hash}`} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-blue-500 hover:underline"
-                      >
-                        {formatTxHash(entry.tx_hash)}
-                      </a>
-                    ) : (
-                      "N/A"
-                    )}
-                  </TableCell>
-                  <TableCell>
+    <Card className="bg-transparent border-emerald/20 backdrop-blur-sm">
+      <CardHeader>
+        <CardTitle className="text-white">Historial de transacciones</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {entries.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-white">No hay transacciones registradas</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {entries.map((entry) => (
+              <div key={entry.id} className="flex items-center justify-between p-4 bg-slate-800/30 rounded-lg border border-emerald/20">
+                <div className="flex flex-col">
+                  <div className="flex items-center gap-2">
+                    <span className="text-white font-medium">{getTypeLabel(entry.type)}</span>
                     {getStatusBadge(entry.status)}
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
-    </div>
+                  </div>
+                  <p className="text-white text-sm">{entry.description}</p>
+                  <p className="text-white text-xs">
+                    {format(new Date(entry.timestamp), 'dd/MM/yyyy HH:mm', { locale: es })}
+                  </p>
+                  {entry.txHash && (
+                    <p className="text-white text-xs font-mono">
+                      TX: {entry.txHash.slice(0, 10)}...{entry.txHash.slice(-10)}
+                    </p>
+                  )}
+                </div>
+                <div className={`text-lg font-bold ${getAmountColor(entry.type)}`}>
+                  {getAmountPrefix(entry.type)}{Math.abs(entry.amount).toFixed(2)} USDT
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 };
 

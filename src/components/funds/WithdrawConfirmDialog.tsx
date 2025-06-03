@@ -31,22 +31,23 @@ const WithdrawConfirmDialog: React.FC<WithdrawConfirmDialogProps> = ({
 }) => {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
+      <AlertDialogContent className="bg-slate-800 border-emerald/20">
         <AlertDialogHeader>
-          <AlertDialogTitle>Confirmar retiro</AlertDialogTitle>
-          <AlertDialogDescription>
+          <AlertDialogTitle className="text-white">Confirmar retiro</AlertDialogTitle>
+          <AlertDialogDescription className="text-white">
             Estás a punto de retirar <strong>{amount} USDT</strong> a la dirección:
-            <div className="p-2 bg-muted rounded my-2 break-all">
-              <code className="text-xs">{address}</code>
+            <div className="p-2 bg-slate-700/50 rounded my-2 break-all border border-emerald/20">
+              <code className="text-xs text-white">{address}</code>
             </div>
-            <p className="mt-2">Esta acción no se puede revertir una vez procesada.</p>
+            <p className="mt-2 text-white">Esta acción no se puede revertir una vez procesada.</p>
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogCancel className="text-white bg-transparent border-emerald/20 hover:bg-emerald/10">Cancelar</AlertDialogCancel>
           <AlertDialogAction 
             onClick={onConfirm}
             disabled={isLoading}
+            className="bg-emerald hover:bg-emerald/90 text-white"
           >
             {isLoading ? (
               <>

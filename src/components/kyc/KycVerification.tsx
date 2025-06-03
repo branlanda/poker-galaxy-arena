@@ -93,7 +93,7 @@ const KycVerification: React.FC = () => {
       case 'rejected':
         return <AlertCircle className="h-5 w-5 text-red-400" />;
       default:
-        return <Shield className="h-5 w-5 text-gray-400" />;
+        return <Shield className="h-5 w-5 text-white" />;
     }
   };
 
@@ -106,7 +106,7 @@ const KycVerification: React.FC = () => {
       case 'rejected':
         return <Badge className="bg-red-500/20 text-red-400 border-red-500/20">Rechazado</Badge>;
       default:
-        return <Badge className="bg-gray-500/20 text-gray-400 border-gray-500/20">No iniciado</Badge>;
+        return <Badge className="bg-gray-500/20 text-white border-gray-500/20">No iniciado</Badge>;
     }
   };
 
@@ -115,10 +115,10 @@ const KycVerification: React.FC = () => {
       <Card className="bg-transparent border-emerald/20 backdrop-blur-sm">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-white">
-            <Shield className="h-5 w-5" />
+            <Shield className="h-5 w-5 text-white" />
             Verificación KYC (Know Your Customer)
           </CardTitle>
-          <p className="text-gray-300">
+          <p className="text-white">
             Verifica tu identidad para aumentar los límites de tu cuenta y acceder a todas las funcionalidades.
           </p>
         </CardHeader>
@@ -143,7 +143,7 @@ const KycVerification: React.FC = () => {
                     {getStatusIcon(level.status)}
                     <div>
                       <CardTitle className="text-lg text-white">Nivel {level.level} - {level.name}</CardTitle>
-                      <p className="text-gray-300">{level.description}</p>
+                      <p className="text-white">{level.description}</p>
                     </div>
                   </div>
                   {getStatusBadge(level.status)}
@@ -155,7 +155,7 @@ const KycVerification: React.FC = () => {
                     <h4 className="font-medium mb-2 text-white">Requisitos:</h4>
                     <ul className="space-y-1">
                       {level.requirements.map((req, index) => (
-                        <li key={index} className="text-sm flex items-center gap-2 text-gray-300">
+                        <li key={index} className="text-sm flex items-center gap-2 text-white">
                           <CheckCircle className="h-3 w-3 text-green-400" />
                           {req}
                         </li>
@@ -164,7 +164,7 @@ const KycVerification: React.FC = () => {
                   </div>
                   <div>
                     <h4 className="font-medium mb-2 text-white">Límites:</h4>
-                    <p className="text-sm text-gray-300">{level.limits}</p>
+                    <p className="text-sm text-white">{level.limits}</p>
                   </div>
                 </div>
               </CardContent>
@@ -176,7 +176,7 @@ const KycVerification: React.FC = () => {
           <Card className="bg-transparent border-emerald/20 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="text-white">Subir Documentos</CardTitle>
-              <p className="text-gray-300">
+              <p className="text-white">
                 Sube los documentos requeridos para completar tu verificación KYC.
               </p>
             </CardHeader>
@@ -185,7 +185,7 @@ const KycVerification: React.FC = () => {
                 <div className="space-y-2">
                   <Label htmlFor="id-front" className="text-white">Documento de Identidad (Frente)</Label>
                   <div className="border-2 border-dashed border-emerald/20 rounded-lg p-6 text-center bg-slate-800/30">
-                    <FileText className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+                    <FileText className="h-12 w-12 mx-auto text-white mb-4" />
                     <Input
                       id="id-front"
                       type="file"
@@ -215,7 +215,7 @@ const KycVerification: React.FC = () => {
                 <div className="space-y-2">
                   <Label htmlFor="id-back" className="text-white">Documento de Identidad (Reverso)</Label>
                   <div className="border-2 border-dashed border-emerald/20 rounded-lg p-6 text-center bg-slate-800/30">
-                    <FileText className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+                    <FileText className="h-12 w-12 mx-auto text-white mb-4" />
                     <Input
                       id="id-back"
                       type="file"
@@ -245,7 +245,7 @@ const KycVerification: React.FC = () => {
                 <div className="space-y-2">
                   <Label htmlFor="selfie" className="text-white">Selfie con Documento</Label>
                   <div className="border-2 border-dashed border-emerald/20 rounded-lg p-6 text-center bg-slate-800/30">
-                    <Camera className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+                    <Camera className="h-12 w-12 mx-auto text-white mb-4" />
                     <Input
                       id="selfie"
                       type="file"
@@ -275,7 +275,7 @@ const KycVerification: React.FC = () => {
                 <div className="space-y-2">
                   <Label htmlFor="proof-address" className="text-white">Comprobante de Domicilio</Label>
                   <div className="border-2 border-dashed border-emerald/20 rounded-lg p-6 text-center bg-slate-800/30">
-                    <FileText className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+                    <FileText className="h-12 w-12 mx-auto text-white mb-4" />
                     <Input
                       id="proof-address"
                       type="file"
@@ -305,7 +305,7 @@ const KycVerification: React.FC = () => {
 
               <div className="border border-emerald/20 rounded-lg p-4 bg-slate-800/30">
                 <h4 className="font-medium text-white mb-2">Información importante:</h4>
-                <ul className="text-sm text-gray-300 space-y-1">
+                <ul className="text-sm text-white space-y-1">
                   <li>• Los documentos deben estar en formato JPG, PNG o PDF</li>
                   <li>• Asegúrate de que la información sea legible y no esté borrosa</li>
                   <li>• Los documentos deben estar vigentes</li>
