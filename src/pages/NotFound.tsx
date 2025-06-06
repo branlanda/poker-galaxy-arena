@@ -1,7 +1,7 @@
 
 import { useLocation, Link } from "react-router-dom";
 import { useEffect } from "react";
-import { Navbar } from "@/components/layout/Navbar";
+import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 
@@ -27,7 +27,7 @@ export const NotFound = () => {
             The poker table you're looking for doesn't exist or has been moved to a different location.
           </p>
           <Link to="/">
-            <Button variant="default" size="lg">
+            <Button variant="primary" size="lg">
               Back to Lobby
             </Button>
           </Link>

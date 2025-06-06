@@ -1,39 +1,40 @@
 
-import React, { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { AnalyticsProvider } from '@/components/analytics/AnalyticsProvider';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { useAuthSync } from '@/hooks/useAuthSync';
-import AppRoutes from '@/components/routing/AppRoutes';
+import { queryClient } from '@/lib/queryClient';
 import { Toaster } from '@/components/ui/toaster';
-import './App.css';
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      refetchOnWindowFocus: false,
-    },
-  },
-});
-
-function AppContent() {
-  useAuthSync();
-  
-  return (
-    <Router>
-      <AnalyticsProvider>
-        <AppRoutes />
-        <Toaster />
-      </AnalyticsProvider>
-    </Router>
-  );
-}
+import { NotificationToastContainer } from '@/components/notifications/NotificationToastContainer';
+import { GlobalPresenceTracker } from '@/components/presence/GlobalPresenceTracker';
+import { OfflineIndicator } from '@/components/network/OfflineIndicator';
+import AppRoutes from '@/components/routing/AppRoutes';
 
 function App() {
+  useAuthSync();
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+
+  useEffect(() => {
+    const handleOnlineStatus = () => setIsOnline(navigator.onLine);
+
+    window.addEventListener('online', handleOnlineStatus);
+    window.addEventListener('offline', handleOnlineStatus);
+
+    return () => {
+      window.removeEventListener('online', handleOnlineStatus);
+      window.removeEventListener('offline', handleOnlineStatus);
+    };
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
-      <AppContent />
+      <Router>
+        <GlobalPresenceTracker />
+        <OfflineIndicator isOnline={isOnline} />
+        <AppRoutes />
+        <Toaster />
+        <NotificationToastContainer />
+      </Router>
     </QueryClientProvider>
   );
 }

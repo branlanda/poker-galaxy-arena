@@ -1,113 +1,285 @@
 
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { AppLayout } from '@/components/layout/AppLayout';
-import { GalacticBackground } from '@/components/layout/GalacticBackground';
-import { FeatureCard } from '@/components/layout/FeatureCard';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/stores/auth';
+import { useTranslation } from '@/hooks/useTranslation';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import StarfallEffect from '@/components/effects/StarfallEffect';
+import Navbar from '@/components/layout/Navbar';
+import Footer from '@/components/layout/Footer';
+import { Play, Trophy, Users, TrendingUp, Target, Settings, User, ArrowRight, Star, Clock, Twitter, Facebook, MessageCircle } from 'lucide-react';
 
 export default function Index() {
   const { user } = useAuth();
+  const { t } = useTranslation();
+  const navigate = useNavigate();
 
-  return (
-    <AppLayout showBreadcrumbs={false}>
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-        <GalacticBackground />
-        
-        <div className="relative z-10">
-          <div className="container mx-auto px-4 py-16">
-            <div className="text-center mb-16">
-              <motion.h1 
-                className="text-6xl md:text-8xl font-bold mb-6"
-                initial={{ opacity: 0, y: 50 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8 }}
-              >
-                <span className="bg-gradient-to-r from-emerald-400 via-emerald-300 to-emerald-400 bg-clip-text text-transparent">
-                  Poker Galaxy
-                </span>
-              </motion.h1>
+  // Si no hay usuario, mostrar la página de bienvenida pública
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 flex flex-col">
+        <Navbar />
+        <div className="flex-grow flex items-center justify-center relative">
+          <StarfallEffect />
+          <div className="max-w-6xl mx-auto px-4 text-center relative z-10">
+            <div className="mb-12">
+              <h1 className="text-6xl font-bold text-emerald mb-6">Poker Galaxy </h1>
+              <p className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto">Welcome to the ultimate online poker experience. Join thousands of players in exciting games and tournaments. </p>
               
-              <motion.p 
-                className="text-xl md:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto"
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.2 }}
-              >
-                Experience the ultimate poker adventure in the cosmos. Join tables, compete in tournaments, and become a galactic poker legend.
-              </motion.p>
-
-              {user ? (
-                <motion.div 
-                  className="flex flex-col sm:flex-row gap-4 justify-center items-center"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.8, delay: 0.4 }}
-                >
-                  <p className="text-emerald-400 text-lg">
-                    Welcome back, {user.alias || user.email}! 🎰
-                  </p>
-                  <div className="flex gap-4">
-                    <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700" asChild>
-                      <Link to="/lobby">
-                        🚀 Play Now
-                      </Link>
-                    </Button>
-                    <Button size="lg" variant="outline" asChild>
-                      <Link to="/profile">
-                        👤 View Profile
-                      </Link>
-                    </Button>
-                  </div>
-                </motion.div>
-              ) : (
-                <motion.div 
-                  className="flex flex-col sm:flex-row gap-4 justify-center"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.8, delay: 0.4 }}
-                >
-                  <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700" asChild>
-                    <Link to="/register">
-                      🚀 Start Playing
-                    </Link>
-                  </Button>
-                  <Button size="lg" variant="outline" asChild>
-                    <Link to="/login">
-                      🔑 Sign In
-                    </Link>
-                  </Button>
-                </motion.div>
-              )}
+              {/* Social Media Icons */}
+              <div className="flex justify-center space-x-4 mb-8">
+                <a href="#" className="text-emerald hover:text-emerald/80 transition-colors">
+                  <span className="sr-only">Twitter</span>
+                  <Twitter className="h-6 w-6" />
+                </a>
+                <a href="#" className="text-emerald hover:text-emerald/80 transition-colors">
+                  <span className="sr-only">Facebook</span>
+                  <Facebook className="h-6 w-6" />
+                </a>
+                <a href="#" className="text-emerald hover:text-emerald/80 transition-colors">
+                  <span className="sr-only">Discord</span>
+                  <MessageCircle className="h-6 w-6" />
+                </a>
+              </div>
+              
+              <div className="flex gap-4 justify-center">
+                <Button size="lg" className="px-8 py-4 bg-emerald hover:bg-emerald/90 text-white" onClick={() => navigate('/login')}>
+                  <ArrowRight className="h-5 w-5 mr-2" />
+                  🎮 {t('auth.signIn', 'Sign In')}
+                </Button>
+                <Button size="lg" variant="outline" className="px-8 py-4 bg-slate-800/60 border-emerald/20 hover:bg-slate-700/50 text-white" onClick={() => navigate('/register')}>
+                  ⭐ {t('auth.signUp', 'Sign Up')}
+                </Button>
+              </div>
+            </div>
+            
+            {/* Features Grid */}
+            <div className="grid md:grid-cols-3 gap-8">
+              <Card className="bg-slate-800/70 border-emerald/20 hover:border-emerald/40 transition-colors backdrop-blur-sm">
+                <CardHeader className="text-center">
+                  <Play className="h-12 w-12 text-emerald mx-auto mb-4" />
+                  <CardTitle className="text-white text-xl">🎲 Quick Games</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription className="text-gray-300 text-center">
+                    Jump into cash games instantly with players of all skill levels. Find your perfect table and start playing. 💰
+                  </CardDescription>
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-slate-800/70 border-gold/20 hover:border-gold/40 transition-colors backdrop-blur-sm">
+                <CardHeader className="text-center">
+                  <Trophy className="h-12 w-12 text-gold mx-auto mb-4" />
+                  <CardTitle className="text-white text-xl">🏆 Tournaments</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription className="text-gray-300 text-center">
+                    Compete in exciting tournaments with guaranteed prize pools and climb the ranks.
+                  </CardDescription>
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-slate-800/70 border-accent/20 hover:border-accent/40 transition-colors backdrop-blur-sm">
+                <CardHeader className="text-center">
+                  <TrendingUp className="h-12 w-12 text-accent mx-auto mb-4" />
+                  <CardTitle className="text-white text-xl">📊 Rankings</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription className="text-gray-300 text-center">
+                    Track your progress and compete on global leaderboards with players worldwide.
+                  </CardDescription>
+                </CardContent>
+              </Card>
             </div>
 
-            <motion.div 
-              className="grid grid-cols-1 md:grid-cols-3 gap-8"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.6, staggerChildren: 0.2 }}
-            >
-              <FeatureCard
-                title="Join Tables"
-                description="Explore a variety of poker tables and join the action. Find the perfect game for your skill level."
-                icon="🃏"
-              />
-              <FeatureCard
-                title="Tournaments"
-                description="Compete in thrilling tournaments and prove your poker skills. Win big and climb the leaderboards."
-                icon="🏆"
-              />
-              <FeatureCard
-                title="Leaderboards"
-                description="Track your progress and compete with other players. See who's on top of the galactic poker scene."
-                icon="🏅"
-              />
-            </motion.div>
+            {/* Call to Action */}
+            <div className="mt-12 p-8 bg-gradient-to-r from-emerald/10 to-gold/10 rounded-lg border border-emerald/20 backdrop-blur-sm">
+              <h2 className="text-2xl font-bold text-white mb-4">🎯 Ready to Play?</h2>
+              <p className="text-gray-300 mb-6">Join the action now and experience the thrill of professional poker. </p>
+              <Button size="lg" className="px-8 py-4 bg-emerald hover:bg-emerald/90 text-white" onClick={() => navigate('/register')}>
+                🚀 Get Started
+                <ArrowRight className="h-5 w-5 ml-2" />
+              </Button>
+            </div>
           </div>
         </div>
+        <Footer />
       </div>
-    </AppLayout>
+    );
+  }
+
+  // Dashboard para usuarios autenticados
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 flex flex-col">
+      <Navbar />
+      <main className="flex-1 container mx-auto px-4 py-8 relative">
+        <StarfallEffect />
+        {/* Welcome Section */}
+        <div className="text-center mb-12 relative z-10">
+          <h1 className="text-4xl font-bold text-emerald mb-4">
+            🎉 {t('common.welcome', 'Welcome back')}, {user.alias || user.email}!
+          </h1>
+          <p className="text-xl text-gray-400 mb-8">
+            {t('dashboardSubtitle', 'Ready to play some poker?')} ♠️♥️♦️♣️
+          </p>
+          
+          {/* Quick Action Buttons */}
+          <div className="flex flex-wrap justify-center gap-4 mb-8">
+            <Button size="lg" className="px-6 bg-emerald hover:bg-emerald/90 text-white" onClick={() => navigate('/lobby')}>
+              <Play className="h-5 w-5 mr-2" />
+              🎮 {t('quickPlay', 'Quick Play')}
+            </Button>
+            <Button size="lg" className="px-6 bg-slate-800/60 border-emerald/20 hover:bg-slate-700/50 text-white border" onClick={() => navigate('/tournaments')}>
+              <Trophy className="h-5 w-5 mr-2" />
+              🏆 {t('tournaments.lobby', 'Tournaments')}
+            </Button>
+            <Button size="lg" variant="outline" className="px-6 bg-slate-800/60 border-emerald/20 hover:bg-slate-700/50 text-white" onClick={() => navigate('/leaderboards')}>
+              <TrendingUp className="h-5 w-5 mr-2" />
+              📊 {t('leaderboards.title', 'Leaderboards')}
+            </Button>
+          </div>
+        </div>
+
+        {/* Main Dashboard Grid */}
+        <div className="grid lg:grid-cols-3 gap-8 relative z-10">
+          {/* Primary Actions */}
+          <div className="lg:col-span-2 space-y-6">
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* Lobby Card */}
+              <Card className="bg-slate-800/70 border-emerald/20 hover:border-emerald/40 transition-all duration-300 group cursor-pointer backdrop-blur-sm" onClick={() => navigate('/lobby')}>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-lg font-semibold text-white">🎰 Poker Lobby</CardTitle>
+                  <Play className="h-6 w-6 text-emerald group-hover:scale-110 transition-transform" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold text-emerald mb-2">Join Now</div>
+                  <p className="text-sm text-gray-300 mb-4">
+                    Find and join poker tables instantly. Choose from cash games or sit & go tournaments. 💰
+                  </p>
+                  <Button className="w-full group-hover:bg-emerald/90 bg-emerald text-white">
+                    {t('goToLobby', 'Go to Lobby')}
+                    <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* Tournaments Card */}
+              <Card className="bg-slate-800/70 border-gold/20 hover:border-gold/40 transition-all duration-300 group cursor-pointer backdrop-blur-sm" onClick={() => navigate('/tournaments')}>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-lg font-semibold text-white">🏆 Tournaments</CardTitle>
+                  <Trophy className="h-6 w-6 text-gold group-hover:scale-110 transition-transform" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold text-gold mb-2">Compete</div>
+                  <p className="text-sm text-gray-300 mb-4">
+                    Join exciting tournaments with guaranteed prize pools and structured play.
+                  </p>
+                  <Button className="w-full bg-slate-800/60 border-gold/20 hover:bg-slate-700/50 text-white border">
+                    {t('viewTournaments', 'View Tournaments')}
+                    <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Secondary Actions */}
+            <div className="grid md:grid-cols-2 gap-6">
+              <Card className="bg-slate-800/70 border-accent/20 hover:border-accent/40 transition-all duration-300 group cursor-pointer backdrop-blur-sm" onClick={() => navigate('/achievements')}>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-lg font-semibold text-white">🎯 Achievements</CardTitle>
+                  <Target className="h-6 w-6 text-accent group-hover:scale-110 transition-transform" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold text-accent mb-2">Unlock</div>
+                  <p className="text-sm text-gray-300 mb-4">
+                    Track your progress, complete challenges, and unlock rewards.
+                  </p>
+                  <Button className="w-full bg-slate-800/60 border-accent/20 hover:bg-slate-700/50 text-white border">
+                    {t('viewAchievements', 'View Achievements')}
+                    <ArrowRight className="h-4 w-4 ml-2" />
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-slate-800/70 border-blue-500/20 hover:border-blue-500/40 transition-all duration-300 group cursor-pointer backdrop-blur-sm" onClick={() => navigate('/leaderboards')}>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-lg font-semibold text-white">📊 Leaderboards</CardTitle>
+                  <TrendingUp className="h-6 w-6 text-blue-400 group-hover:scale-110 transition-transform" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold text-blue-400 mb-2">Rank Up</div>
+                  <p className="text-sm text-gray-300 mb-4">
+                    See how you rank against other players globally.
+                  </p>
+                  <Button variant="outline" className="w-full border-blue-400/20 text-blue-400 hover:bg-blue-400/10 bg-slate-800/60">
+                    {t('viewLeaderboards', 'View Leaderboards')}
+                    <ArrowRight className="h-4 w-4 ml-2" />
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Quick Actions */}
+            <Card className="bg-slate-800/70 border-emerald/20 backdrop-blur-sm">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center">
+                  <Star className="h-5 w-5 mr-2 text-emerald" />
+                  ⚡ Quick Actions
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Button variant="outline" className="w-full justify-start border-emerald/20 hover:bg-slate-700/50 bg-slate-800/60 text-white" onClick={() => navigate('/profile')}>
+                  <User className="h-4 w-4 mr-3" />
+                  👤 {t('common.profile', 'View Profile')}
+                </Button>
+                <Button variant="outline" className="w-full justify-start border-emerald/20 hover:bg-slate-700/50 bg-slate-800/60 text-white" onClick={() => navigate('/funds')}>
+                  <Target className="h-4 w-4 mr-3" />
+                  💰 {t('manageFunds', 'Manage Funds')}
+                </Button>
+                <Button variant="outline" className="w-full justify-start border-emerald/20 hover:bg-slate-700/50 bg-slate-800/60 text-white" onClick={() => navigate('/settings')}>
+                  <Settings className="h-4 w-4 mr-3" />
+                  ⚙️ {t('common.settings', 'Settings')}
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Recent Activity */}
+            <Card className="bg-slate-800/70 border-emerald/20 backdrop-blur-sm">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center">
+                  <Clock className="h-5 w-5 mr-2 text-emerald" />
+                  ⏰ Recent Activity
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3 text-sm text-gray-400">
+                  <div className="flex items-center justify-between">
+                    <span>Last session</span>
+                    <span className="text-emerald">2 hours ago</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span>Tables played</span>
+                    <span className="text-white">3</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span>Tournaments entered</span>
+                    <span className="text-white">1</span>
+                  </div>
+                </div>
+                <div className="mt-4 pt-4 border-t border-gray-600">
+                  <Button variant="ghost" size="sm" className="w-full text-emerald hover:bg-emerald/10" onClick={() => navigate('/profile')}>
+                    📊 View Full History
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </main>
+      <Footer />
+    </div>
   );
 }
