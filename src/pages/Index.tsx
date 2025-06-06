@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -11,7 +12,7 @@ export default function Index() {
   const { user } = useAuth();
 
   return (
-    <AppLayout>
+    <AppLayout showBreadcrumbs={false}>
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
         <GalacticBackground />
         
@@ -74,8 +75,8 @@ export default function Index() {
                     </Link>
                   </Button>
                   <Button size="lg" variant="outline" asChild>
-                    <Link to="/lobby">
-                      👁️ Browse Tables
+                    <Link to="/login">
+                      🔑 Sign In
                     </Link>
                   </Button>
                 </motion.div>
