@@ -38,26 +38,10 @@ export function PlayerSeat({
 }: PlayerSeatProps) {
   const playerState = state || player;
 
-  // Posiciones actualizadas - movidas significativamente hacia arriba y a la izquierda superior
-  const positions = [
-    { top: '60%', left: '35%' },    // bottom center (0) - movido arriba y izquierda
-    { top: '50%', left: '5%' },     // bottom left (1) - movido arriba y izquierda
-    { top: '25%', left: '0%' },     // middle left (2) - movido arriba y izquierda  
-    { top: '5%', left: '5%' },      // top left (3) - movido arriba y izquierda
-    { top: '0%', left: '20%' },     // top left-center (4) - movido arriba y izquierda
-    { top: '0%', left: '50%' },     // top right-center (5) - movido arriba y izquierda
-    { top: '5%', left: '70%' },     // top right (6) - movido arriba y izquierda
-    { top: '25%', left: '78%' },    // middle right (7) - movido arriba y izquierda
-    { top: '50%', left: '70%' }     // bottom right (8) - movido arriba y izquierda
-  ];
-
-  const seatStyle = positions[position % positions.length];
-
   if (!playerState) {
     return (
       <motion.div 
-        className="absolute transform -translate-x-1/2 -translate-y-1/2 z-10" 
-        style={seatStyle}
+        className="transform -translate-x-1/2 -translate-y-1/2 z-10" 
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         initial={{ opacity: 0, scale: 0.8 }}
@@ -69,9 +53,9 @@ export function PlayerSeat({
           size="lg" 
           onClick={onSitDown} 
           disabled={disabled}
-          className="h-20 w-20 rounded-full bg-slate-800/80 hover:bg-slate-700/90 border-2 border-emerald/40 hover:border-emerald/60 transition-all duration-300 backdrop-blur-sm shadow-lg mx-0 my-0 px-0 py-0 text-lg font-extralight text-gray-200"
+          className="h-16 w-16 sm:h-20 sm:w-20 lg:h-24 lg:w-24 rounded-full bg-slate-800/80 hover:bg-slate-700/90 border-2 border-emerald/40 hover:border-emerald/60 transition-all duration-300 backdrop-blur-sm shadow-lg text-sm sm:text-lg font-extralight text-gray-200 p-0"
         >
-          <UserCircle2 className="h-10 w-10 text-emerald-400" />
+          <UserCircle2 className="h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 text-emerald-400" />
         </Button>
       </motion.div>
     );
@@ -82,13 +66,12 @@ export function PlayerSeat({
 
   return (
     <motion.div 
-      className={`absolute transform -translate-x-1/2 -translate-y-1/2 z-10 ${isActive ? 'scale-110' : 'scale-100'} transition-all duration-500`}
-      style={seatStyle}
+      className={`transform -translate-x-1/2 -translate-y-1/2 z-10 ${isActive ? 'scale-110' : 'scale-100'} transition-all duration-500`}
       initial={{ opacity: 0, scale: 0.8, y: 30 }}
       animate={{ opacity: 1, scale: isActive ? 1.15 : 1, y: 0 }}
       transition={{ type: "spring", damping: 15, stiffness: 300, delay: position * 0.1 }}
     >
-      <div className={`relative p-4 rounded-2xl backdrop-blur-sm border-2 transition-all duration-500 ${
+      <div className={`relative p-2 sm:p-3 lg:p-4 rounded-xl sm:rounded-2xl backdrop-blur-sm border-2 transition-all duration-500 ${
         isActive 
           ? 'bg-gradient-to-br from-emerald-500/40 to-emerald-600/50 border-emerald-400 shadow-[0_0_40px_0_rgba(16,185,129,0.8)]' 
           : 'bg-gradient-to-br from-slate-800/90 to-slate-900/95 border-slate-600/50 shadow-xl'
@@ -99,7 +82,7 @@ export function PlayerSeat({
         {/* Active player enhanced glow effect */}
         {isActive && (
           <motion.div 
-            className="absolute -inset-2 bg-gradient-to-r from-emerald-400 to-emerald-600 rounded-2xl opacity-80 blur-md"
+            className="absolute -inset-1 sm:-inset-2 bg-gradient-to-r from-emerald-400 to-emerald-600 rounded-xl sm:rounded-2xl opacity-80 blur-md"
             animate={{ opacity: [0.6, 1, 0.6], scale: [1, 1.05, 1] }}
             transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
           />
