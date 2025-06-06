@@ -35,15 +35,69 @@ export const GameTable: React.FC<GameTableProps> = ({
   
   // Responsive seat positions - optimized for different screen sizes
   const seatPositions = [
-    { top: '80%', left: '50%', transform: 'translate(-50%, -50%)', mobile: { top: '85%', left: '50%' } },     // Seat 0 - Bottom center
-    { top: '68%', left: '12%', transform: 'translate(-50%, -50%)', mobile: { top: '72%', left: '8%' } },      // Seat 1 - Bottom left
-    { top: '45%', left: '2%', transform: 'translate(-50%, -50%)', mobile: { top: '50%', left: '1%' } },       // Seat 2 - Middle left
-    { top: '22%', left: '12%', transform: 'translate(-50%, -50%)', mobile: { top: '25%', left: '8%' } },      // Seat 3 - Top left
-    { top: '8%', left: '32%', transform: 'translate(-50%, -50%)', mobile: { top: '10%', left: '30%' } },      // Seat 4 - Top left-center
-    { top: '8%', left: '68%', transform: 'translate(-50%, -50%)', mobile: { top: '10%', left: '70%' } },      // Seat 5 - Top right-center
-    { top: '22%', left: '88%', transform: 'translate(-50%, -50%)', mobile: { top: '25%', left: '92%' } },     // Seat 6 - Top right
-    { top: '45%', left: '98%', transform: 'translate(-50%, -50%)', mobile: { top: '50%', left: '99%' } },     // Seat 7 - Middle right
-    { top: '68%', left: '88%', transform: 'translate(-50%, -50%)', mobile: { top: '72%', left: '92%' } },     // Seat 8 - Bottom right
+    { 
+      top: '80%', 
+      left: '50%', 
+      transform: 'translate(-50%, -50%)',
+      mobileTop: '85%',
+      mobileLeft: '50%'
+    },
+    { 
+      top: '68%', 
+      left: '12%', 
+      transform: 'translate(-50%, -50%)',
+      mobileTop: '72%',
+      mobileLeft: '8%'
+    },
+    { 
+      top: '45%', 
+      left: '2%', 
+      transform: 'translate(-50%, -50%)',
+      mobileTop: '50%',
+      mobileLeft: '1%'
+    },
+    { 
+      top: '22%', 
+      left: '12%', 
+      transform: 'translate(-50%, -50%)',
+      mobileTop: '25%',
+      mobileLeft: '8%'
+    },
+    { 
+      top: '8%', 
+      left: '32%', 
+      transform: 'translate(-50%, -50%)',
+      mobileTop: '10%',
+      mobileLeft: '30%'
+    },
+    { 
+      top: '8%', 
+      left: '68%', 
+      transform: 'translate(-50%, -50%)',
+      mobileTop: '10%',
+      mobileLeft: '70%'
+    },
+    { 
+      top: '22%', 
+      left: '88%', 
+      transform: 'translate(-50%, -50%)',
+      mobileTop: '25%',
+      mobileLeft: '92%'
+    },
+    { 
+      top: '45%', 
+      left: '98%', 
+      transform: 'translate(-50%, -50%)',
+      mobileTop: '50%',
+      mobileLeft: '99%'
+    },
+    { 
+      top: '68%', 
+      left: '88%', 
+      transform: 'translate(-50%, -50%)',
+      mobileTop: '72%',
+      mobileLeft: '92%'
+    },
   ];
 
   return (
@@ -66,16 +120,12 @@ export const GameTable: React.FC<GameTableProps> = ({
         return (
           <div
             key={seatIndex}
-            className="absolute transition-all duration-300 ease-in-out"
+            className={`absolute transition-all duration-300 ease-in-out
+              ${window.innerWidth <= 768 ? '' : ''}`}
             style={{
-              top: position.top,
-              left: position.left,
+              top: window.innerWidth <= 768 ? position.mobileTop : position.top,
+              left: window.innerWidth <= 768 ? position.mobileLeft : position.left,
               transform: position.transform,
-              // Apply mobile positioning on smaller screens
-              '@media (max-width: 768px)': {
-                top: position.mobile.top,
-                left: position.mobile.left,
-              }
             }}
           >
             <PlayerSeat
