@@ -1,40 +1,39 @@
 
-import { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
-import { QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { AnalyticsProvider } from '@/components/analytics/AnalyticsProvider';
 import { useAuthSync } from '@/hooks/useAuthSync';
-import { queryClient } from '@/lib/queryClient';
-import { Toaster } from '@/components/ui/toaster';
-import { NotificationToastContainer } from '@/components/notifications/NotificationToastContainer';
-import { GlobalPresenceTracker } from '@/components/presence/GlobalPresenceTracker';
-import { OfflineIndicator } from '@/components/network/OfflineIndicator';
 import AppRoutes from '@/components/routing/AppRoutes';
+import { Toaster } from '@/components/ui/toaster';
+import './App.css';
 
-function App() {
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
+
+function AppContent() {
   useAuthSync();
-  const [isOnline, setIsOnline] = useState(navigator.onLine);
-
-  useEffect(() => {
-    const handleOnlineStatus = () => setIsOnline(navigator.onLine);
-
-    window.addEventListener('online', handleOnlineStatus);
-    window.addEventListener('offline', handleOnlineStatus);
-
-    return () => {
-      window.removeEventListener('online', handleOnlineStatus);
-      window.removeEventListener('offline', handleOnlineStatus);
-    };
-  }, []);
-
+  
   return (
-    <QueryClientProvider client={queryClient}>
-      <Router>
-        <GlobalPresenceTracker />
-        <OfflineIndicator isOnline={isOnline} />
+    <Router>
+      <AnalyticsProvider>
         <AppRoutes />
         <Toaster />
-        <NotificationToastContainer />
-      </Router>
+      </AnalyticsProvider>
+    </Router>
+  );
+}
+
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AppContent />
     </QueryClientProvider>
   );
 }

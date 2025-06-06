@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -12,23 +13,21 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { useToast } from '@/hooks/use-toast';
 import { AuthLayout } from '@/components/layout/AuthLayout';
 import { ArrowLeft, Mail, Lock } from 'lucide-react';
+
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters')
 });
+
 type LoginFormData = z.infer<typeof loginSchema>;
+
 export default function Login() {
   const [loading, setLoading] = useState(false);
-  const {
-    signIn
-  } = useAuth();
-  const {
-    toast
-  } = useToast();
-  const {
-    t
-  } = useTranslation();
+  const { signIn } = useAuth();
+  const { toast } = useToast();
+  const { t } = useTranslation();
   const navigate = useNavigate();
+
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -36,13 +35,14 @@ export default function Login() {
       password: ''
     }
   });
+
   const onSubmit = async (data: LoginFormData) => {
     setLoading(true);
     try {
       await signIn(data.email, data.password);
       toast({
         title: "🎉 Welcome back to Poker Galaxy!",
-        description: "You have successfully signed in. 🎰"
+        description: "You have successfully signed in. 🎰",
       });
       navigate('/');
     } catch (error: any) {
@@ -50,13 +50,15 @@ export default function Login() {
       toast({
         title: "❌ Sign in failed",
         description: error.message || "Please check your credentials and try again.",
-        variant: "destructive"
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
     }
   };
-  return <AuthLayout>
+
+  return (
+    <AuthLayout>
       <div className="space-y-6">
         {/* Back Button */}
         <div className="flex items-center">
@@ -71,36 +73,55 @@ export default function Login() {
             <CardTitle className="text-2xl text-center text-emerald">
               🎰 {t('auth.signIn', 'Sign In')} - Poker Galaxy
             </CardTitle>
-            <CardDescription className="text-center text-gray-400">🎯 Enter your credentials to access your account </CardDescription>
+            <CardDescription className="text-center text-gray-400">
+              🎯 Enter your credentials to access your account
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <FormField control={form.control} name="email" render={({
-                field
-              }) => <FormItem>
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
                       <FormLabel className="text-white">📧 {t('auth.email', 'Email')}</FormLabel>
                       <FormControl>
                         <div className="relative">
                           <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                          <Input placeholder="Enter your email" className="pl-10" {...field} />
+                          <Input 
+                            placeholder="Enter your email" 
+                            className="pl-10" 
+                            {...field} 
+                          />
                         </div>
                       </FormControl>
                       <FormMessage />
-                    </FormItem>} />
+                    </FormItem>
+                  )}
+                />
 
-                <FormField control={form.control} name="password" render={({
-                field
-              }) => <FormItem>
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
                       <FormLabel className="text-white">🔒 {t('auth.password', 'Password')}</FormLabel>
                       <FormControl>
                         <div className="relative">
                           <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                          <Input type="password" placeholder="Enter your password" className="pl-10" {...field} />
+                          <Input 
+                            type="password" 
+                            placeholder="Enter your password" 
+                            className="pl-10" 
+                            {...field} 
+                          />
                         </div>
                       </FormControl>
                       <FormMessage />
-                    </FormItem>} />
+                    </FormItem>
+                  )}
+                />
 
                 <div className="flex items-center justify-between">
                   <Link to="/forgot-password" className="text-sm text-emerald hover:text-emerald/80 hover:underline">
@@ -108,7 +129,11 @@ export default function Login() {
                   </Link>
                 </div>
 
-                <Button type="submit" className="w-full bg-emerald hover:bg-emerald/90" loading={loading}>
+                <Button 
+                  type="submit" 
+                  className="w-full bg-emerald hover:bg-emerald/90" 
+                  loading={loading}
+                >
                   🎮 {t('auth.signIn', 'Sign In')}
                 </Button>
               </form>
@@ -125,5 +150,6 @@ export default function Login() {
           </CardContent>
         </Card>
       </div>
-    </AuthLayout>;
+    </AuthLayout>
+  );
 }
