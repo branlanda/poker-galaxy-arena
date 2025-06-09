@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useGameRoom } from '@/hooks/useGameRoom';
 import { GameRoomLoader } from '@/components/poker/GameRoomLoader';
 import { GameRoomError } from '@/components/poker/GameRoomError';
-import { TexasHoldemGame } from '@/components/poker/game/TexasHoldemGame';
+import { PremiumTexasHoldemGame } from '@/components/poker/game/PremiumTexasHoldemGame';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/stores/auth';
 import { Card as PokerCard, PlayerState } from '@/types/poker';
@@ -133,9 +133,9 @@ export default function GameRoom() {
   } : null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div className="min-h-screen">
       {transformedGameState && (
-        <TexasHoldemGame
+        <PremiumTexasHoldemGame
           gameState={transformedGameState}
           players={transformedPlayers}
           userId={userId}
