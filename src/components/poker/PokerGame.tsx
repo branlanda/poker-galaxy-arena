@@ -104,7 +104,6 @@ export function PokerGame({
         playerState={playerState}
         currentBet={game.currentBet}
         gamePhase={game.phase}
-        lastAction={actions[0]}
         onAction={onAction}
         onLeaveTable={handleLeaveTable}
       />

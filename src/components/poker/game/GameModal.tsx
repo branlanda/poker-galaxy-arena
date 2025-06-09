@@ -169,7 +169,6 @@ export const GameModal: React.FC<GameModalProps> = ({
                     playerState={playerState}
                     currentBet={game.currentBet}
                     gamePhase={game.phase}
-                    lastAction={undefined}
                     onAction={onAction}
                     onLeaveTable={onLeaveTable}
                   />

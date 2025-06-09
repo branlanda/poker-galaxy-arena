@@ -31,7 +31,6 @@ export const GameRoomBottomControls: React.FC<GameRoomBottomControlsProps> = ({
           playerState={playerState}
           currentBet={gameState.currentBet}
           gamePhase={gameState.phase}
-          lastAction={gameState.lastAction}
           onAction={async (action, amount) => {
             onAction(action, amount);
           }}
