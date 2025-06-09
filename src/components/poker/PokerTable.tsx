@@ -138,7 +138,7 @@ export function PokerTable({
           >
             <PlayerSeat 
               position={index}
-              state={seat}
+              player={seat}
               isCurrentPlayer={userId && seat?.playerId === userId}
               isActive={gameState.activePlayerId === seat?.playerId}
               onSitDown={() => onSitDown(index)}

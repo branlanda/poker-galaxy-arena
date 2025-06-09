@@ -58,6 +58,9 @@ export const PlayerSeat: React.FC<PlayerSeatProps> = ({
     );
   }
 
+  const playerName = player.playerName || `Player ${position + 1}`;
+  const initials = playerName.split(' ').map(name => name.charAt(0)).join('').toUpperCase().slice(0, 2);
+
   return (
     <div className="relative flex flex-col items-center">
       {/* Player's hole cards */}
@@ -84,15 +87,14 @@ export const PlayerSeat: React.FC<PlayerSeatProps> = ({
         {/* Player avatar and name */}
         <div className="flex flex-col items-center">
           <PlayerAvatar
-            playerId={player.playerId}
-            playerName={player.playerName || `Player ${position + 1}`}
+            initials={initials}
+            isCurrentPlayer={isCurrentPlayer}
             isActive={isActive}
-            size="sm"
           />
           
           <div className="text-center mt-1">
             <div className="text-xs font-medium text-white truncate max-w-20">
-              {player.playerName || `Player ${position + 1}`}
+              {playerName}
             </div>
             <div className="text-xs text-gray-400">
               ${player.stack.toLocaleString()}
@@ -106,15 +108,16 @@ export const PlayerSeat: React.FC<PlayerSeatProps> = ({
           isSmallBlind={isSmallBlind}
           isBigBlind={isBigBlind}
           status={player.status}
-          size="sm"
         />
 
         {/* Current bet display */}
         {player.currentBet > 0 && (
           <PlayerChipDisplay
-            amount={player.currentBet}
-            size="sm"
-            className="mt-1"
+            playerName={playerName}
+            playerId={player.playerId}
+            isCurrentPlayer={isCurrentPlayer}
+            stack={player.stack}
+            currentBet={player.currentBet}
           />
         )}
 
