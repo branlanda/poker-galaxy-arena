@@ -47,19 +47,9 @@ export const PremiumPokerTable: React.FC<PremiumPokerTableProps> = ({
     <div className="relative w-full h-[700px] max-w-6xl mx-auto">
       {/* Premium poker table */}
       <motion.div 
-        className="absolute inset-0 rounded-[50%] overflow-hidden"
+        className="absolute inset-0 rounded-full overflow-hidden"
         style={{
-          background: `
-            radial-gradient(ellipse at center, 
-              #0f5132 0%, 
-              #198754 15%, 
-              #20c997 30%, 
-              #0d6efd 45%, 
-              #6f42c1 70%, 
-              #e83e8c 85%, 
-              #fd7e14 100%
-            )
-          `,
+          background: 'radial-gradient(ellipse at center, #0f5132 0%, #198754 15%, #20c997 30%, #0d6efd 45%, #6f42c1 70%, #e83e8c 85%, #fd7e14 100%)',
           filter: 'hue-rotate(120deg) saturate(0.8) brightness(0.4)'
         }}
         initial={{ scale: 0.8, opacity: 0 }}
@@ -68,15 +58,22 @@ export const PremiumPokerTable: React.FC<PremiumPokerTableProps> = ({
       >
         {/* Premium felt texture */}
         <div className="absolute inset-0 bg-gradient-to-br from-emerald-900 via-emerald-800 to-emerald-900 opacity-90"></div>
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="%23ffffff" fill-opacity="0.03"%3E%3Cpath d="M20 20c0-5.5-4.5-10-10-10s-10 4.5-10 10 4.5 10 10 10 10-4.5 10-10zm10 0c0-5.5-4.5-10-10-10s-10 4.5-10 10 4.5 10 10 10 10-4.5 10-10z"/%3E%3C/g%3E%3C/svg%3E')] opacity-30"></div>
+        <div className="absolute inset-0 bg-opacity-30" style={{
+          backgroundImage: "url('data:image/svg+xml,%3Csvg width=\"40\" height=\"40\" viewBox=\"0 0 40 40\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Cg fill=\"%23ffffff\" fill-opacity=\"0.03\"%3E%3Cpath d=\"M20 20c0-5.5-4.5-10-10-10s-10 4.5-10 10 4.5 10 10 10 10-4.5 10-10zm10 0c0-5.5-4.5-10-10-10s-10 4.5-10 10 4.5 10 10 10 10-4.5 10-10z\"/%3E%3C/g%3E%3C/svg%3E')"
+        }}></div>
         
         {/* Premium border with glow */}
-        <div className="absolute inset-0 rounded-[50%] border-8 border-gradient-to-r from-amber-600 via-amber-400 to-amber-600 shadow-[0_0_50px_rgba(245,158,11,0.5)]" 
-             style={{ borderImageSource: 'linear-gradient(45deg, #d97706, #f59e0b, #fbbf24, #f59e0b, #d97706)', borderImageSlice: 1 }}>
+        <div className="absolute inset-0 rounded-full border-8 border-amber-600 shadow-2xl" 
+             style={{ 
+               borderImage: 'linear-gradient(45deg, #d97706, #f59e0b, #fbbf24, #f59e0b, #d97706) 1',
+               boxShadow: '0 0 50px rgba(245,158,11,0.5)'
+             }}>
         </div>
 
         {/* Inner glow effect */}
-        <div className="absolute inset-8 rounded-[50%] shadow-[inset_0_0_100px_rgba(16,185,129,0.3)]"></div>
+        <div className="absolute inset-8 rounded-full shadow-inner" style={{
+          boxShadow: 'inset 0 0 100px rgba(16,185,129,0.3)'
+        }}></div>
       </motion.div>
 
       {/* Premium center area */}
@@ -91,14 +88,7 @@ export const PremiumPokerTable: React.FC<PremiumPokerTableProps> = ({
       {/* Premium table logo */}
       <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full flex items-center justify-center pointer-events-none z-10"
            style={{
-             background: `
-               radial-gradient(circle at center, 
-                 rgba(16, 185, 129, 0.15) 0%, 
-                 rgba(16, 185, 129, 0.1) 30%, 
-                 rgba(16, 185, 129, 0.05) 60%, 
-                 transparent 80%
-               )
-             `
+             background: 'radial-gradient(circle at center, rgba(16, 185, 129, 0.15) 0%, rgba(16, 185, 129, 0.1) 30%, rgba(16, 185, 129, 0.05) 60%, transparent 80%)'
            }}>
         <motion.div
           className="text-center"
@@ -160,7 +150,8 @@ export const PremiumPokerTable: React.FC<PremiumPokerTableProps> = ({
           animate={{ scale: 1 }}
           transition={{ type: "spring", stiffness: 300, damping: 20 }}
         >
-          <div className="w-12 h-12 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full border-4 border-amber-200 shadow-[0_0_20px_rgba(245,158,11,0.8)] flex items-center justify-center">
+          <div className="w-12 h-12 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full border-4 border-amber-200 shadow-2xl flex items-center justify-center"
+               style={{ boxShadow: '0 0 20px rgba(245,158,11,0.8)' }}>
             <Crown className="w-6 h-6 text-amber-900" fill="currentColor" />
           </div>
         </motion.div>
