@@ -95,8 +95,7 @@ export const PremiumTexasHoldemGame: React.FC<PremiumTexasHoldemGameProps> = ({
             <div className="flex-1">
               <GameChat 
                 tableId={gameState.id} 
-                userId={userId} 
-                className="h-full border-none bg-transparent"
+                userId={userId}
               />
             </div>
 
