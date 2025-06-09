@@ -1,18 +1,20 @@
 
 import { useParams, useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useGameRoom } from '@/hooks/useGameRoom';
 import { GameRoomLoader } from '@/components/poker/GameRoomLoader';
 import { GameRoomError } from '@/components/poker/GameRoomError';
-import { GameRoomContent } from '@/components/poker/GameRoomContent';
+import { TexasHoldemGame } from '@/components/poker/game/TexasHoldemGame';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/stores/auth';
-import { Card as PokerCard } from '@/types/poker';
+import { Card as PokerCard, PlayerState } from '@/types/poker';
 
 export default function GameRoom() {
   const { tableId } = useParams<{ tableId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [transformedPlayers, setTransformedPlayers] = useState<PlayerState[]>([]);
+  
   const {
     table,
     players,
@@ -53,6 +55,41 @@ export default function GameRoom() {
     }
   }, [table?.status, loading, navigate]);
 
+  // Transform gameState seats to PlayerState format
+  useEffect(() => {
+    if (gameState?.seats) {
+      const transformed: PlayerState[] = gameState.seats
+        .map((seat: any, index: number) => {
+          if (!seat) return null;
+          
+          return {
+            id: `seat-${index}`,
+            gameId: tableId || 'temp-game-id',
+            playerId: seat.playerId,
+            playerName: seat.playerName || `Player ${index + 1}`,
+            seatNumber: index,
+            stack: seat.stack || 0,
+            holeCards: seat.cards?.map((card: any): PokerCard => ({
+              suit: card.suit,
+              value: card.value,
+              code: card.code || `${card.value}${card.suit.charAt(0).toUpperCase()}`
+            })) || [],
+            status: seat.isFolded ? 'FOLDED' : 
+                   seat.isAllIn ? 'ALL_IN' :
+                   seat.isActive ? 'PLAYING' : 'SITTING',
+            currentBet: seat.bet || 0,
+            isDealer: seat.isDealer || false,
+            isSmallBlind: seat.isSmallBlind || false,
+            isBigBlind: seat.isBigBlind || false,
+            createdAt: new Date().toISOString()
+          } as PlayerState;
+        })
+        .filter(Boolean) as PlayerState[];
+      
+      setTransformedPlayers(transformed);
+    }
+  }, [gameState?.seats, tableId]);
+
   // Show loading state
   if (loading) {
     return <GameRoomLoader />;
@@ -66,7 +103,7 @@ export default function GameRoom() {
 
   // Transform gameState to include required properties for poker GameState
   const transformedGameState = gameState ? {
-    id: table.id, // Use table ID as game ID
+    id: table.id,
     tableId: gameState.tableId,
     phase: gameState.phase,
     pot: gameState.pot,
@@ -96,18 +133,16 @@ export default function GameRoom() {
   } : null;
 
   return (
-    <GameRoomContent
-      tableId={tableId!}
-      tableData={table}
-      players={players}
-      gameState={transformedGameState}
-      isPlayerSeated={isPlayerSeated}
-      isPlayerTurn={isPlayerTurn}
-      isJoining={false}
-      userId={userId}
-      onSitDown={handleSitDown}
-      onAction={handleAction}
-      onLeaveTable={leaveTable}
-    />
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      {transformedGameState && (
+        <TexasHoldemGame
+          gameState={transformedGameState}
+          players={transformedPlayers}
+          userId={userId}
+          onSitDown={handleSitDown}
+          onAction={handleAction}
+        />
+      )}
+    </div>
   );
 }
